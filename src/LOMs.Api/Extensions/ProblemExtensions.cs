@@ -1,9 +1,9 @@
-
 using LOMs.Domain.Common.Results;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Extensions;
 
+// for Minimal APIs
 public static class ProblemExtensions
 {
     public static IResult ToProblem(this List<Error> errors)

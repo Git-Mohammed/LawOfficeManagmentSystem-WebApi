@@ -1,7 +1,5 @@
 ﻿using LOMs.Application.Features.Customers.Dtos;
-using LOMs.Application.Features.Customers.Mappers;
 using LOMs.Domain.Customers;
-using LOMs.Domain.Customers.Vehicles;
 
 
 namespace LOMs.Application.Features.Customers.Mappers;

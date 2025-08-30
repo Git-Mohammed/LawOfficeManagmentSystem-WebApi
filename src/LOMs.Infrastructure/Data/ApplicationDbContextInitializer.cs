@@ -5,11 +5,11 @@ using Microsoft.Extensions.Logging;
 
 namespace LOMs.Infrastructure.Data;
 
-public class ApplicationDbContextInitialiser(
-    ILogger<ApplicationDbContextInitialiser> logger,
+public class ApplicationDbContextInitializer(
+    ILogger<ApplicationDbContextInitializer> logger,
     AppDbContext context)
 {
-    private readonly ILogger<ApplicationDbContextInitialiser> _logger = logger;
+    private readonly ILogger<ApplicationDbContextInitializer> _logger = logger;
     private readonly AppDbContext _context = context;
     //private readonly UserManager<AppUser> _userManager = userManager;
     //private readonly RoleManager<IdentityRole> _roleManager = roleManager;
@@ -18,7 +18,7 @@ public class ApplicationDbContextInitialiser(
     {
         try
         {
-            if ( _context.Database.GetPendingMigrations().Any())
+            if ( (await _context.Database.GetPendingMigrationsAsync()).Any())
             {
                await _context.Database.MigrateAsync();
             }

@@ -1,6 +1,4 @@
-﻿
-
-using LOMs.Domain.Common.Results;
+﻿using LOMs.Domain.Common.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -16,12 +14,7 @@ public class ApiController : ControllerBase
             return Problem();
         }
 
-        if (errors.All(error => error.Type == ErrorKind.Validation))
-        {
-            return ValidationProblem(errors);
-        }
-
-        return Problem(errors[0]);
+        return errors.All(error => error.Type == ErrorKind.Validation) ? ValidationProblem(errors) : Problem(errors[0]);
     }
 
     private ObjectResult Problem(Error error)

@@ -4,9 +4,7 @@ using LOMs.Application.Features.Customers.Dtos;
 using LOMs.Application.Features.Customers.Mappers;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.Customers;
-using LOMs.Domain.Customers.Vehicles;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
 namespace LOMs.Application.Features.Customers.Commands.CreateCustomer;

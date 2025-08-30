@@ -10,21 +10,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace LOMs.Api.Controllers
 {
     [Route("api/customers")]
-    public class CustomersController : ApiController
+    public class CustomersController(ICommandMediator command, IQueryMediator query) : ApiController
     {
-        private readonly ICommandMediator _command;
-        private readonly IQueryMediator _query;
-
-        public CustomersController(ICommandMediator command, IQueryMediator query)
-        {
-           _command = command;
-            _query = query;
-        }
-
         [HttpGet]
         public async Task<IActionResult> Get(CancellationToken ct)
         {
-            var result = await _query.QueryAsync(new GetCustomersQuery(), ct);
+            var result = await query.QueryAsync(new GetCustomersQuery(), ct);
 
             return result.Match(
                 response => Ok(response),
@@ -34,7 +25,7 @@ namespace LOMs.Api.Controllers
         [HttpGet("{customerId:guid}", Name = "GetCustomerById")]
         public async Task<IActionResult> GetById(Guid customerId, CancellationToken ct)
         {
-            var result = await _query.QueryAsync(new GetCustomerByIdQuery(customerId), ct);
+            var result = await query.QueryAsync(new GetCustomerByIdQuery(customerId), ct);
             return result.Match(
                 response => Ok(response),
                 Problem);
@@ -43,7 +34,7 @@ namespace LOMs.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerRequest request, CancellationToken ct)
         {
-            var result = await _command.SendAsync(
+            var result = await command.SendAsync(
                 new CreateCustomerCommand(
                 request.Name,
                 request.PhoneNumber,

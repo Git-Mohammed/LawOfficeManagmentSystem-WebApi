@@ -1,3 +1,4 @@
+using LOMs.Api;
 using LOMs.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,7 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services
-    .AddPerecention()
+    .AddPresentation()
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
 var app = builder.Build();
@@ -42,14 +43,16 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-await seedDataBase();
+await SeedDataBase();
 
-async Task seedDataBase()
+app.Run();
+return;
+
+async Task SeedDataBase()
 {
     using var scope = app.Services.CreateScope();
 
-    var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
+    var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
 
     await initialiser.InitialiseAsync();
 }
-app.Run();

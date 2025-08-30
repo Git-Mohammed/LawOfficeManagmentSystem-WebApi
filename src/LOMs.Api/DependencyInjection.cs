@@ -1,19 +1,17 @@
 using LOMs.Api.Services;
 using LOMs.Application.Common.Interfaces;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace LOMs.Api;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddPerecention(this IServiceCollection services)
+    public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
         services.AddIdentityInfrastructure();
-       
-
         return services;
     }
 
-    public static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services)
+    private static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services)
     {
         services.AddScoped<IUser, CurrentUser>();
         services.AddHttpContextAccessor();
