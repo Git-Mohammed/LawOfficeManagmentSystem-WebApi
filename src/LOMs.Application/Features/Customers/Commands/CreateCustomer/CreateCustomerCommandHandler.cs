@@ -1,7 +1,6 @@
 using LiteBus.Commands.Abstractions;
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.Customers.Dtos;
-using LOMs.Application.Features.Customers.Mappers;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.Customers;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +10,8 @@ namespace LOMs.Application.Features.Customers.Commands.CreateCustomer;
 
 public class CreateCustomerCommandHandler(
     ILogger<CreateCustomerCommandHandler> logger,
-    IAppDbContext context)
+    IAppDbContext context,
+    IMapper mapper)
     : ICommandHandler<CreateCustomerCommand, Result<CustomerDto>>
 {
     private readonly ILogger<CreateCustomerCommandHandler> _logger = logger;
@@ -52,6 +52,7 @@ public class CreateCustomerCommandHandler(
 
         _logger.LogInformation("Customer created successfully. Id: {CustomerId}", createCustomerResult.Value.Id);
 
-        return customer.ToDto();
+        return mapper.Map<Customer,CustomerDto>(customer);
+        //return customer.ToDto();
     }
 }

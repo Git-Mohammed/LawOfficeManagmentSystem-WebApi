@@ -1,6 +1,8 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Infrastructure.Data;
 using LOMs.Infrastructure.Data.Interceptors;
+using LOMs.Infrastructure.Mapping.Configs;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -28,8 +30,19 @@ public static class DependencyInjection
         services.AddScoped<ApplicationDbContextInitializer>();
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
+        services.MapsterRegister();
+        
+
         return services;
     }
 
 
+    private static IServiceCollection MapsterRegister(this IServiceCollection services)
+    {
+        MappingConfig.Configure();
+        services.AddSingleton(TypeAdapterConfig.GlobalSettings);
+        services.AddScoped<MapsterMapper.IMapper, MapsterMapper.ServiceMapper>();
+        services.AddScoped<IMapper, MappingServiceAdapter>();
+        return services;
+    }
 }

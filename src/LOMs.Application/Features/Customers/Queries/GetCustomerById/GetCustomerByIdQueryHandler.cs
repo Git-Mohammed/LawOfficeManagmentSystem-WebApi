@@ -1,8 +1,8 @@
 using LiteBus.Queries.Abstractions;
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.Customers.Dtos;
-using LOMs.Application.Features.Customers.Mappers;
 using LOMs.Domain.Common.Results;
+using LOMs.Domain.Customers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -10,8 +10,8 @@ namespace LOMs.Application.Features.Customers.Queries.GetCustomerById;
 
 public class GetCustomerByIdQueryHandler(
     ILogger<GetCustomerByIdQueryHandler> logger,
-    IAppDbContext context
-    )
+    IAppDbContext context,
+    IMapper mapper)
     : IQueryHandler<GetCustomerByIdQuery, Result<CustomerDto>>
 {
     private readonly ILogger<GetCustomerByIdQueryHandler> _logger = logger;
@@ -31,6 +31,7 @@ public class GetCustomerByIdQueryHandler(
                 description: $"Customer with id '{query.CustomerId}' was not found");
         }
 
-        return customer.ToDto();
+        return mapper.Map<Customer,CustomerDto>(customer);
+        //return customer.ToDto();
     }
 }
