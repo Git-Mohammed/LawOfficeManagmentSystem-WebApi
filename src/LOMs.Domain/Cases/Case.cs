@@ -9,8 +9,8 @@ namespace LOMs.Domain.Cases
 {
     public sealed class Case : AuditableEntity
     {
-        public string? CaseNumber { get; private set; }
-        public string? CaseNotes { get; private set; }
+        public string? Number { get; private set; }
+        public string? Subject { get; private set; }
         public PartyRole Role { get; private set; }
         public string? ClientRequests { get; private set; }
         public DateOnly? EstimatedReviewDate { get; private set; }
@@ -26,7 +26,7 @@ namespace LOMs.Domain.Cases
         private Case(
             Guid id,
             string? caseNumber,
-            string? caseNotes,
+            string? subject,
             PartyRole role,
             string? clientRequests,
             DateOnly? estimatedReviewDate,
@@ -36,8 +36,8 @@ namespace LOMs.Domain.Cases
             CourtType courtType
         ) : base(id)
         {
-            CaseNumber = caseNumber;
-            CaseNotes = caseNotes;
+            Number = caseNumber;
+            Subject = subject;
             Role = role;
             ClientRequests = clientRequests;
             EstimatedReviewDate = estimatedReviewDate;
@@ -52,7 +52,7 @@ namespace LOMs.Domain.Cases
         /// </summary>
         public static Result<Case> Create(
             Guid id,
-            string? caseNumber,
+            string? number,
             CourtType courtType,
             string? caseNotes,
             PartyRole role,
@@ -81,7 +81,7 @@ namespace LOMs.Domain.Cases
 
             var @case = new Case(
                 id,
-                caseNumber,
+                number,
                 caseNotes,
                 role,
                 clientRequests,
@@ -98,7 +98,7 @@ namespace LOMs.Domain.Cases
 
         public override string ToString()
         {
-            return $"Case #{CaseNumber ?? "N/A"} - {Role} - {CourtType} - Status: {Status}";
+            return $"Case #{Number ?? "N/A"} - {Role} - {CourtType} - Status: {Status}";
         }
     }
 }

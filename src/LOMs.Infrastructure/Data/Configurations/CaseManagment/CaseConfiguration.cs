@@ -10,10 +10,11 @@ public class CaseConfiguration : IEntityTypeConfiguration<Case>
     {
         builder.HasKey(c => c.Id).IsClustered(false);
 
-        builder.Property(c => c.CaseNumber)
+        builder.Property(c => c.Number)
+            .IsRequired(false)
             .HasMaxLength(100);
 
-        builder.Property(c => c.CaseNotes)
+        builder.Property(c => c.Subject)
             .HasMaxLength(1000);
 
         builder.Property(c => c.ClientRequests)

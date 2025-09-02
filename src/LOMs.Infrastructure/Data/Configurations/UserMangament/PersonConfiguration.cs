@@ -26,7 +26,7 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
                .HasMaxLength(20);
 
         builder.Property(p => p.Address)
-               .IsRequired()
+               .IsRequired(false)
                .HasMaxLength(250);
     }
 }

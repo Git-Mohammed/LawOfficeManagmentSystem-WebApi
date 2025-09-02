@@ -66,8 +66,8 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
 
         var commandRequest = new CreateCaseCommand(
             Clients: clientModels,
-            CaseNumber: request.CaseNumber,
-            CaseNotes: request.CaseNotes,
+            CaseNumber: request.Number,
+            CaseNotes: request.Subject,
             CourtType: (CourtType)request.CourtType,
             Role: (PartyRole)request.Role,
             ClientRequests: request.ClientRequests,

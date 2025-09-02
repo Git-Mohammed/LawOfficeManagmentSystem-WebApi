@@ -37,11 +37,11 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
+app.UseCoreMiddlewares(builder.Configuration);
 
 app.MapControllers();
+
+app.MapStaticAssets();
 
 await SeedDataBase();
 

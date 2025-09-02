@@ -11,7 +11,7 @@ public sealed class Person : AuditableEntity
     public string NationalId { get; private set; } = null!;
     public DateOnly BirthDate { get; private set; }
     public string PhoneNumber { get; private set; } = null!;
-    public string Address { get; private set; } = null!;
+    public string? Address { get; private set; }
 
     public Client? Client { get; set; }
     private Person() { }
@@ -31,7 +31,7 @@ public sealed class Person : AuditableEntity
         if (string.IsNullOrWhiteSpace(fullName) || fullName.Length < 3)
             return PersonErrors.FullNameRequired;
 
-        if (string.IsNullOrWhiteSpace(nationalId) || !Regex.IsMatch(nationalId, @"^\d{11}$"))
+        if (string.IsNullOrWhiteSpace(nationalId) || !Regex.IsMatch(nationalId, @"^\d{10}$"))
             return PersonErrors.InvalidNationalId;
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -39,11 +39,9 @@ public sealed class Person : AuditableEntity
         if (birthDate > today || age < 18)
             return PersonErrors.InvalidBirthDate;
 
-        if (string.IsNullOrWhiteSpace(phoneNumber) || !Regex.IsMatch(phoneNumber, @"^\+?\d{7,15}$"))
+        if (phoneNumber.StartsWith("05") && (string.IsNullOrWhiteSpace(phoneNumber) || !Regex.IsMatch(phoneNumber, @"^\+?\d{7,15}$")))
             return PersonErrors.InvalidPhoneNumber;
 
-        if (string.IsNullOrWhiteSpace(address) || address.Length < 10)
-            return PersonErrors.InvalidAddress;
 
         return new Person(id, fullName, nationalId, birthDate, phoneNumber, address);
     }

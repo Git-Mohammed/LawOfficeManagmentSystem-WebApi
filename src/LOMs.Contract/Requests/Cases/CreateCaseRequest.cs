@@ -9,12 +9,12 @@ namespace LOMs.Contract.Requests.Cases;
 public class CreateCaseRequest
 {
     [Required(ErrorMessage = "Case number is required.")]
-    public string CaseNumber { get; set; } = string.Empty;
+    public string Number { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Court type is required.")]
     public int CourtType { get; set; }
 
-    public string CaseNotes { get; set; } = string.Empty;
+    public string Subject { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Party role is required.")]
     public int Role { get; set; }
