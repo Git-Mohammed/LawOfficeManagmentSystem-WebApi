@@ -1,6 +1,7 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Infrastructure.Data;
 using LOMs.Infrastructure.Data.Interceptors;
+using LOMs.Infrastructure.Identity;
 using LOMs.Infrastructure.Mapping.Configs;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,18 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString);
         });
 
+        services.AddIdentityCore<ApplicationUser>(options =>
+            {
+                options.Password.RequiredLength = 6;
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequiredUniqueChars = 1;
+                options.SignIn.RequireConfirmedAccount = false;
+            }).AddRoles<ApplicationRole>()
+            .AddEntityFrameworkStores<AppDbContext>();
+        
         services.AddScoped<ApplicationDbContextInitializer>();
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
