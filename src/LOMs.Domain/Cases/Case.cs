@@ -9,8 +9,6 @@ namespace LOMs.Domain.Cases
 {
     public sealed class Case : AuditableEntity
     {
-        public Guid ClientFileId { get; }
-
         public string? CaseNumber { get; private set; }
         public string? CaseNotes { get; private set; }
         public PartyRole Role { get; private set; }
@@ -21,17 +19,16 @@ namespace LOMs.Domain.Cases
         public string AssignedOfficer { get; private set; } = null!;
         public CourtType CourtType { get; private set; }
 
-        public ClientFile? ClientFile { get; set; }
         public ICollection<ClientCase> CaseClients { get; private set; } = new List<ClientCase>();
+
         private Case() { }
 
         private Case(
             Guid id,
-            Guid clientFileId,
             string? caseNumber,
-            string caseNotes,
+            string? caseNotes,
             PartyRole role,
-            string clientRequests,
+            string? clientRequests,
             DateOnly? estimatedReviewDate,
             CaseStatus status,
             string? lawyerOpinion,
@@ -39,7 +36,6 @@ namespace LOMs.Domain.Cases
             CourtType courtType
         ) : base(id)
         {
-            ClientFileId = clientFileId;
             CaseNumber = caseNumber;
             CaseNotes = caseNotes;
             Role = role;
@@ -51,39 +47,40 @@ namespace LOMs.Domain.Cases
             CourtType = courtType;
         }
 
+        /// <summary>
+        /// Factory method to create a new Case with validation.
+        /// </summary>
         public static Result<Case> Create(
             Guid id,
-            Guid clientFileId,
             string? caseNumber,
             CourtType courtType,
-            string caseNotes,
+            string? caseNotes,
             PartyRole role,
-            string clientRequests,
+            string? clientRequests,
             DateOnly? estimatedReviewDate,
             CaseStatus status,
             string? lawyerOpinion,
             string assignedOfficer
         )
         {
+            // Basic validations
             if (id == Guid.Empty)
                 return Error.Conflict();
 
-
-            if (clientFileId == Guid.Empty)
-                return CaseErrors.Invalid_ClientFileId;
-
             if (string.IsNullOrWhiteSpace(assignedOfficer))
                 return CaseErrors.Missing_AssignedOfficer;
+
             if (!Enum.IsDefined(typeof(CaseStatus), status))
                 return CaseErrors.Invalid_ReviewDate;
+
             if (!Enum.IsDefined(typeof(PartyRole), role))
                 return CaseErrors.Invalid_ReviewDate;
+
             if (!Enum.IsDefined(typeof(CourtType), courtType))
                 return CaseErrors.Invalid_CourtType;
 
-            return new Case(
+            var @case = new Case(
                 id,
-                clientFileId,
                 caseNumber,
                 caseNotes,
                 role,
@@ -94,6 +91,14 @@ namespace LOMs.Domain.Cases
                 assignedOfficer,
                 courtType
             );
+
+            return @case;
+        }
+
+
+        public override string ToString()
+        {
+            return $"Case #{CaseNumber ?? "N/A"} - {Role} - {CourtType} - Status: {Status}";
         }
     }
 }

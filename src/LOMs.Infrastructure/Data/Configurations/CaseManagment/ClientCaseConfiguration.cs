@@ -8,7 +8,7 @@ public class ClientCaseConfiguration : IEntityTypeConfiguration<ClientCase>
 {
     public void Configure(EntityTypeBuilder<ClientCase> builder)
     {
-        builder.HasKey(cc => new { cc.CaseId, cc.ClientId });
+        builder.HasKey(cc => new { cc.CaseId, cc.ClientId, cc.ClientFileId });
 
         builder.HasOne(cc => cc.Case)
             .WithMany(c => c.CaseClients)
@@ -19,5 +19,11 @@ public class ClientCaseConfiguration : IEntityTypeConfiguration<ClientCase>
             .WithMany(c => c.CaseClients)
             .HasForeignKey(cc => cc.ClientId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(cc => cc.ClientFile)
+            .WithMany(c => c.CaseClients)
+            .HasForeignKey(cc => cc.ClientFileId)
+            .OnDelete(DeleteBehavior.Restrict);
+
     }
 }

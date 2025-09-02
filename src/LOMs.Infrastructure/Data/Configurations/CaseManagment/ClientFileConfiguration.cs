@@ -19,9 +19,5 @@ public class ClientFileConfiguration : IEntityTypeConfiguration<ClientFile>
             .HasForeignKey(cf => cf.ClientId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(cf => cf.Cases)
-            .WithOne(c => c.ClientFile)
-            .HasForeignKey(c => c.ClientFileId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

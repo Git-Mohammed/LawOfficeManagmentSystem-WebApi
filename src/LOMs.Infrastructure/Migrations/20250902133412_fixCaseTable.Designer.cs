@@ -4,6 +4,7 @@ using LOMs.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LOMs.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250902133412_fixCaseTable")]
+    partial class fixCaseTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -95,8 +98,6 @@ namespace LOMs.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("CaseId", "ClientId", "ClientFileId");
-
-                    b.HasIndex("ClientFileId");
 
                     b.HasIndex("ClientId");
 
@@ -265,7 +266,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasOne("LOMs.Domain.Cases.ClientFiles.ClientFile", "ClientFile")
                         .WithMany("CaseClients")
-                        .HasForeignKey("ClientFileId")
+                        .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
