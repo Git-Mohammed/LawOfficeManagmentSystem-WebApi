@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LOMs.Infrastructure.Data.Configurations.UserMangment;
+namespace LOMs.Infrastructure.Data.Configurations.UserManagement;
 
 public class ClientConfiguration : IEntityTypeConfiguration<Client>
 {

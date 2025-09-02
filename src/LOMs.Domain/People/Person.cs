@@ -2,6 +2,7 @@
 using LOMs.Domain.Common;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People.Clients;
+using LOMs.Domain.People.Employees;
 
 namespace LOMs.Domain.People;
 
@@ -14,6 +15,7 @@ public sealed class Person : AuditableEntity
     public string Address { get; private set; } = null!;
 
     public Client? Client { get; set; }
+    public Employee? Employee { get; set; }
     private Person() { }
 
     private Person(Guid id, string fullName, string nationalId, DateOnly birthDate, string phoneNumber, string address)
