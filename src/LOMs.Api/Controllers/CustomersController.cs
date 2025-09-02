@@ -4,7 +4,6 @@ using LOMs.Application.Features.Customers.Commands.CreateCustomer;
 using LOMs.Application.Features.Customers.Queries.GetCustomerById;
 using LOMs.Application.Features.Customers.Queries.GetCustomers;
 using LOMs.Contract.Requests.Customers;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Controllers

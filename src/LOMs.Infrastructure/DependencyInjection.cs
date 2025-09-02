@@ -3,6 +3,7 @@ using LOMs.Infrastructure.Data;
 using LOMs.Infrastructure.Data.Interceptors;
 using LOMs.Infrastructure.Identity;
 using LOMs.Infrastructure.Mapping.Configs;
+using LOMs.Infrastructure.Services;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -42,8 +43,9 @@ public static class DependencyInjection
         
         services.AddScoped<ApplicationDbContextInitializer>();
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
-
+        services.AddScoped<IIdentityService, IdentityService>();
         services.MapsterRegister();
+        services.AddPasswordGenerator();
         
 
         return services;
@@ -57,5 +59,10 @@ public static class DependencyInjection
         services.AddScoped<MapsterMapper.IMapper, MapsterMapper.ServiceMapper>();
         services.AddScoped<IMapper, MappingServiceAdapter>();
         return services;
+    }
+    
+    private static IServiceCollection AddPasswordGenerator(this IServiceCollection services)
+    {
+        return services.AddSingleton<IPasswordGenerator, RandomPasswordGenerator>();
     }
 }
