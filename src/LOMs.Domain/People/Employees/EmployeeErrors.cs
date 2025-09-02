@@ -12,4 +12,6 @@ public static class EmployeeErrors
 
     public static readonly Error RoleInvalid =
         Error.Validation("Employee.RoleInvalid", "The provided role is invalid.");
+    public static readonly Error UserIdRequired =
+        Error.Validation("Employee.UserIdRequired", "The provided userId is invalid.");
 }

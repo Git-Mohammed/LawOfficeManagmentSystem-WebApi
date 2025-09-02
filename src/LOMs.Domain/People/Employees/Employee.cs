@@ -9,6 +9,8 @@ public sealed class Employee : AuditableEntity
     public Guid PersonId { get; }
     public Person Person { get;} = null!;
     public Role Role { get;}
+
+    public string UserId { get; private set; }
     
     private Employee(){}
 
@@ -29,6 +31,14 @@ public sealed class Employee : AuditableEntity
             return EmployeeErrors.RoleInvalid;
         
         return new Employee(id, person, role);
+    }
+
+    public Result<bool> AssignUser(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return EmployeeErrors.IdRequired;
+        UserId = id;
+        return true;
     }
 
 }
