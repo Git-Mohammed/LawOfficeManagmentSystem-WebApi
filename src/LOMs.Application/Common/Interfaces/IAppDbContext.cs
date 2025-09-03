@@ -2,6 +2,7 @@
 using LOMs.Domain.Customers;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
+using LOMs.Domain.User;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using LOMs.Domain.People.Employees;
@@ -13,6 +14,7 @@ public interface IAppDbContext
     public DbSet<Person> People { get; }
     public DbSet<Client> Clients { get; }
     public DbSet<Employee> Employees { get; }
+
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 };
