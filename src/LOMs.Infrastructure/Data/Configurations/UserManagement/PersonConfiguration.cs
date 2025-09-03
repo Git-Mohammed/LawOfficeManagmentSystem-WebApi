@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using LOMs.Domain.People;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using LOMs.Domain.People;
 
-namespace LOMs.Infrastructure.Data.Configurations.UserMangment;
+namespace LOMs.Infrastructure.Data.Configurations.UserManagement;
 
 public class PersonConfiguration : IEntityTypeConfiguration<Person>
 {

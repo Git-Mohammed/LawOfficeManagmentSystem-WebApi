@@ -1,7 +1,9 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Infrastructure.Data;
 using LOMs.Infrastructure.Data.Interceptors;
+using LOMs.Infrastructure.Identity;
 using LOMs.Infrastructure.Mapping.Configs;
+using LOMs.Infrastructure.Services;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -27,10 +29,23 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString);
         });
 
+        services.AddIdentityCore<ApplicationUser>(options =>
+            {
+                options.Password.RequiredLength = 6;
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequiredUniqueChars = 1;
+                options.SignIn.RequireConfirmedAccount = false;
+            }).AddRoles<ApplicationRole>()
+            .AddEntityFrameworkStores<AppDbContext>();
+        
         services.AddScoped<ApplicationDbContextInitializer>();
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
-
+        services.AddScoped<IIdentityService, IdentityService>();
         services.MapsterRegister();
+        services.AddPasswordGenerator();
         
 
         return services;
@@ -44,5 +59,10 @@ public static class DependencyInjection
         services.AddScoped<MapsterMapper.IMapper, MapsterMapper.ServiceMapper>();
         services.AddScoped<IMapper, MappingServiceAdapter>();
         return services;
+    }
+    
+    private static IServiceCollection AddPasswordGenerator(this IServiceCollection services)
+    {
+        return services.AddSingleton<IPasswordGenerator, RandomPasswordGenerator>();
     }
 }

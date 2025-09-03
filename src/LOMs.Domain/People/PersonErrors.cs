@@ -9,6 +9,8 @@ public static class PersonErrors
 
     public static Error InvalidNationalId =>
         Error.Validation("Person_NationalId_Invalid", "National ID must be exactly 11 digits.");
+    public static Error ExistingNationalId =>
+        Error.Validation("Person_Existing_NationalId", "National ID already exists.");
 
     public static Error InvalidBirthDate =>
         Error.Validation("Person_BirthDate_Invalid", "Person must be at least 18 years old.");
