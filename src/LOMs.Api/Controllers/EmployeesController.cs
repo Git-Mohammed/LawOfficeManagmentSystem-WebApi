@@ -25,6 +25,7 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
     {
         var result = await command.SendAsync(new CreateEmployeeCommand(
             Role:  request.Role,
+            Email: request.Email,
             Person: new CreatePersonCommand(
                 request.Person.FullName,
                 request.Person.NationalId,

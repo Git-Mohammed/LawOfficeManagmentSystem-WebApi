@@ -5,4 +5,4 @@ using LOMs.Domain.Common.Results;
 
 namespace LOMs.Application.Features.People.Employees.Commands;
 
-public sealed record CreateEmployeeCommand (string Role,CreatePersonCommand Person) : ICommand<Result<EmployeeDto>>;
+public sealed record CreateEmployeeCommand (string Role,string Email,CreatePersonCommand Person) : ICommand<Result<EmployeeDto>>;

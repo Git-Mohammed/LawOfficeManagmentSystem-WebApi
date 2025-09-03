@@ -7,5 +7,6 @@ public sealed class EmployeeDto
 {
     public Guid Id { get; init; }
     public string Role { get; init; }
+    public string Email { get; init; }
     public PersonDto Person { get; init; }
 }

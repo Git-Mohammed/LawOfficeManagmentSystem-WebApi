@@ -23,9 +23,9 @@ public class IdentityService(UserManager<ApplicationUser> userManager) : IIdenti
         throw new NotImplementedException();
     }
 
-    public async Task<Result<string>> CreateUserAsync(string userName, string password)
+    public async Task<Result<string>> CreateUserAsync(string userName, string email, string password)
     {
-        var user = new ApplicationUser { UserName = userName, Email = userName };
+        var user = new ApplicationUser { UserName = userName, Email = email };
         var result = await _userManager.CreateAsync(user, password);
         if (result.Succeeded)
             return user.Id;

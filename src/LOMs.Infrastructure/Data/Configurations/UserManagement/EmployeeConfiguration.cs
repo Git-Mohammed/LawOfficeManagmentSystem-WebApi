@@ -12,6 +12,7 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         builder.Property(e => e.Role)
             .HasConversion<string>().HasMaxLength(50).IsRequired();
         builder.Property(e => e.UserId).IsRequired();
+        builder.Property(e => e.Email).IsRequired().HasMaxLength(100);
         
         builder.HasOne(e=>e.Person)
             .WithOne(p=> p.Employee)
@@ -19,6 +20,7 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(e => e.PersonId);
         builder.HasIndex(e => e.UserId);
+        builder.HasIndex(e => e.Email);
         builder.ToTable("Employees","UserManagement");
     }
 }
