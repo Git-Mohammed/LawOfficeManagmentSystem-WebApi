@@ -15,7 +15,16 @@ public class SmtpEmailSender(IOptions<SmtpSettings> options) : IEmailSender
         client.Credentials = new NetworkCredential(_settings.Username, _settings.Password);
         client.EnableSsl = _settings.EnableSsl;
 
-        var mail = new MailMessage(_settings.From, to, subject, body);
+        var mail = new MailMessage
+        {
+            From = new MailAddress(_settings.From),
+            Subject = subject,
+            Body = body,
+            IsBodyHtml = true
+        };
+
+        mail.To.Add(to);
+
         await client.SendMailAsync(mail);
     }
 }

@@ -1,20 +1,23 @@
 ﻿using LiteBus.Commands.Abstractions;
+using LiteBus.Events.Abstractions;
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.People.Employees.DTOs;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Employees;
+using LOMs.Domain.People.Employees.DomainEvents;
 using Microsoft.EntityFrameworkCore;
 
 namespace LOMs.Application.Features.People.Employees.Commands;
 
-public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityService identityService, IMapper mapper, IPasswordGenerator passwordGenerator)
+public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityService identityService, IMapper mapper, IPasswordGenerator passwordGenerator, IDomainEventPublisher  eventPublisher)
     : ICommandHandler<CreateEmployeeCommand, Result<EmployeeDto>>
 {
     private readonly IAppDbContext _context = context;
     private readonly IIdentityService _identityService = identityService;
     private readonly IMapper _mapper = mapper;
     private readonly IPasswordGenerator _passwordGenerator = passwordGenerator;
+    private readonly IDomainEventPublisher _eventPublisher = eventPublisher;
 
     public async Task<Result<EmployeeDto>> HandleAsync(CreateEmployeeCommand command, CancellationToken cancellationToken = new CancellationToken())
     {
@@ -58,7 +61,12 @@ public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityServic
         
         _context.Employees.Add(employee.Value);
         await _context.SaveChangesAsync(cancellationToken);
+        
+        // send email
         var createdEmployee = employee.Value;
+        await _eventPublisher.PublishAsync(new EmployeeCreatedEvent(createdEmployee, "redaessa27@gmail.com", randomPassword), cancellationToken);
+        
         return _mapper.Map<Employee,EmployeeDto>(createdEmployee);
+        
     }
 }

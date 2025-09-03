@@ -4,11 +4,13 @@ using LOMs.Infrastructure.Data.Interceptors;
 using LOMs.Infrastructure.Identity;
 using LOMs.Infrastructure.Mapping.Configs;
 using LOMs.Infrastructure.Services;
+using LOMs.Infrastructure.Services.DomainEventPublishers;
 using LOMs.Infrastructure.Services.EmailSender;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
+
 
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -49,7 +51,7 @@ public static class DependencyInjection
         services.MapsterRegister();
         services.AddPasswordGenerator();
         services.AddEmailSenderService(configuration);
-
+        services.AddScoped<IDomainEventPublisher,LiteBusEventPublisher>();
         return services;
     }
 
@@ -70,7 +72,7 @@ public static class DependencyInjection
     private static IServiceCollection AddEmailSenderService(this IServiceCollection services, IConfiguration configuration)
     {
         // Bind the "Smtp" section to SmtpSettings
-        services.Configure<SmtpSettings>(option => configuration.GetSection("Smtp"));
+        services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
 
         // Register the email sender
         services.AddScoped<IEmailSender, SmtpEmailSender>();

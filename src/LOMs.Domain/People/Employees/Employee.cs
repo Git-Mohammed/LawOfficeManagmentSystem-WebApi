@@ -7,14 +7,15 @@ namespace LOMs.Domain.People.Employees;
 
 public sealed class Employee : AuditableEntity
 {
-    public Guid Id { get;}
+    public Guid Id { get; }
     public Guid PersonId { get; }
-    public Person Person { get;} = null!;
-    public Role Role { get;}
-
+    public Person Person { get; } = null!;
+    public Role Role { get; }
     public string UserId { get; private set; }
-    
-    private Employee(){}
+
+    private Employee()
+    {
+    }
 
     private Employee(Guid id, Person person, Role role) : base(id)
     {
@@ -39,10 +40,10 @@ public sealed class Employee : AuditableEntity
         {
             return EmployeeErrors.RoleInvalid;
         }
-        
+
         if (!Enum.IsDefined(roleEnum))
             return EmployeeErrors.RoleInvalid;
-        
+
         return new Employee(id, person, roleEnum);
     }
 
@@ -53,7 +54,5 @@ public sealed class Employee : AuditableEntity
         UserId = id;
         return true;
     }
-    
-    
 }
 
