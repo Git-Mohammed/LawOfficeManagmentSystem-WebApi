@@ -26,6 +26,10 @@ public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityServic
         if (await _context.People.AnyAsync(p => p.NationalId == nationalId, cancellationToken))
             return PersonErrors.ExistingNationalId;
         
+        var email = command.Email.Trim().ToLower();
+        if (await _context.Employees.AnyAsync(e => e.Email == email, cancellationToken))
+            return EmployeeErrors.ExistingEmail;
+        
         // create person
         var person = Person.Create(
             Guid.NewGuid(),
@@ -39,14 +43,14 @@ public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityServic
             return person.Errors;
         
         // create employee
-        var employee = Employee.Create(Guid.NewGuid(),person.Value,command.Role);
+        var employee = Employee.Create(Guid.NewGuid(),email,person.Value,command.Role);
         
         if (employee.IsError)
             return employee.Errors;
         
         // create user
         var randomPassword = _passwordGenerator.Generate();
-        var userResult = await _identityService.CreateUserAsync(nationalId, randomPassword);
+        var userResult = await _identityService.CreateUserAsync(nationalId, email, randomPassword);
 
         if (userResult.IsError || string.IsNullOrEmpty(userResult.Value))
         {
@@ -64,7 +68,7 @@ public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityServic
         
         // send email
         var createdEmployee = employee.Value;
-        await _eventPublisher.PublishAsync(new EmployeeCreatedEvent(createdEmployee, "redaessa27@gmail.com", randomPassword), cancellationToken);
+        await _eventPublisher.PublishAsync(new EmployeeCreatedEvent(createdEmployee, createdEmployee.Email, randomPassword), cancellationToken);
         
         return _mapper.Map<Employee,EmployeeDto>(createdEmployee);
         
