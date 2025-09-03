@@ -11,7 +11,6 @@ public static class PersonErrors
 
         Error.Validation("Person_NationalId_Invalid", "رقم الهوية الوطنية يجب أن يتكون من 10 أرقام بالضبط.");
 
-        Error.Validation("Person_NationalId_Invalid", "National ID must be exactly 11 digits.");
     public static Error ExistingNationalId =>
         Error.Validation("Person_Existing_NationalId", "National ID already exists.");
 
