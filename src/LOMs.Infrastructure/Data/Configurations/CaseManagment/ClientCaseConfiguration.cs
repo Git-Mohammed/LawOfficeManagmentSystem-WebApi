@@ -11,7 +11,7 @@ public class ClientCaseConfiguration : IEntityTypeConfiguration<ClientCase>
         builder.HasKey(cc => new { cc.CaseId, cc.ClientId, cc.ClientFileId });
 
         builder.HasOne(cc => cc.Case)
-            .WithMany(c => c.CaseClients)
+            .WithMany(c => c.ClientCases)
             .HasForeignKey(cc => cc.CaseId)
             .OnDelete(DeleteBehavior.Restrict);
 

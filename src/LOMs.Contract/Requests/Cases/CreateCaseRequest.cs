@@ -1,37 +1,35 @@
-﻿using LOMs.Contract.Requests.Clients;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace LOMs.Contract.Requests.Cases;
-
-/// <summary>
-/// Represents the data required to create a new legal case, including metadata and client associations.
-/// </summary>
-public class CreateCaseRequest
+namespace LOMs.Contract.Requests.Cases
 {
-    [Required(ErrorMessage = "Case number is required.")]
-    public string Number { get; set; } = string.Empty;
+    public class CreateCaseRequest
+    {
+        public string CaseNumber { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Court type is required.")]
-    public int CourtType { get; set; }
+        [Required(ErrorMessage = "نوع المحكمة مطلوب.")]
+        public int CourtType { get; set; }
 
-    public string Subject { get; set; } = string.Empty;
+        public string CaseSubject { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Party role is required.")]
-    public int Role { get; set; }
+        [Required(ErrorMessage = "دور الطرف مطلوب.")]
+        public int PartyRole { get; set; }
 
-    public string ClientRequests { get; set; } = string.Empty;
+        public string ClientRequestDetails { get; set; } = string.Empty;
 
-    public DateOnly? EstimatedReviewDate { get; set; }
+        public DateOnly? EstimatedReviewDate { get; set; }
 
-    public bool IsDraft { get; set; }
+        public bool IsDraft { get; set; }
 
-    public string? LawyerOpinion { get; set; }
+        public bool HasContracts { get; set; }
 
-    [Required(ErrorMessage = "Assigned officer is required.")]
-    public string AssignedOfficer { get; set; } = string.Empty;
+       public List<CreateContractWithCaseRequest>? Contracts { get; set; }
 
-    /// <summary>
-    /// List of clients to associate with the case. Each item may represent an existing client or a new one.
-    /// </summary>
-    public List<CaseClientRequest> Clients { get; set; } = new();
+        public string? LawyerOpinion { get; set; }
+
+        [Required(ErrorMessage = " الموظف المسؤول مطلوب.")]
+        public string AssignedOfficer { get; set; } = string.Empty;
+
+        [MinLength(1, ErrorMessage = "يجب إضافة عميل واحد على الأقل.")]
+        public List<CaseClientRequest> Clients { get; set; } = new();
+    }
 }

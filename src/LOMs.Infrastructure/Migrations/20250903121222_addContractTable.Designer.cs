@@ -4,6 +4,7 @@ using LOMs.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LOMs.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250903121222_addContractTable")]
+    partial class addContractTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -355,7 +358,7 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.Contracts.Contract", b =>
                 {
                     b.HasOne("LOMs.Domain.Cases.Case", "Case")
-                        .WithMany("Contracts")
+                        .WithMany()
                         .HasForeignKey("CaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -377,8 +380,6 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.Case", b =>
                 {
                     b.Navigation("ClientCases");
-
-                    b.Navigation("Contracts");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.ClientFiles.ClientFile", b =>

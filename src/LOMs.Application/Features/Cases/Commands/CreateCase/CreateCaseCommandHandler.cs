@@ -3,6 +3,7 @@ using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
+using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.Enums;
 using LOMs.Domain.Cases.Enums.CourtTypes;
 using LOMs.Domain.Common.Results;
@@ -35,7 +36,7 @@ public sealed class CreateCaseCommandHandler(
 
         if (!string.IsNullOrWhiteSpace(message.CaseNumber))
         {
-            var caseNumberExists = await _context.Cases.AnyAsync(x => x.Number == message.CaseNumber, cancellationToken);
+            var caseNumberExists = await _context.Cases.AnyAsync(x => x.CaseNumber == message.CaseNumber, cancellationToken);
             if (caseNumberExists)
             {
                 _logger.LogWarning("Duplicate case number detected: {CaseNumber}", message.CaseNumber);
@@ -82,7 +83,7 @@ public sealed class CreateCaseCommandHandler(
             var duplicates = await _context.People
                 .Where(p => existingNationalIds.Contains(p.NationalId))
                 .Select(p => p.NationalId)
-                .ToListAsync(cancellationToken);
+                .ToHashSetAsync(cancellationToken);
 
             if (duplicates.Any())
             {
@@ -100,7 +101,7 @@ public sealed class CreateCaseCommandHandler(
             message.CaseNumber,
             message.CourtType,
             message.CaseNotes,
-            message.Role,
+            message.PartyRole,
             message.ClientRequests,
             message.EstimatedReviewDate,
             message.IsDraft ? CaseStatus.Draft : CaseStatus.Pending,
@@ -156,8 +157,22 @@ public sealed class CreateCaseCommandHandler(
                 return CaseErrors.Unknown_ClientType;
             }
         }
+        List<Contract> contracts = new List<Contract>();
 
-        await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        if(message.HasContracts)
+        {
+            if (!message.Contracts.Any())
+                return Error.Conflict();
+
+            foreach(var newcontract in message.Contracts)
+            {
+                var contractResult = Contract.Create(Guid.NewGuid(), @case.Id, @case.CourtType, (ContractType)newcontract.ContractType, newcontract.IssueDate, newcontract.ExpiryDate, newcontract.TotalAmount, newcontract.InitialPayment, newcontract.ContractFilePath, newcontract.IsAssigned);
+
+                if (contractResult.IsError)
+                    return contractResult.Errors;
+                contracts.Add(contractResult.Value);
+            }
+        }
 
         try
         {
@@ -174,8 +189,11 @@ public sealed class CreateCaseCommandHandler(
             if (clientCases.Count > 0)
                 await _context.ClientCases.AddRangeAsync(clientCases, cancellationToken);
 
+            if (contracts.Count > 0 && message.HasContracts)
+                await _context.Contracts.AddRangeAsync(contracts, cancellationToken);
+
+
             await _context.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
 
             _logger.LogInformation("Case creation completed successfully. CaseId: {CaseId}", @case.Id);
             return _mapper.Map<Case, CaseDto>(@case);
@@ -183,7 +201,6 @@ public sealed class CreateCaseCommandHandler(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while creating case. Rolling back transaction.");
-            await transaction.RollbackAsync(cancellationToken);
             return CaseErrors.Unexpected_Failure;
         }
     }

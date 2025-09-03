@@ -4,6 +4,7 @@ using LOMs.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LOMs.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250903161106_fix")]
+    partial class fix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -242,6 +245,9 @@ namespace LOMs.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("CaseId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
 
@@ -260,6 +266,8 @@ namespace LOMs.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("CaseId");
 
                     b.HasIndex("PersonId")
                         .IsUnique();
@@ -365,6 +373,10 @@ namespace LOMs.Infrastructure.Migrations
 
             modelBuilder.Entity("LOMs.Domain.People.Clients.Client", b =>
                 {
+                    b.HasOne("LOMs.Domain.Cases.Case", null)
+                        .WithMany("Clients")
+                        .HasForeignKey("CaseId");
+
                     b.HasOne("LOMs.Domain.People.Person", "Person")
                         .WithOne("Client")
                         .HasForeignKey("LOMs.Domain.People.Clients.Client", "PersonId")
@@ -377,6 +389,8 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.Case", b =>
                 {
                     b.Navigation("ClientCases");
+
+                    b.Navigation("Clients");
 
                     b.Navigation("Contracts");
                 });

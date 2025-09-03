@@ -1,4 +1,5 @@
 ﻿using LOMs.Domain.Cases.ClientFiles;
+using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.Enums;
 using LOMs.Domain.Cases.Enums.CourtTypes;
 using LOMs.Domain.Common;
@@ -9,25 +10,26 @@ namespace LOMs.Domain.Cases
 {
     public sealed class Case : AuditableEntity
     {
-        public string? Number { get; private set; }
-        public string? Subject { get; private set; }
-        public PartyRole Role { get; private set; }
+        public string? CaseNumber { get; private set; }
+        public string? CaseSubject { get; private set; }
+        public PartyRole PartyRole { get; private set; }
         public string? ClientRequests { get; private set; }
         public DateOnly? EstimatedReviewDate { get; private set; }
         public CaseStatus Status { get; private set; }
         public string? LawyerOpinion { get; private set; }
         public string AssignedOfficer { get; private set; } = null!;
         public CourtType CourtType { get; private set; }
+        public ICollection<Contract> Contracts {  get;  set; } = new List<Contract>();
+        public ICollection<ClientCase> ClientCases { get;  set; } = new List<ClientCase>();
 
-        public ICollection<ClientCase> CaseClients { get; private set; } = new List<ClientCase>();
 
         private Case() { }
 
         private Case(
             Guid id,
             string? caseNumber,
-            string? subject,
-            PartyRole role,
+            string? caseSubject,
+            PartyRole partyRole,
             string? clientRequests,
             DateOnly? estimatedReviewDate,
             CaseStatus status,
@@ -36,9 +38,9 @@ namespace LOMs.Domain.Cases
             CourtType courtType
         ) : base(id)
         {
-            Number = caseNumber;
-            Subject = subject;
-            Role = role;
+            CaseNumber = caseNumber;
+            CaseSubject = caseSubject;
+            PartyRole = partyRole;
             ClientRequests = clientRequests;
             EstimatedReviewDate = estimatedReviewDate;
             Status = status;
@@ -52,7 +54,7 @@ namespace LOMs.Domain.Cases
         /// </summary>
         public static Result<Case> Create(
             Guid id,
-            string? number,
+            string? caseNumber,
             CourtType courtType,
             string? caseNotes,
             PartyRole role,
@@ -79,9 +81,9 @@ namespace LOMs.Domain.Cases
             if (!Enum.IsDefined(typeof(CourtType), courtType))
                 return CaseErrors.Invalid_CourtType;
 
-            var @case = new Case(
+            return new Case(
                 id,
-                number,
+                caseNumber,
                 caseNotes,
                 role,
                 clientRequests,
@@ -90,15 +92,13 @@ namespace LOMs.Domain.Cases
                 lawyerOpinion,
                 assignedOfficer,
                 courtType
-            );
-
-            return @case;
+            ); ;
         }
 
 
         public override string ToString()
         {
-            return $"Case #{Number ?? "N/A"} - {Role} - {CourtType} - Status: {Status}";
+            return $"Case #{CaseNumber ?? "N/A"} - {PartyRole} - {CourtType} - Status: {Status}";
         }
     }
 }

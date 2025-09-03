@@ -1,6 +1,7 @@
 ﻿
 using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
+using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Customers;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
@@ -17,7 +18,9 @@ public interface IAppDbContext
     public DbSet<ClientFile> ClientFiles { get; }
     public DbSet<Case> Cases { get; }
     public DbSet<ClientCase> ClientCases { get; }
-    public DatabaseFacade Database { get; }
+    public DbSet<Contract> Contracts { get; }
+
+    //  public DatabaseFacade Database { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 };

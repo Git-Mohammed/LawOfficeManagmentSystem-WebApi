@@ -53,6 +53,5 @@ public class CreateCustomerCommandHandler(
         _logger.LogInformation("Customer created successfully. Id: {CustomerId}", createCustomerResult.Value.Id);
 
         return mapper.Map<Customer,CustomerDto>(customer);
-        //return customer.ToDto();
     }
 }

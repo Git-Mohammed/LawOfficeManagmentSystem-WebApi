@@ -1,6 +1,7 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
+using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Customers;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
@@ -18,6 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<ClientFile> ClientFiles => Set<ClientFile>();
 
+    public DbSet<Contract> Contracts => Set<Contract>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
