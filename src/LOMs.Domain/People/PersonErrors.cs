@@ -8,7 +8,13 @@ public static class PersonErrors
         Error.Validation("Person_FullName_Required", "الاسم الكامل مطلوب ويجب أن لا يقل عن 3 أحرف.");
 
     public static Error InvalidNationalId =>
+
         Error.Validation("Person_NationalId_Invalid", "رقم الهوية الوطنية يجب أن يتكون من 10 أرقام بالضبط.");
+
+        Error.Validation("Person_NationalId_Invalid", "National ID must be exactly 11 digits.");
+    public static Error ExistingNationalId =>
+        Error.Validation("Person_Existing_NationalId", "National ID already exists.");
+
 
     public static Error InvalidBirthDate =>
         Error.Validation("Person_BirthDate_Invalid", "يجب أن يكون عمر الشخص 18 سنة على الأقل.");
