@@ -246,6 +246,7 @@ public sealed class CreateCaseCommandHandler(
             Guid.NewGuid(),
             request.Client.Person.FullName,
             request.Client.Person.NationalId,
+            request.Client.Person.CountryCode,
             request.Client.Person.BirthDate,
             request.Client.Person.PhoneNumber,
             request.Client.Person.Address

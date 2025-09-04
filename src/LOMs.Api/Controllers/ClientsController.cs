@@ -32,7 +32,7 @@ namespace LOMs.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateClient([FromBody] CreateClientRequest request, CancellationToken ct)
         {
-            var personCommand = new CreatePersonCommand(request.Person.FullName, request.Person.NationalId, request.Person.BirthDate, request.Person.PhoneNumber, request.Person.Address);
+            var personCommand = new CreatePersonCommand(request.Person.FullName, request.Person.NationalId, request.Person.CountryCode ,request.Person.BirthDate, request.Person.PhoneNumber, request.Person.Address);
 
             var result = await command.SendAsync(
                 new CreateClientCommand(personCommand),
