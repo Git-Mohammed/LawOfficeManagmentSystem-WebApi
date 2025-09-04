@@ -21,4 +21,9 @@ public class PersonRequest
 
     [MinLength(10, ErrorMessage = "العنوان يجب أن يحتوي على تفاصيل كافية ولا يقل عن 10 أحرف.")]
     public string Address { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "CountryCode is required")]
+    [StringLength(2, MinimumLength = 2, ErrorMessage = "CountryCode must be exactly 2 characters")]
+    [RegularExpression("^[A-Z]{2}$", ErrorMessage = "CountryCode must be a valid ISO Alpha-2 code (e.g., EG, US, FR)")]
+    public string CountryCode { get; set; } = string.Empty;
 }

@@ -29,6 +29,7 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
             Person: new CreatePersonCommand(
                 request.Person.FullName,
                 request.Person.NationalId,
+                request.Person.CountryCode,
                 request.Person.BirthDate,
                 request.Person.PhoneNumber,
                 request.Person.Address

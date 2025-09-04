@@ -12,7 +12,11 @@ public static class PersonErrors
         Error.Validation("Person_NationalId_Invalid", "رقم الهوية الوطنية يجب أن يتكون من 10 أرقام بالضبط.");
 
     public static Error ExistingNationalId =>
-        Error.Validation("Person_Existing_NationalId", "National ID already exists.");
+        Error.Validation("Person_Existing_NationalId", "National ID already exists."); 
+    public static Error CountryCodeRequired =>
+        Error.Validation("Person_CountryCode_Required", "CountryCode is required.");
+    public static Error CountryCodeInvalid =>
+        Error.Validation("Person_CountryCode_Invalid", "CountryCode is Invalid.");
 
 
     public static Error InvalidBirthDate =>

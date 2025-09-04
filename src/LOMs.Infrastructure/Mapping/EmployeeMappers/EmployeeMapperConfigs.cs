@@ -12,7 +12,8 @@ public class EmployeeMapperConfigs: IRegister
     {
         // Person -> PersonDto
         config.NewConfig<Person, PersonDto>()
-            .Map(dest => dest.PersonId, src => src.Id);
+            .Map(dest => dest.PersonId, src => src.Id)
+            .Map(dest => dest.CountryCode, src => src.CountryCode.ToString());
 
         // Employee -> EmployeeDto
         config.NewConfig<Employee, EmployeeDto>()
