@@ -4,6 +4,7 @@ using LOMs.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LOMs.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250904115318_add_countryCode_field_in_People_table")]
+    partial class add_countryCode_field_in_People_table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -234,58 +237,6 @@ namespace LOMs.Infrastructure.Data.Migrations
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
                     b.ToTable("Customers");
-                });
-
-            modelBuilder.Entity("LOMs.Domain.POAs.POA", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AttachmentPath")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasComment("Path or URL to the attached POA document");
-
-                    b.Property<Guid>("CaseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateOnly>("IssueDate")
-                        .HasColumnType("date")
-                        .HasComment("Date the POA was issued");
-
-                    b.Property<string>("IssuingAuthority")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
-                        .HasComment("The authority that issued the POA, such as a court or notary");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("POANumber")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasComment("Official POA number as stated in the document");
-
-                    b.HasKey("Id");
-
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
-
-                    b.HasIndex("CaseId");
-
-                    b.ToTable("POAs");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Clients.Client", b =>
@@ -669,17 +620,6 @@ namespace LOMs.Infrastructure.Data.Migrations
                     b.Navigation("Case");
                 });
 
-            modelBuilder.Entity("LOMs.Domain.POAs.POA", b =>
-                {
-                    b.HasOne("LOMs.Domain.Cases.Case", "Case")
-                        .WithMany("POAs")
-                        .HasForeignKey("CaseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Case");
-                });
-
             modelBuilder.Entity("LOMs.Domain.People.Clients.Client", b =>
                 {
                     b.HasOne("LOMs.Domain.People.Person", "Person")
@@ -758,8 +698,6 @@ namespace LOMs.Infrastructure.Data.Migrations
                     b.Navigation("ClientCases");
 
                     b.Navigation("Contracts");
-
-                    b.Navigation("POAs");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.ClientFiles.ClientFile", b =>

@@ -52,6 +52,7 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
                             new CreatePersonCommand(
                                 newClient.Client.Person.FullName,
                                 newClient.Client.Person.NationalId,
+                                newClient.Client.Person.CountryCode,
                                 newClient.Client.Person.BirthDate,
                                 newClient.Client.Person.PhoneNumber,
                                 newClient.Client.Person.Address
