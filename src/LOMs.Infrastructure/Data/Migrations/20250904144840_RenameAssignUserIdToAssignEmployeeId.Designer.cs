@@ -4,6 +4,7 @@ using LOMs.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LOMs.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250904144840_RenameAssignUserIdToAssignEmployeeId")]
+    partial class RenameAssignUserIdToAssignEmployeeId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,6 +58,9 @@ namespace LOMs.Infrastructure.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateOnly?>("EstimatedReviewDate")
                         .HasColumnType("date");
 
@@ -79,7 +85,7 @@ namespace LOMs.Infrastructure.Data.Migrations
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("AssignedEmployeeId");
+                    b.HasIndex("EmployeeId");
 
                     b.ToTable("Cases");
                 });
@@ -624,8 +630,8 @@ namespace LOMs.Infrastructure.Data.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.Case", b =>
                 {
                     b.HasOne("LOMs.Domain.People.Employees.Employee", "Employee")
-                        .WithMany("Cases")
-                        .HasForeignKey("AssignedEmployeeId")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -784,11 +790,6 @@ namespace LOMs.Infrastructure.Data.Migrations
                     b.Navigation("CaseClients");
 
                     b.Navigation("ClientFiles");
-                });
-
-            modelBuilder.Entity("LOMs.Domain.People.Employees.Employee", b =>
-                {
-                    b.Navigation("Cases");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Person", b =>

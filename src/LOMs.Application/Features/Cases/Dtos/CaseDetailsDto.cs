@@ -1,4 +1,5 @@
 ﻿using LOMs.Application.Features.People.Clients.Dtos;
+using LOMs.Application.Features.People.Employees.DTOs;
 
 namespace LOMs.Application.Features.Cases.Dtos
 {
@@ -6,9 +7,9 @@ namespace LOMs.Application.Features.Cases.Dtos
     {
         public Guid Id { get; set; }
         public string CaseNumber { get; set; } = string.Empty;
-        public int CourtType { get; set; }
+        public string CourtType { get; set; } = string.Empty;
         public string CaseSubject { get; set; } = string.Empty;
-        public int PartyRole { get; set; }
+        public string PartyRole { get; set; } = string.Empty;
         public string ClientRequestDetails { get; set; } = string.Empty;
         public DateOnly? EstimatedReviewDate { get; set; }
         public string CaseStatus { get; set; }
@@ -19,7 +20,8 @@ namespace LOMs.Application.Features.Cases.Dtos
         public List<POADto> POAs { get; set; } = new();
 
         public string? LawyerOpinion { get; set; }
-        public string AssignedOfficer { get; set; } = string.Empty;
+        public Guid AssignedEmployeeId { get; set; } 
+        public EmployeeDto Employee { get; set; }
         public List<ClientDto> Clients { get; set; } = new();
     }
 

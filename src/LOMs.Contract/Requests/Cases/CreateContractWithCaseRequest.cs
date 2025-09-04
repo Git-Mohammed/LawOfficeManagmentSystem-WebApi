@@ -20,11 +20,6 @@ namespace LOMs.Contract.Requests.Cases
         [Range(0, double.MaxValue, ErrorMessage = "مقدم العقد يجب أن يكون أكبر من أو يساوي صفر.")]
         public decimal InitialPayment { get; set; }
 
-        [Required(ErrorMessage = " مرفق العقد مطلوب.")]
-        public IFormFile ContractFile { get; set; } = null!;
-
         public bool IsAssigned { get; set; }
-
-      
     }
 }

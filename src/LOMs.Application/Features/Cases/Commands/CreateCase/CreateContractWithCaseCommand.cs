@@ -5,13 +5,13 @@ using LOMs.Domain.Common.Results;
 
 namespace LOMs.Application.Features.Cases.Commands.CreateCase;
 
-    public sealed record CreateContractWithCaseCommand(
-        ContractType ContractType,
-        DateOnly? IssueDate,
-        DateOnly? ExpiryDate,
-        decimal TotalAmount,
-        decimal InitialPayment,
-        string AttachmentFilePath,
-        bool IsAssigned
-    ) : ICommand<Result<ContractDto>>;
-
+public sealed record CreateContractWithCaseCommand(
+    ContractType ContractType,
+    DateOnly? IssueDate,
+    DateOnly? ExpiryDate,
+    decimal TotalAmount,
+    decimal InitialPayment,
+    Stream AttachmentFileStream,  // Use a generic Stream
+    string AttachmentFileName,    // Use a string for the file name
+    bool IsAssigned
+);

@@ -9,16 +9,18 @@ using LOMs.Domain.Cases.Enums;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace LOMs.Api.Controllers;
 
 [Route("api/cases")]
 public class CasesController(ICommandMediator command, IQueryMediator query) : ApiController
 {
-    [HttpGet("{caseId:guid}", Name = "GetCaseById")]
-    public async Task<IActionResult> GetById(Guid caseId, CancellationToken ct)
+    [HttpGet("{Id:guid}", Name = "GetCaseById")]
+    public async Task<IActionResult> GetById(Guid Id, CancellationToken ct)
     {
-        var result = await query.QueryAsync(new GetCaseByIdQuery(caseId), ct);
+        var result = await query.QueryAsync(new GetCaseByIdQuery(Id), ct);
 
         return result.Match(
             response => Ok(response),
@@ -29,17 +31,35 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
     public async Task<IActionResult> CreateCase([FromForm] CreateCaseRequest request, CancellationToken ct)
     {
         // ✅ تحقق من صحة القيم المدخلة
-        if (!Enum.IsDefined(typeof(LOMs.Domain.Cases.Enums.CourtType), request.CourtType))
+        if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.CourtType), request.CourtType))
             return Problem("نوع المحكمة غير صالح.");
 
-        if (!Enum.IsDefined(typeof(LOMs.Domain.Cases.Enums.PartyRole), request.PartyRole))
+        if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.PartyRole), request.PartyRole))
             return Problem("دور العميل في القضية غير صالح.");
 
         var clientModels = new List<CaseClientModel>();
 
         try
         {
-            clientModels = request.Clients.Select<CaseClientRequest, CaseClientModel>(c =>
+            List<CaseClientRequest> clients = new List<CaseClientRequest>();
+
+            if (!string.IsNullOrEmpty(request.ClientsJson))
+            {
+
+
+                clients = JsonSerializer.Deserialize<List<CaseClientRequest>>(request.ClientsJson);
+            }
+
+            else
+            {
+                return Problem("يجب ان يكون هناك عملاء");
+
+            }
+
+            if(clients is null ||  clients.Count == 0)
+                return Problem("يجب ان يكون هناك عملاء");
+
+            clientModels = clients.Select<CaseClientRequest, CaseClientModel>(c =>
             {
                 return c switch
                 {
@@ -68,70 +88,94 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
             return Problem(ex.Message);
         }
 
-        List<CreateContractWithCaseCommand> contracts = new List<CreateContractWithCaseCommand>();
+        var contracts = new List<CreateContractWithCaseCommand>();
+
+        // The controller receives the flattened DTO
         if (request.HasContracts)
         {
-            if (request.Contracts is null)
-                return Problem("يجب ادخال عقد او اكثر عند وجود عقود");
-
-            if (!request.Contracts.Any(x => !Enum.IsDefined(typeof(LOMs.Domain.Cases.Enums.ContractType), (LOMs.Domain.Cases.Enums.ContractType)x.ContractType)))
+            // 1. Basic validation
+            if (request.ContractsData is null || request.ContractsData.Count == 0)
             {
-                return Problem("الرجاء اختيار نوع عقد متوفر.");
+                return Problem("يجب ادخال عقد او اكثر عند وجود عقود");
             }
 
-            // Use a foreach loop to handle asynchronous file operations
-            foreach (var contractRequest in request.Contracts)
+            if (request.ContractFiles is null || request.ContractFiles.Count != request.ContractsData.Count)
             {
-                // Read file content into a byte array
-                if (contractRequest.ContractFile == null || contractRequest.ContractFile.Length == 0)
+                return Problem("يجب أن يتطابق عدد مرفقات العقود مع عدد بيانات العقود.");
+            }
+
+            // 2. Map and process each file and its corresponding data
+            for (int i = 0; i < request.ContractsData.Count; i++)
+            {
+                var contractData = request.ContractsData[i];
+                var contractFile = request.ContractFiles[i];
+
+                // 3. Perform specific validation for each item
+                if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.ContractType), (LOMs.Contract.Commons.Enums.ContractType)contractData.ContractType))
+                {
+                    return Problem("الرجاء اختيار نوع عقد متوفر.");
+                }
+
+                if (contractFile.Length == 0)
                 {
                     return Problem("ملف العقد مطلوب.");
                 }
 
-                // Map to the command with the file content and name
+                // 4. Create the command with the file stream and filename
                 var contractCommand = new CreateContractWithCaseCommand(
-                    (LOMs.Domain.Cases.Enums.ContractType)contractRequest.ContractType,
-                    contractRequest.IssueDate,
-                    contractRequest.ExpiryDate,
-                    contractRequest.TotalAmount,
-                    contractRequest.InitialPayment,
-                    contractRequest.ContractFile.FileName,
-                    contractRequest.IsAssigned
+                    (LOMs.Domain.Cases.Enums.ContractType)contractData.ContractType,
+                    contractData.IssueDate,
+                    contractData.ExpiryDate,
+                    contractData.TotalAmount,
+                    contractData.InitialPayment,
+                    contractFile.OpenReadStream(),
+                    contractFile.FileName,
+                    contractData.IsAssigned
                 );
                 contracts.Add(contractCommand);
             }
+            // The rest of your controller logic continues here
         }
         List<CreatePOAWithCaseCommand> poas = new List<CreatePOAWithCaseCommand>();
 
         if (request.HasPOAs)
         {
-            if (request.POAs is null || !request.POAs.Any())
-                return Problem("يجب إدخال وكالة واحدة على الأقل عند تحديد وجود وكالات.");
-
-            foreach (var poa in request.POAs)
+            // 1. Validate that the data and files lists exist and have the same count.
+            if (request.POAsData is null || request.POAFiles is null || request.POAFiles.Count != request.POAsData.Count)
             {
-                if (string.IsNullOrWhiteSpace(poa.POANumber))
-                    return Problem("رقم الوكالة مطلوب.");
-
-                if (string.IsNullOrWhiteSpace(poa.IssuingAuthority))
-                    return Problem("جهة إصدار الوكالة مطلوبة.");
-
-                if (poa.IssueDate > DateOnly.FromDateTime(DateTime.UtcNow))
-                    return Problem("تاريخ إصدار الوكالة لا يمكن أن يكون في المستقبل.");
-
-                if (poa.AttachmentFile is null || poa.AttachmentFile.Length == 0)
-                    return Problem("ملف الوكالة مطلوب ويجب أن يكون صالحًا.");
+                return Problem("يجب أن يتطابق عدد مرفقات الوكالات مع عدد بيانات الوكالات.");
             }
 
-            poas = request.POAs.Select(poa =>
-                new CreatePOAWithCaseCommand(
-                    poa.POANumber.Trim(),
-                    poa.IssueDate,
-                    poa.IssuingAuthority.Trim(),
-                    poa.AttachmentFile.FileName
-                )).ToList();
-        }
+            // 2. Use a for loop to correctly match each file with its data.
+            for (int i = 0; i < request.POAsData.Count; i++)
+            {
+                var poaData = request.POAsData[i];
+                var poaFile = request.POAFiles[i];
 
+                // 3. Perform specific validation for each item.
+                if (string.IsNullOrWhiteSpace(poaData.POANumber))
+                    return Problem("رقم الوكالة مطلوب.");
+
+                if (string.IsNullOrWhiteSpace(poaData.IssuingAuthority))
+                    return Problem("جهة إصدار الوكالة مطلوبة.");
+
+                if (poaData.IssueDate > DateOnly.FromDateTime(DateTime.UtcNow))
+                    return Problem("تاريخ إصدار الوكالة لا يمكن أن يكون في المستقبل.");
+
+                if (poaFile is null || poaFile.Length == 0)
+                    return Problem("ملف الوكالة مطلوب ويجب أن يكون صالحًا.");
+
+                // 4. Create the command with the file stream and filename.
+                var poaCommand = new CreatePOAWithCaseCommand(
+                    poaData.POANumber.Trim(),
+                    poaData.IssueDate,
+                    poaData.IssuingAuthority.Trim(),
+                    poaFile.OpenReadStream(),
+                    poaFile.FileName);
+
+                poas.Add(poaCommand);
+            }
+        }
 
         var commandRequest = new CreateCaseCommand(
                 Clients: clientModels,
@@ -147,7 +191,7 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
                 Contracts: contracts,
                 HasPOAs : request.HasPOAs,
                 POAs: poas,
-                AssignedOfficerId: request.AssignedOfficer
+                AssignedOfficerId: request.AssignedEmployeeId
         );
 
         var result = await command.SendAsync(commandRequest, ct);
@@ -155,8 +199,8 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
         return result.Match(
             success => CreatedAtRoute(
                 routeName: "GetCaseById",
-                routeValues: new { caseId = success.Id },
-                value: new { caseId = success.Id }),
+                routeValues: new { Id = success.Id },
+                value: new { Id = success.Id }),
             error => Problem(error)
         );
     }

@@ -3,6 +3,7 @@ using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Domain.Cases;
 using LOMs.Domain.Common.Results;
+using LOMs.Domain.People.Employees;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -25,6 +26,9 @@ public sealed class GetCaseByIdQueryHandler(
             .Include(c => c.ClientCases)
             .ThenInclude(c => c.Client)
             .ThenInclude(c => c.Person)
+            .Include(c => c.Employee)
+            .ThenInclude(c => c.Person)
+            .Include(c => c.POAs)
             .FirstOrDefaultAsync(c => c.Id == request.CaseId, cancellationToken);
 
         if (caseEntity is null)

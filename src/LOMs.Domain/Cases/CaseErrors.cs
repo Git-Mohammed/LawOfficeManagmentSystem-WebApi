@@ -72,5 +72,19 @@ namespace LOMs.Domain.Cases
 
         public static readonly Error Unexpected_Failure =
             Error.Unexpected("CreateCase_Failure", "حدث خطأ غير متوقع أثناء إنشاء القضية.");
+        public static readonly Error ImageSaveFailure =
+    Error.Unexpected("Image_Save_Failure", "حدث خطأ أثناء حفظ الملف.");
+
+
+
+
+        public static readonly Error ContractFilesMissing =
+    Error.Validation("Case_ContractFilesMissing", "تم تحديد وجود عقود، ولكن لم يتم إرفاق أي ملفات عقود.");
+
+        public static readonly Error PoasMissing =
+    Error.Validation("Case_PoasMissing_Failure", "تم تحديد وجود توكيلات، ولكن لم يتم إرفاق أي ملفات توكيلات.");
+        public static readonly Error SaveContractFile =
+                Error.Unexpected("Case_SaveContractFile_Failure", "حدث خطأ أثناء حفظ  ملف العقد.");
+
     }
 }

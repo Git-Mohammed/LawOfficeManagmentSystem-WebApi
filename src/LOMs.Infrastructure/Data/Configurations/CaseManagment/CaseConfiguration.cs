@@ -20,7 +20,7 @@ public class CaseConfiguration : IEntityTypeConfiguration<Case>
         builder.Property(c => c.ClientRequests)
             .HasMaxLength(1000);
 
-        builder.Property(c => c.AssignedOfficerId)
+        builder.Property(c => c.AssignedEmployeeId)
             .IsRequired()
             .HasMaxLength(100)
             .HasComment("اسم الموظف المسؤول عن متابعة القضية");
@@ -39,5 +39,10 @@ public class CaseConfiguration : IEntityTypeConfiguration<Case>
             .IsRequired()
             .HasConversion<int>() // يخزن كـ int
             .HasComment("نوع المحكمة: 100 = عامة، 200 = جزئية، 300 = عمالية، 400 = أحوال شخصية، 600 = إدارية، 700 = لجان شبه قضائية، 800 = أخرى");
+
+        builder.HasOne(x => x.Employee)
+            .WithMany(x => x.Cases)
+            .HasForeignKey(x => x.AssignedEmployeeId)
+            .IsRequired();
     }
 }

@@ -18,7 +18,7 @@ namespace LOMs.Domain.Cases
         public DateOnly? EstimatedReviewDate { get; private set; }
         public CaseStatus Status { get; private set; }
         public string? LawyerOpinion { get; private set; }
-        public Guid AssignedOfficerId { get; private set; } 
+        public Guid AssignedEmployeeId { get; private set; } 
         public CourtType CourtType { get; private set; }
         public ICollection<Contract> Contracts {  get;  set; } = new List<Contract>();
         public ICollection<ClientCase> ClientCases { get;  set; } = new List<ClientCase>();
@@ -39,7 +39,7 @@ namespace LOMs.Domain.Cases
             DateOnly? estimatedReviewDate,
             CaseStatus status,
             string? lawyerOpinion,
-            Guid assignedOfficer,
+            Guid assignedEmployee,
             CourtType courtType
         ) : base(id)
         {
@@ -50,7 +50,7 @@ namespace LOMs.Domain.Cases
             EstimatedReviewDate = estimatedReviewDate;
             Status = status;
             LawyerOpinion = lawyerOpinion;
-            AssignedOfficerId = assignedOfficer;
+            AssignedEmployeeId = assignedEmployee;
             CourtType = courtType;
         }
 
@@ -67,14 +67,14 @@ namespace LOMs.Domain.Cases
             DateOnly? estimatedReviewDate,
             CaseStatus status,
             string? lawyerOpinion,
-            Guid assignedOfficerId
+            Guid assignedEmployeeId
         )
         {
             // Basic validations
             if (id == Guid.Empty)
                 return Error.Conflict();
 
-            if (assignedOfficerId == Guid.Empty)
+            if (assignedEmployeeId == Guid.Empty)
                 return CaseErrors.Missing_AssignedOfficer;
 
             if (!Enum.IsDefined(typeof(CaseStatus), status))
@@ -95,7 +95,7 @@ namespace LOMs.Domain.Cases
                 estimatedReviewDate,
                 status,
                 lawyerOpinion,
-                assignedOfficerId,
+                assignedEmployeeId,
                 courtType
             ); ;
         }

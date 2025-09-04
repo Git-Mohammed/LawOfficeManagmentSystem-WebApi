@@ -23,6 +23,7 @@ public static class DependencyInjection
         return services;
     }
 
+
     private static IServiceCollection AddLiteBusRigstertion(this IServiceCollection services)
     {
         services.AddLiteBus(liteBus =>

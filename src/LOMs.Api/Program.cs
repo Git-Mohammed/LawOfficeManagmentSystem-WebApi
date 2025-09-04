@@ -3,8 +3,15 @@ using LOMs.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 
+// ·Ê «·„Ã·œ „« ﬂ«‰ „ÊÃÊœ° √‰‘∆Â
+if (!Directory.Exists(builder.Environment.WebRootPath))
+{
+    Directory.CreateDirectory(builder.Environment.WebRootPath);
+}
+
+// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -12,8 +19,8 @@ builder.Services
     .AddPresentation()
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
-var app = builder.Build();
 
+var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -28,14 +35,14 @@ if (app.Environment.IsDevelopment())
         options.EnableFilter();
     });
 
-
     //await app.InitialiseDatabaseAsync();
-
 }
 else
 {
     app.UseHsts();
 }
+
+app.UseStaticFiles();
 
 app.UseCoreMiddlewares(builder.Configuration);
 
@@ -51,8 +58,6 @@ return;
 async Task SeedDataBase()
 {
     using var scope = app.Services.CreateScope();
-
     var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
-
     await initialiser.InitialiseAsync();
 }

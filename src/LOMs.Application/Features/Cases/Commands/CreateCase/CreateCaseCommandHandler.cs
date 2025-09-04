@@ -5,29 +5,34 @@ using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.Enums;
+using LOMs.Domain.Common.Enums;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using LOMs.Domain.POAs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 
 namespace LOMs.Application.Features.Cases.Commands.CreateCase;
 
 public sealed class CreateCaseCommandHandler(
     IMapper mapper,
     ILogger<CreateCaseCommandHandler> logger,
-    IAppDbContext context
+    IAppDbContext context,
+    IImageService imageService
 ) : ICommandHandler<CreateCaseCommand, Result<CaseDto>>
 {
     private readonly ILogger<CreateCaseCommandHandler> _logger = logger;
     private readonly IAppDbContext _context = context;
     private readonly IMapper _mapper = mapper;
+    private readonly IImageService _imageService = imageService;
+
 
     public async Task<Result<CaseDto>> HandleAsync(CreateCaseCommand message, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting case creation for CaseNumber: {CaseNumber}", message.CaseNumber);
 
+        // All existing validation and entity creation logic for clients and cases...
         if (message.Clients is null || !message.Clients.Any())
         {
             _logger.LogWarning("No clients provided for case creation.");
@@ -72,7 +77,6 @@ public sealed class CreateCaseCommandHandler(
             }
         }
 
-
         var existingNationalIds = message.Clients
             .OfType<NewCaseClientModel>()
             .Select(x => x.Client.Person.NationalId)
@@ -92,10 +96,86 @@ public sealed class CreateCaseCommandHandler(
             }
         }
 
+        _logger.LogInformation("Starting case creation for CaseNumber: {CaseNumber}", message.CaseNumber);
+
+        var validationResult = await ValidateCaseAndClientsAsync(message, existingClients, cancellationToken);
+        if (validationResult.IsError)
+        {
+            return validationResult.Errors;
+        }
+
+        var (caseEntity, clients, clientFiles, clientCases) = validationResult.Value;
+        var savedFilePaths = new List<string>();
+
+        if (message.HasContracts && !message.Contracts.Any())
+            return CaseErrors.ContractFilesMissing;
+
+        var contractsResult = await ProcessContractsAsync(message.Contracts, caseEntity, savedFilePaths, cancellationToken);
+        if (contractsResult.IsError)
+        {
+            return contractsResult.Errors;
+        }
+
+        if (message.HasPOAs && !message.Contracts.Any())
+            return CaseErrors.PoasMissing;
+
+        var poasResult = await ProcessPoasAsync(message.POAs, caseEntity, savedFilePaths, cancellationToken);
+        if (poasResult.IsError)
+        {
+            return poasResult.Errors;
+        }
+
+        // Final persistence in a single try-catch block
+        try
+        {
+            _logger.LogInformation("Persisting case and related entities to database...");
+
+            await _context.Cases.AddAsync(caseEntity, cancellationToken);
+
+            if (clients.Count > 0)
+                await _context.Clients.AddRangeAsync(clients, cancellationToken);
+
+            if (clientFiles.Count > 0)
+                await _context.ClientFiles.AddRangeAsync(clientFiles, cancellationToken);
+
+            if (clientCases.Count > 0)
+                await _context.ClientCases.AddRangeAsync(clientCases, cancellationToken);
+
+            if (message.Contracts.Count > 0 && message.HasContracts)
+                await _context.Contracts.AddRangeAsync(contractsResult.Value, cancellationToken);
+
+            if (message.POAs.Count > 0 && message.HasPOAs)
+                await _context.POAs.AddRangeAsync(poasResult.Value, cancellationToken);
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Case creation completed successfully. CaseId: {CaseId}", caseEntity.Id);
+            return _mapper.Map<Case, CaseDto>(caseEntity);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while creating case. Rolling back transaction.");
+            foreach (var path in savedFilePaths)
+            {
+                _imageService.DeleteImage(path);
+            }
+            return CaseErrors.Unexpected_Failure;
+        }
+    }
+
+    
+
+    // Private helper methods for a cleaner main handler
+
+    private async Task<Result<(Case caseEntity, List<Client> clients, List<ClientFile> clientFiles, List<ClientCase> clientCases)>> ValidateCaseAndClientsAsync(CreateCaseCommand message, IReadOnlyDictionary<Guid, Client> existingClients, CancellationToken cancellationToken)
+    {
+        // ... (This method would contain all the validation and client-related logic from your original code) ...
+
         var clients = new List<Client>();
         var clientFiles = new List<ClientFile>();
         var clientCases = new List<ClientCase>();
 
+        // Case creation
         var caseResult = Case.Create(
             Guid.NewGuid(),
             message.CaseNumber,
@@ -108,21 +188,22 @@ public sealed class CreateCaseCommandHandler(
             message.LawyerOpinion,
             message.AssignedOfficerId
         );
-
         if (caseResult.IsError)
         {
             _logger.LogWarning("Case creation failed due to validation errors.");
             return caseResult.Errors;
         }
+        var caseEntity = caseResult.Value;
 
-        var @case = caseResult.Value;
-        _logger.LogInformation("Case entity created with ID: {CaseId}", @case.Id);
+        // Clients processing
+        // ... (all client validation and handling logic, like the loops in your original code) ...
+        _logger.LogInformation("Case entity created with ID: {CaseId}", caseEntity.Id);
 
         foreach (var clientDto in message.Clients)
         {
             if (clientDto is ExistingCaseClientModel existing)
             {
-                var existingResult = HandleExistingClient(existing, @case.Id, message.CourtType, existingClients);
+                var existingResult = HandleExistingClient(existing, caseEntity.Id, message.CourtType, existingClients);
                 if (existingResult.IsError)
                 {
                     _logger.LogWarning("Failed to process existing client with ID: {ClientId}", existing.ExistingClientId);
@@ -138,7 +219,7 @@ public sealed class CreateCaseCommandHandler(
             }
             else if (clientDto is NewCaseClientModel newClient)
             {
-                var newResult = HandleNewClient(newClient, @case.Id, message.CourtType);
+                var newResult = HandleNewClient(newClient, caseEntity.Id, message.CourtType);
                 if (newResult.IsError)
                 {
                     _logger.LogWarning("Failed to process new client with NationalId: {NationalId}", newClient.Client.Person.NationalId);
@@ -157,75 +238,86 @@ public sealed class CreateCaseCommandHandler(
                 return CaseErrors.Unknown_ClientType;
             }
         }
-        List<Contract> contracts = new List<Contract>();
 
-        if(message.HasContracts)
+        return  (caseEntity, clients, clientFiles, clientCases);
+    }
+
+    private async Task<Result<List<Contract>>> ProcessContractsAsync(IEnumerable<CreateContractWithCaseCommand> contractCommands, Case caseEntity, List<string> savedFilePaths, CancellationToken cancellationToken)
+    {
+        var contracts = new List<Contract>();
+        if (contractCommands is null || !contractCommands.Any())
         {
-            if (!message.Contracts.Any())
-                return Error.Conflict();
-
-            foreach(var newcontract in message.Contracts)
-            {
-                // TODO: Hanlde Save Image
-                var contractResult = Contract.Create(Guid.NewGuid(), @case.Id, @case.CourtType, (ContractType)newcontract.ContractType, newcontract.IssueDate, newcontract.ExpiryDate, newcontract.TotalAmount, newcontract.InitialPayment, newcontract.AttachmentFilePath, newcontract.IsAssigned);
-
-                if (contractResult.IsError)
-                    return contractResult.Errors;
-                contracts.Add(contractResult.Value);
-            }
+            return contracts; // Return an empty list if no contracts are provided
         }
-
-        List<POA> poas = new List<POA>();
-
-        if (message.HasPOAs)
-        {
-            if (!message.POAs.Any())
-                return Error.Conflict();
-
-            foreach (var poa in message.POAs)
-            {
-                var poaResult = POA.Create(Guid.NewGuid(), @case.Id, poa.POANumber, poa.IssueDate, poa.IssuingAuthority, poa.AttachmentFilePath);
-
-                if (poaResult.IsError)
-                    return poaResult.Errors;
-                poas.Add(poaResult.Value);
-            }
-        }
-
 
         try
         {
-            _logger.LogInformation("Persisting case and related entities to database...");
+            foreach (var command in contractCommands)
+            {
+                var filePath = await _imageService.SaveImageAsync(command.AttachmentFileStream, command.AttachmentFileName, ImageFolder.Contracts);
+                savedFilePaths.Add(filePath);
 
-            await _context.Cases.AddAsync(@case, cancellationToken);
+                var contractResult = Contract.Create(Guid.NewGuid(), caseEntity.Id, caseEntity.CourtType, command.ContractType, command.IssueDate, command.ExpiryDate, command.TotalAmount, command.InitialPayment, filePath, command.IsAssigned);
 
-            if (clients.Count > 0)
-                await _context.Clients.AddRangeAsync(clients, cancellationToken);
-
-            if (clientFiles.Count > 0)
-                await _context.ClientFiles.AddRangeAsync(clientFiles, cancellationToken);
-
-            if (clientCases.Count > 0)
-                await _context.ClientCases.AddRangeAsync(clientCases, cancellationToken);
-
-            if (contracts.Count > 0 && message.HasContracts)
-                await _context.Contracts.AddRangeAsync(contracts, cancellationToken);
-
-            if (poas.Count > 0 && message.HasPOAs)
-                await _context.POAs.AddRangeAsync(poas, cancellationToken);
-
-            await _context.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Case creation completed successfully. CaseId: {CaseId}", @case.Id);
-            return _mapper.Map<Case, CaseDto>(@case);
+                if (contractResult.IsError)
+                {
+                    // Clean up already saved files
+                    foreach (var path in savedFilePaths)
+                    {
+                        _imageService.DeleteImage(path);
+                    }
+                    return contractResult.Errors;
+                }
+                contracts.Add(contractResult.Value);
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while creating case. Rolling back transaction.");
-            return CaseErrors.Unexpected_Failure;
+            _logger.LogError(ex, "Error occurred while saving contract files. Rolling back.");
+            return CaseErrors.SaveContractFile;
         }
+
+        return contracts;
     }
 
+    private async Task<Result<List<POA>>> ProcessPoasAsync(IEnumerable<CreatePOAWithCaseCommand> poaCommands, Case caseEntity, List<string> savedFilePaths, CancellationToken cancellationToken)
+    {
+        var poas = new List<POA>();
+        if (poaCommands is null || !poaCommands.Any())
+        {
+            return poas; // Return an empty list if no POAs are provided
+        }
+
+        try
+        {
+            foreach (var command in poaCommands)
+            {
+                var filePath = await _imageService.SaveImageAsync(command.AttachmentFileStream, command.AttachmentFileName, ImageFolder.POAs);
+                savedFilePaths.Add(filePath);
+
+                var poaResult = POA.Create(Guid.NewGuid(), caseEntity.Id, command.POANumber, command.IssueDate, command.IssuingAuthority, filePath);
+
+                if (poaResult.IsError)
+                {
+                    // Clean up already saved files
+                    foreach (var path in savedFilePaths)
+                    {
+                        _imageService.DeleteImage(path);
+                    }
+                    return poaResult.Errors;
+                }
+                poas.Add(poaResult.Value);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while saving POA files. Rolling back.");
+            return CaseErrors.ImageSaveFailure;
+        }
+
+        return poas;
+    }
+    
     private Result<(ClientFile? clientFile, ClientCase clientCase)> HandleExistingClient(
         ExistingCaseClientModel request,
         Guid caseId,

@@ -15,7 +15,4 @@ public class CreatePOAWithCaseRequest
     [Required(ErrorMessage = "جهة إصدار الوكالة مطلوبة.")]
     [MaxLength(200, ErrorMessage = "جهة الإصدار يجب ألا تتجاوز 200 حرف.")]
     public string IssuingAuthority { get; set; } = string.Empty;
-
-    [Required(ErrorMessage = "مرفق الوكالة مطلوب.")]
-    public IFormFile AttachmentFile { get; set; } = null!;
 }

@@ -1,4 +1,5 @@
-﻿using LOMs.Domain.Common;
+﻿using LOMs.Domain.Cases;
+using LOMs.Domain.Common;
 using LOMs.Domain.Common.Extensions;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.Identity;
@@ -13,6 +14,7 @@ public sealed class Employee : AuditableEntity
     public string Email { get; }
     public string UserId { get; private set; }
 
+    public ICollection<Case> Cases { get; set; } = [];
     private Employee()
     {
     }
