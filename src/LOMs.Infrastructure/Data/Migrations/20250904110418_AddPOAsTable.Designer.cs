@@ -4,6 +4,7 @@ using LOMs.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LOMs.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250904110418_AddPOAsTable")]
+    partial class AddPOAsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,9 +31,10 @@ namespace LOMs.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AssignedEmployeeId")
+                    b.Property<string>("AssignedOfficer")
+                        .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("nvarchar(100)")
                         .HasComment("اسم الموظف المسؤول عن متابعة القضية");
 
                     b.Property<string>("CaseNumber")
@@ -78,8 +82,6 @@ namespace LOMs.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
-
-                    b.HasIndex("AssignedEmployeeId");
 
                     b.ToTable("Cases");
                 });
@@ -383,10 +385,6 @@ namespace LOMs.Infrastructure.Data.Migrations
                     b.Property<DateOnly>("BirthDate")
                         .HasColumnType("date");
 
-                    b.Property<string>("CountryCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
 
@@ -418,9 +416,7 @@ namespace LOMs.Infrastructure.Data.Migrations
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("NationalId");
-
-                    b.ToTable("People", "UserManagement");
+                    b.ToTable("People");
                 });
 
             modelBuilder.Entity("LOMs.Infrastructure.Identity.ApplicationRole", b =>
@@ -621,17 +617,6 @@ namespace LOMs.Infrastructure.Data.Migrations
                     b.ToTable("UserTokens", "Identity");
                 });
 
-            modelBuilder.Entity("LOMs.Domain.Cases.Case", b =>
-                {
-                    b.HasOne("LOMs.Domain.People.Employees.Employee", "Employee")
-                        .WithMany("Cases")
-                        .HasForeignKey("AssignedEmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-                });
-
             modelBuilder.Entity("LOMs.Domain.Cases.ClientCase", b =>
                 {
                     b.HasOne("LOMs.Domain.Cases.Case", "Case")
@@ -784,11 +769,6 @@ namespace LOMs.Infrastructure.Data.Migrations
                     b.Navigation("CaseClients");
 
                     b.Navigation("ClientFiles");
-                });
-
-            modelBuilder.Entity("LOMs.Domain.People.Employees.Employee", b =>
-                {
-                    b.Navigation("Cases");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Person", b =>

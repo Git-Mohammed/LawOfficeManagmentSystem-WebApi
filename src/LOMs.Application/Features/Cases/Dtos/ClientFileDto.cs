@@ -1,6 +1,5 @@
 ﻿using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Application.Features.People.Clients.Dtos;
-using LOMs.Domain.Cases.Enums.CourtTypes;
 
 namespace LOMs.Application.Features.ClientFiles.Dtos;
 

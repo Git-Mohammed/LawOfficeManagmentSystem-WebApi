@@ -1,4 +1,4 @@
-﻿namespace LOMs.Domain.Cases.Enums.CourtTypes
+﻿namespace LOMs.Domain.Cases.Enums
 {
     public enum CourtType 
     {

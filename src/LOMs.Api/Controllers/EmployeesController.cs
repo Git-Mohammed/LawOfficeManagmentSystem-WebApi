@@ -10,7 +10,7 @@ namespace LOMs.Api.Controllers;
 [Route("api/employees")]
 public class EmployeesController(ICommandMediator command, IQueryMediator query):ApiController
 {
-    [HttpGet("id:guid", Name = "GetEmployeeById")]
+    [HttpGet("{id:guid}", Name = "GetEmployeeById")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var result = await query.QueryAsync(new GetEmployeeByIdQuery(id), ct);
@@ -39,7 +39,7 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
         return result.Match(
             response => CreatedAtRoute(
                 routeName: "GetEmployeeById",
-                routeValues: new {employeeId = response.Id},
+                routeValues: new {id = response.Id},
                 value:  response
                 ),
             Problem

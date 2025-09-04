@@ -1,5 +1,4 @@
 ﻿using LOMs.Domain.Cases.Enums;
-using LOMs.Domain.Cases.Enums.CourtTypes;
 using LOMs.Domain.Common;
 using LOMs.Domain.Common.Constants;
 using LOMs.Domain.Common.Results;

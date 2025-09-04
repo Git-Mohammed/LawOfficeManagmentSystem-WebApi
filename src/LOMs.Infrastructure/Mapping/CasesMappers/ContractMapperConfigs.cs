@@ -15,7 +15,8 @@ namespace LOMs.Infrastructure.Mapping.CasesMappers
                 .Map(dest => dest.IssueDate, src => src.IssuedOn)
                 .Map(dest => dest.ExpiryDate, src => src.ExpiresOn)
                 .Map(dest => dest.TotalAmount, src => src.TotalAmount)
-                .Map(dest => dest.ContractType, src => src.Type);
+                .Map(dest => dest.ContractType, src => src.Type)
+                .Map(dest => dest.ContractFilePath, src => src.FilePath);
 
         }
     }

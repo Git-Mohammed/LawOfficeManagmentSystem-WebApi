@@ -6,6 +6,7 @@ using LOMs.Infrastructure.Mapping.Configs;
 using LOMs.Infrastructure.Services;
 using LOMs.Infrastructure.Services.DomainEventPublishers;
 using LOMs.Infrastructure.Services.EmailSender;
+using LOMs.Infrastructure.Services.Image;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -52,10 +53,16 @@ public static class DependencyInjection
         services.AddPasswordGenerator();
         services.AddEmailSenderService(configuration);
         services.AddScoped<IDomainEventPublisher,LiteBusEventPublisher>();
+        services.AddServices();
         return services;
     }
 
+    private static IServiceCollection AddServices(this IServiceCollection services)
+    {
+        services.AddScoped<IImageService, ImageService>();
 
+        return services;
+    }
     private static IServiceCollection MapsterRegister(this IServiceCollection services)
     {
         MappingConfig.Configure();
