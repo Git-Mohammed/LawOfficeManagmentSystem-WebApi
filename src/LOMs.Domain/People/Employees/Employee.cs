@@ -7,7 +7,6 @@ namespace LOMs.Domain.People.Employees;
 
 public sealed class Employee : AuditableEntity
 {
-    public Guid Id { get; }
     public Guid PersonId { get; }
     public Person Person { get; } = null!;
     public Role Role { get; }
@@ -20,7 +19,6 @@ public sealed class Employee : AuditableEntity
 
     private Employee(Guid id,string email ,Person person, Role role) : base(id)
     {
-        Id = id;
         Person = person ?? throw new ArgumentNullException(nameof(person));
         PersonId = person.Id;
         Role = role;
