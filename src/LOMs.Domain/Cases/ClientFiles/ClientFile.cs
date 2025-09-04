@@ -1,4 +1,4 @@
-﻿using LOMs.Domain.Cases.Enums.CourtTypes;
+﻿using LOMs.Domain.Cases.Enums;
 using LOMs.Domain.Common;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People.Clients;

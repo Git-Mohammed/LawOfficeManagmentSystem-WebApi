@@ -1,8 +1,8 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Domain.Cases.Enums;
-using LOMs.Domain.Cases.Enums.CourtTypes;
 using LOMs.Domain.Common.Results;
+using LOMs.Domain.POAs;
 
 namespace LOMs.Application.Features.Cases.Commands.CreateCase;
 
@@ -17,4 +17,6 @@ public sealed record CreateCaseCommand(List<CaseClientModel> Clients,
             bool IsDraft,
             bool HasContracts,
             List<CreateContractWithCaseCommand> Contracts,
-            string AssignedOfficer) : ICommand<Result<CaseDto>>;
+            bool HasPOAs,
+            List<CreatePOAWithCaseCommand> POAs,
+            Guid AssignedOfficerId) : ICommand<Result<CaseDto>>;

@@ -20,7 +20,7 @@ public class CaseConfiguration : IEntityTypeConfiguration<Case>
         builder.Property(c => c.ClientRequests)
             .HasMaxLength(1000);
 
-        builder.Property(c => c.AssignedOfficer)
+        builder.Property(c => c.AssignedOfficerId)
             .IsRequired()
             .HasMaxLength(100)
             .HasComment("اسم الموظف المسؤول عن متابعة القضية");

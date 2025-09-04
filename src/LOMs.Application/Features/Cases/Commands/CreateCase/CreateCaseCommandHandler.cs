@@ -5,10 +5,10 @@ using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.Enums;
-using LOMs.Domain.Cases.Enums.CourtTypes;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
+using LOMs.Domain.POAs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -106,7 +106,7 @@ public sealed class CreateCaseCommandHandler(
             message.EstimatedReviewDate,
             message.IsDraft ? CaseStatus.Draft : CaseStatus.Pending,
             message.LawyerOpinion,
-            message.AssignedOfficer
+            message.AssignedOfficerId
         );
 
         if (caseResult.IsError)
@@ -166,13 +166,32 @@ public sealed class CreateCaseCommandHandler(
 
             foreach(var newcontract in message.Contracts)
             {
-                var contractResult = Contract.Create(Guid.NewGuid(), @case.Id, @case.CourtType, (ContractType)newcontract.ContractType, newcontract.IssueDate, newcontract.ExpiryDate, newcontract.TotalAmount, newcontract.InitialPayment, newcontract.ContractFilePath, newcontract.IsAssigned);
+                // TODO: Hanlde Save Image
+                var contractResult = Contract.Create(Guid.NewGuid(), @case.Id, @case.CourtType, (ContractType)newcontract.ContractType, newcontract.IssueDate, newcontract.ExpiryDate, newcontract.TotalAmount, newcontract.InitialPayment, newcontract.AttachmentFilePath, newcontract.IsAssigned);
 
                 if (contractResult.IsError)
                     return contractResult.Errors;
                 contracts.Add(contractResult.Value);
             }
         }
+
+        List<POA> poas = new List<POA>();
+
+        if (message.HasPOAs)
+        {
+            if (!message.POAs.Any())
+                return Error.Conflict();
+
+            foreach (var poa in message.POAs)
+            {
+                var poaResult = POA.Create(Guid.NewGuid(), @case.Id, poa.POANumber, poa.IssueDate, poa.IssuingAuthority, poa.AttachmentFilePath);
+
+                if (poaResult.IsError)
+                    return poaResult.Errors;
+                poas.Add(poaResult.Value);
+            }
+        }
+
 
         try
         {
@@ -192,6 +211,8 @@ public sealed class CreateCaseCommandHandler(
             if (contracts.Count > 0 && message.HasContracts)
                 await _context.Contracts.AddRangeAsync(contracts, cancellationToken);
 
+            if (poas.Count > 0 && message.HasPOAs)
+                await _context.POAs.AddRangeAsync(poas, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
 

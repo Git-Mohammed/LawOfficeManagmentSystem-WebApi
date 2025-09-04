@@ -26,7 +26,7 @@ public class CaseMapperConfigs : IRegister
      .Map(dest => dest.CaseStatus, src => src.Status.ToString())
      .Map(dest => dest.Contracts, src => src.Contracts)
      .Map(dest => dest.LawyerOpinion, src => src.LawyerOpinion)
-     .Map(dest => dest.AssignedOfficer, src => src.AssignedOfficer)
+     .Map(dest => dest.AssignedOfficer, src => src.AssignedOfficerId)
      .Map(dest => dest.HasContracts, src => src.Contracts.Any())
      .Map(dest => dest.Clients, src => src.ClientCases.Select(x => new ClientDto
      {

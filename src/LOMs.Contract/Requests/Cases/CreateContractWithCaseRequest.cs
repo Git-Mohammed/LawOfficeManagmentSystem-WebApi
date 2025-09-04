@@ -1,11 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using LOMs.Contract.Commons.Enums;
+using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace LOMs.Contract.Requests.Cases
 {
-    public class CreateContractWithCaseRequest : IValidatableObject
+    public class CreateContractWithCaseRequest 
     {
         [Required(ErrorMessage = "نوع العقد مطلوب.")]
-        public int ContractType { get; set; }
+        public ContractType ContractType { get; set; }
 
         public DateOnly? IssueDate { get; set; }
         public DateOnly? ExpiryDate { get; set; }
@@ -18,21 +20,11 @@ namespace LOMs.Contract.Requests.Cases
         [Range(0, double.MaxValue, ErrorMessage = "مقدم العقد يجب أن يكون أكبر من أو يساوي صفر.")]
         public decimal InitialPayment { get; set; }
 
-        [Required(ErrorMessage = "مسار ملف العقد مطلوب.")]
-        public string ContractFilePath { get; set; } = string.Empty;
+        [Required(ErrorMessage = " مرفق العقد مطلوب.")]
+        public IFormFile ContractFile { get; set; } = null!;
 
         public bool IsAssigned { get; set; }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (ContractType == 1) 
-            {
-                if (IssueDate == null)
-                    yield return new ValidationResult("تاريخ إصدار العقد مطلوب لهذا النوع من العقود.", new[] { nameof(IssueDate) });
-
-                if (ExpiryDate == null)
-                    yield return new ValidationResult("تاريخ انتهاء العقد مطلوب لهذا النوع من العقود.", new[] { nameof(ExpiryDate) });
-            }
-        }
+      
     }
 }

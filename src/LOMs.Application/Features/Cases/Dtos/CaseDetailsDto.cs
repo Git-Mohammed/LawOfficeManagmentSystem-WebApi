@@ -14,6 +14,10 @@ namespace LOMs.Application.Features.Cases.Dtos
         public string CaseStatus { get; set; }
         public bool HasContracts { get; set; }
         public List<ContractDto> Contracts { get; set; } = new();
+
+        public bool HasPOAs { get; set; }
+        public List<POADto> POAs { get; set; } = new();
+
         public string? LawyerOpinion { get; set; }
         public string AssignedOfficer { get; set; } = string.Empty;
         public List<ClientDto> Clients { get; set; } = new();

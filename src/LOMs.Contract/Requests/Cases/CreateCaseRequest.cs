@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using LOMs.Contract.Commons.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace LOMs.Contract.Requests.Cases
 {
@@ -7,12 +8,12 @@ namespace LOMs.Contract.Requests.Cases
         public string CaseNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "نوع المحكمة مطلوب.")]
-        public int CourtType { get; set; }
+        public CourtType CourtType { get; set; }
 
         public string CaseSubject { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "دور الطرف مطلوب.")]
-        public int PartyRole { get; set; }
+        public PartyRole PartyRole { get; set; }
 
         public string ClientRequestDetails { get; set; } = string.Empty;
 
@@ -22,12 +23,17 @@ namespace LOMs.Contract.Requests.Cases
 
         public bool HasContracts { get; set; }
 
-       public List<CreateContractWithCaseRequest>? Contracts { get; set; }
+        public List<CreateContractWithCaseRequest>? Contracts { get; set; }
+
+
+        public bool HasPOAs { get; set; }
+
+        public List<CreatePOAWithCaseRequest>? POAs { get; set; }
 
         public string? LawyerOpinion { get; set; }
 
         [Required(ErrorMessage = " الموظف المسؤول مطلوب.")]
-        public string AssignedOfficer { get; set; } = string.Empty;
+        public Guid AssignedOfficer { get; set; } 
 
         [MinLength(1, ErrorMessage = "يجب إضافة عميل واحد على الأقل.")]
         public List<CaseClientRequest> Clients { get; set; } = new();

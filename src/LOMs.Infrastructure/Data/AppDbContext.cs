@@ -6,6 +6,7 @@ using LOMs.Domain.Customers;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
+using LOMs.Domain.POAs;
 using LOMs.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -27,6 +28,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<Contract> Contracts => Set<Contract>();
 
     public DbSet<Employee> Employees => Set<Employee>();
+
+    public DbSet<POA> POAs => Set<POA>();
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

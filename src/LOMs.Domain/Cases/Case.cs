@@ -1,10 +1,11 @@
 ﻿using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.Enums;
-using LOMs.Domain.Cases.Enums.CourtTypes;
 using LOMs.Domain.Common;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People.Clients;
+using LOMs.Domain.People.Employees;
+using LOMs.Domain.POAs;
 
 namespace LOMs.Domain.Cases
 {
@@ -17,10 +18,14 @@ namespace LOMs.Domain.Cases
         public DateOnly? EstimatedReviewDate { get; private set; }
         public CaseStatus Status { get; private set; }
         public string? LawyerOpinion { get; private set; }
-        public string AssignedOfficer { get; private set; } = null!;
+        public Guid AssignedOfficerId { get; private set; } 
         public CourtType CourtType { get; private set; }
         public ICollection<Contract> Contracts {  get;  set; } = new List<Contract>();
         public ICollection<ClientCase> ClientCases { get;  set; } = new List<ClientCase>();
+        public ICollection<POA> POAs { get; set; } = new List<POA>();
+        public Employee Employee { get; set; } 
+
+
 
 
         private Case() { }
@@ -34,7 +39,7 @@ namespace LOMs.Domain.Cases
             DateOnly? estimatedReviewDate,
             CaseStatus status,
             string? lawyerOpinion,
-            string assignedOfficer,
+            Guid assignedOfficer,
             CourtType courtType
         ) : base(id)
         {
@@ -45,7 +50,7 @@ namespace LOMs.Domain.Cases
             EstimatedReviewDate = estimatedReviewDate;
             Status = status;
             LawyerOpinion = lawyerOpinion;
-            AssignedOfficer = assignedOfficer;
+            AssignedOfficerId = assignedOfficer;
             CourtType = courtType;
         }
 
@@ -62,14 +67,14 @@ namespace LOMs.Domain.Cases
             DateOnly? estimatedReviewDate,
             CaseStatus status,
             string? lawyerOpinion,
-            string assignedOfficer
+            Guid assignedOfficerId
         )
         {
             // Basic validations
             if (id == Guid.Empty)
                 return Error.Conflict();
 
-            if (string.IsNullOrWhiteSpace(assignedOfficer))
+            if (assignedOfficerId == Guid.Empty)
                 return CaseErrors.Missing_AssignedOfficer;
 
             if (!Enum.IsDefined(typeof(CaseStatus), status))
@@ -90,7 +95,7 @@ namespace LOMs.Domain.Cases
                 estimatedReviewDate,
                 status,
                 lawyerOpinion,
-                assignedOfficer,
+                assignedOfficerId,
                 courtType
             ); ;
         }

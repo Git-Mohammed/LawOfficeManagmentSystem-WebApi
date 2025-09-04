@@ -3,12 +3,12 @@ using LiteBus.Queries.Abstractions;
 using LOMs.Application.Features.Cases.Commands.CreateCase;
 using LOMs.Application.Features.Cases.Queries.GetCaseByIdQuery;
 using LOMs.Application.Features.People.Clients.Commands.CreateClient;
+using LOMs.Contract.Commons.Enums;
 using LOMs.Contract.Requests.Cases;
 using LOMs.Domain.Cases.Enums;
-using LOMs.Domain.Cases.Enums.CourtTypes;
-using LOMs.Domain.Common.Results;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace LOMs.Api.Controllers;
 
@@ -26,13 +26,13 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateCase([FromBody] CreateCaseRequest request, CancellationToken ct)
+    public async Task<IActionResult> CreateCase([FromForm] CreateCaseRequest request, CancellationToken ct)
     {
         // ✅ تحقق من صحة القيم المدخلة
-        if (!Enum.IsDefined(typeof(CourtType), request.CourtType))
+        if (!Enum.IsDefined(typeof(LOMs.Domain.Cases.Enums.CourtType), request.CourtType))
             return Problem("نوع المحكمة غير صالح.");
 
-        if (!Enum.IsDefined(typeof(PartyRole), request.PartyRole))
+        if (!Enum.IsDefined(typeof(LOMs.Domain.Cases.Enums.PartyRole), request.PartyRole))
             return Problem("دور العميل في القضية غير صالح.");
 
         var clientModels = new List<CaseClientModel>();
@@ -73,29 +73,80 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
             if (request.Contracts is null)
                 return Problem("يجب ادخال عقد او اكثر عند وجود عقود");
 
-            if (!request.Contracts.Any() ||
-                !Enum.IsDefined(typeof(ContractType), request.Contracts.First().ContractType))
+            if (!request.Contracts.Any(x => !Enum.IsDefined(typeof(LOMs.Domain.Cases.Enums.ContractType), (LOMs.Domain.Cases.Enums.ContractType)x.ContractType)))
             {
                 return Problem("الرجاء اختيار نوع عقد متوفر.");
             }
 
-            contracts = request.Contracts.Select(x => new CreateContractWithCaseCommand(x.ContractType, x.IssueDate, x.ExpiryDate, x.TotalAmount, x.InitialPayment, x.ContractFilePath, x.IsAssigned)).ToList();
+            // Use a foreach loop to handle asynchronous file operations
+            foreach (var contractRequest in request.Contracts)
+            {
+                // Read file content into a byte array
+                if (contractRequest.ContractFile == null || contractRequest.ContractFile.Length == 0)
+                {
+                    return Problem("ملف العقد مطلوب.");
+                }
 
+                // Map to the command with the file content and name
+                var contractCommand = new CreateContractWithCaseCommand(
+                    (LOMs.Domain.Cases.Enums.ContractType)contractRequest.ContractType,
+                    contractRequest.IssueDate,
+                    contractRequest.ExpiryDate,
+                    contractRequest.TotalAmount,
+                    contractRequest.InitialPayment,
+                    contractRequest.ContractFile.FileName,
+                    contractRequest.IsAssigned
+                );
+                contracts.Add(contractCommand);
+            }
+        }
+        List<CreatePOAWithCaseCommand> poas = new List<CreatePOAWithCaseCommand>();
+
+        if (request.HasPOAs)
+        {
+            if (request.POAs is null || !request.POAs.Any())
+                return Problem("يجب إدخال وكالة واحدة على الأقل عند تحديد وجود وكالات.");
+
+            foreach (var poa in request.POAs)
+            {
+                if (string.IsNullOrWhiteSpace(poa.POANumber))
+                    return Problem("رقم الوكالة مطلوب.");
+
+                if (string.IsNullOrWhiteSpace(poa.IssuingAuthority))
+                    return Problem("جهة إصدار الوكالة مطلوبة.");
+
+                if (poa.IssueDate > DateOnly.FromDateTime(DateTime.UtcNow))
+                    return Problem("تاريخ إصدار الوكالة لا يمكن أن يكون في المستقبل.");
+
+                if (poa.AttachmentFile is null || poa.AttachmentFile.Length == 0)
+                    return Problem("ملف الوكالة مطلوب ويجب أن يكون صالحًا.");
+            }
+
+            poas = request.POAs.Select(poa =>
+                new CreatePOAWithCaseCommand(
+                    poa.POANumber.Trim(),
+                    poa.IssueDate,
+                    poa.IssuingAuthority.Trim(),
+                    poa.AttachmentFile.FileName
+                )).ToList();
         }
 
-            var commandRequest = new CreateCaseCommand(
+
+        var commandRequest = new CreateCaseCommand(
                 Clients: clientModels,
                 CaseNumber: request.CaseNumber,
                 CaseNotes: request.CaseSubject,
-                CourtType: (CourtType)request.CourtType,
-                PartyRole: (PartyRole)request.PartyRole,
+                CourtType: (LOMs.Domain.Cases.Enums.CourtType)request.CourtType,
+                PartyRole: (LOMs.Domain.Cases.Enums.PartyRole)request.PartyRole,
                 ClientRequests: request.ClientRequestDetails,
                 EstimatedReviewDate: request.EstimatedReviewDate,
                 LawyerOpinion: request.LawyerOpinion,
                 IsDraft: request.IsDraft,
                 HasContracts: request.HasContracts,
                 Contracts: contracts,
-                AssignedOfficer: request.AssignedOfficer
+                HasPOAs : request.HasPOAs,
+                POAs: poas,
+                AssignedOfficerId: request.AssignedOfficer
         );
 
         var result = await command.SendAsync(commandRequest, ct);
