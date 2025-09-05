@@ -1,9 +1,13 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.Cases.Dtos;
+using LOMs.Application.Features.ClientFiles;
+using LOMs.Application.Features.Contracts.Services;
+using LOMs.Application.Utilities;
 using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
+using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Cases.Enums;
 using LOMs.Domain.Common.Enums;
 using LOMs.Domain.Common.Results;
@@ -20,14 +24,17 @@ public sealed class CreateCaseCommandHandler(
     IMapper mapper,
     ILogger<CreateCaseCommandHandler> logger,
     IAppDbContext context,
-    IImageService imageService
+    IImageService imageService,
+    IClientFileFactory clientFileFactory,
+    IContractFactory contractFactory
 ) : ICommandHandler<CreateCaseCommand, Result<CaseDto>>
 {
     private readonly ILogger<CreateCaseCommandHandler> _logger = logger;
     private readonly IAppDbContext _context = context;
     private readonly IMapper _mapper = mapper;
     private readonly IImageService _imageService = imageService;
-
+    private readonly IClientFileFactory _clientFileFactory = clientFileFactory;
+    private readonly IContractFactory _contractFactory = contractFactory;
 
     public async Task<Result<CaseDto>> HandleAsync(CreateCaseCommand message, CancellationToken cancellationToken = default)
     {
@@ -36,7 +43,7 @@ public sealed class CreateCaseCommandHandler(
         if (message.Clients is null || !message.Clients.Any())
         {
             _logger.LogWarning("No clients provided for case creation.");
-            return CaseErrors.Invalid_Clients;
+            return CaseErrors.InvalidClients;
         }
 
         if (!string.IsNullOrWhiteSpace(message.CaseNumber))
@@ -45,8 +52,31 @@ public sealed class CreateCaseCommandHandler(
             if (caseNumberExists)
             {
                 _logger.LogWarning("Duplicate case number detected: {CaseNumber}", message.CaseNumber);
-                return CaseErrors.Duplicate_CaseNumber(message.CaseNumber);
+                return CaseErrors.DuplicateCaseNumber(message.CaseNumber);
             }
+        }
+
+        if (message.AssignedOfEmployeeId == Guid.Empty)
+        {
+            return CaseErrors.EmptyEmployeeId;
+        }
+
+        var employeeExists = await _context.Employees
+            .AnyAsync(x => x.Id == message.AssignedOfEmployeeId, cancellationToken);
+
+        if (!employeeExists)
+        {
+            return CaseErrors.AssignedEmployeeNotFound(message.AssignedOfEmployeeId);
+        }
+
+
+        var courtType = await _context.CourtTypes.FirstOrDefaultAsync(x => x.Id == message.CourtTypeId);
+        if(courtType is null)
+        {
+            _logger.LogWarning("No clients provided for case creation.");
+
+            return CaseErrors.InvalidCourtType;
+
         }
 
         var existingClientIds = message.Clients
@@ -73,7 +103,7 @@ public sealed class CreateCaseCommandHandler(
                 _logger.LogWarning("Missing clients detected. Expected: {Expected}, Found: {Found}, Missing: {Missing}",
                     existingClientIds.Count, existingClients.Count, string.Join(", ", missingClientIds));
 
-                return CaseErrors.Client_NotFoundWithIds(missingClientIds);
+                return CaseErrors.ClientNotFoundWithIds(missingClientIds);
             }
         }
 
@@ -92,13 +122,13 @@ public sealed class CreateCaseCommandHandler(
             if (duplicates.Any())
             {
                 _logger.LogWarning("Duplicate national IDs detected: {NationalIds}", string.Join(", ", duplicates));
-                return CaseErrors.Duplicate_NationalIds(duplicates);
+                return CaseErrors.DuplicateNationalIds(duplicates);
             }
         }
 
         _logger.LogInformation("Starting case creation for CaseNumber: {CaseNumber}", message.CaseNumber);
 
-        var validationResult = await ValidateCaseAndClientsAsync(message, existingClients, cancellationToken);
+        var validationResult = await ValidateCaseAndClientsAsync(message, existingClients, courtType,cancellationToken);
         if (validationResult.IsError)
         {
             return validationResult.Errors;
@@ -110,7 +140,7 @@ public sealed class CreateCaseCommandHandler(
         if (message.HasContracts && !message.Contracts.Any())
             return CaseErrors.ContractFilesMissing;
 
-        var contractsResult = await ProcessContractsAsync(message.Contracts, caseEntity, savedFilePaths, cancellationToken);
+        var contractsResult = await ProcessContractsAsync(message.Contracts, caseEntity, courtType, savedFilePaths, cancellationToken);
         if (contractsResult.IsError)
         {
             return contractsResult.Errors;
@@ -159,7 +189,7 @@ public sealed class CreateCaseCommandHandler(
             {
                 _imageService.DeleteImage(path);
             }
-            return CaseErrors.Unexpected_Failure;
+            return CaseErrors.UnexpectedFailure;
         }
     }
 
@@ -167,7 +197,7 @@ public sealed class CreateCaseCommandHandler(
 
     // Private helper methods for a cleaner main handler
 
-    private async Task<Result<(Case caseEntity, List<Client> clients, List<ClientFile> clientFiles, List<ClientCase> clientCases)>> ValidateCaseAndClientsAsync(CreateCaseCommand message, IReadOnlyDictionary<Guid, Client> existingClients, CancellationToken cancellationToken)
+    private async Task<Result<(Case caseEntity, List<Client> clients, List<ClientFile> clientFiles, List<ClientCase> clientCases)>> ValidateCaseAndClientsAsync(CreateCaseCommand message, IReadOnlyDictionary<Guid, Client> existingClients,CourtType courtType, CancellationToken cancellationToken)
     {
         // ... (This method would contain all the validation and client-related logic from your original code) ...
 
@@ -178,15 +208,15 @@ public sealed class CreateCaseCommandHandler(
         // Case creation
         var caseResult = Case.Create(
             Guid.NewGuid(),
+            courtType.Id,
             message.CaseNumber,
-            message.CourtType,
-            message.CaseNotes,
+            message.CaseSubject,
             message.PartyRole,
             message.ClientRequests,
             message.EstimatedReviewDate,
             message.IsDraft ? CaseStatus.Draft : CaseStatus.Pending,
             message.LawyerOpinion,
-            message.AssignedOfficerId
+            message.AssignedOfEmployeeId
         );
         if (caseResult.IsError)
         {
@@ -197,13 +227,12 @@ public sealed class CreateCaseCommandHandler(
 
         // Clients processing
         // ... (all client validation and handling logic, like the loops in your original code) ...
-        _logger.LogInformation("Case entity created with ID: {CaseId}", caseEntity.Id);
-
+        _logger.LogInformation("Case entity created with ID: {CaseId}", caseEntity.Id); 
         foreach (var clientDto in message.Clients)
         {
             if (clientDto is ExistingCaseClientModel existing)
             {
-                var existingResult = HandleExistingClient(existing, caseEntity.Id, message.CourtType, existingClients);
+                var existingResult = await HandleExistingClient(existing, caseEntity.Id, courtType, existingClients, cancellationToken);
                 if (existingResult.IsError)
                 {
                     _logger.LogWarning("Failed to process existing client with ID: {ClientId}", existing.ExistingClientId);
@@ -219,7 +248,7 @@ public sealed class CreateCaseCommandHandler(
             }
             else if (clientDto is NewCaseClientModel newClient)
             {
-                var newResult = HandleNewClient(newClient, caseEntity.Id, message.CourtType);
+                var newResult = await HandleNewClient(newClient, caseEntity.Id, courtType, cancellationToken);
                 if (newResult.IsError)
                 {
                     _logger.LogWarning("Failed to process new client with NationalId: {NationalId}", newClient.Client.Person.NationalId);
@@ -235,14 +264,14 @@ public sealed class CreateCaseCommandHandler(
             else
             {
                 _logger.LogError("Unknown client type encountered during case creation.");
-                return CaseErrors.Unknown_ClientType;
+                return CaseErrors.UnknownClientType;
             }
         }
 
         return  (caseEntity, clients, clientFiles, clientCases);
     }
 
-    private async Task<Result<List<Contract>>> ProcessContractsAsync(IEnumerable<CreateContractWithCaseCommand> contractCommands, Case caseEntity, List<string> savedFilePaths, CancellationToken cancellationToken)
+    private async Task<Result<List<Contract>>> ProcessContractsAsync(IEnumerable<CreateContractWithCaseCommand> contractCommands, Case caseEntity,CourtType courtType, List<string> savedFilePaths, CancellationToken cancellationToken)
     {
         var contracts = new List<Contract>();
         if (contractCommands is null || !contractCommands.Any())
@@ -257,7 +286,7 @@ public sealed class CreateCaseCommandHandler(
                 var filePath = await _imageService.SaveImageAsync(command.AttachmentFileStream, command.AttachmentFileName, ImageFolder.Contracts);
                 savedFilePaths.Add(filePath);
 
-                var contractResult = Contract.Create(Guid.NewGuid(), caseEntity.Id, caseEntity.CourtType, command.ContractType, command.IssueDate, command.ExpiryDate, command.TotalAmount, command.InitialPayment, filePath, command.IsAssigned);
+                var contractResult = await _contractFactory.CreateAsync(caseEntity.Id, courtType, command.ContractType, command.IssueDate, command.ExpiryDate, command.BaseAmount, command.InitialPayment, filePath, command.IsAssigned);
 
                 if (contractResult.IsError)
                 {
@@ -274,7 +303,7 @@ public sealed class CreateCaseCommandHandler(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while saving contract files. Rolling back.");
-            return CaseErrors.SaveContractFile;
+            return CaseErrors.SaveContractFileFailure;
         }
 
         return contracts;
@@ -318,25 +347,27 @@ public sealed class CreateCaseCommandHandler(
         return poas;
     }
     
-    private Result<(ClientFile? clientFile, ClientCase clientCase)> HandleExistingClient(
+    private async Task<Result<(ClientFile? clientFile, ClientCase clientCase)>> HandleExistingClient(
         ExistingCaseClientModel request,
         Guid caseId,
         CourtType courtType,
-        IReadOnlyDictionary<Guid, Client> existingClients)
+        IReadOnlyDictionary<Guid, Client> existingClients,
+        CancellationToken ct)
     {
         if (!existingClients.TryGetValue(request.ExistingClientId, out var client))
         {
             _logger.LogWarning("Existing client not found: {ClientId}", request.ExistingClientId);
-            return CaseErrors.Client_NotFoundWithId(request.ExistingClientId);
+            return CaseErrors.ClientNotFoundWithId(request.ExistingClientId);
         }
+        var currentHijriYear = HijriDateConverter.GetCurrentHijriYear();
 
-        var existingFile = client.ClientFiles.FirstOrDefault(x => x.CourtType == courtType);
+        var existingFile = client.ClientFiles.FirstOrDefault(x => x.CourtTypeCode == courtType.Code && x.HijriYear == currentHijriYear);
 
         ClientFile? clientFile = null;
 
         if (existingFile is null)
         {
-            var clientFileResult = ClientFile.Create(Guid.NewGuid(), client.Id, courtType);
+            var clientFileResult = await _clientFileFactory.CreateAsync(client.Id, courtType, ct);
             if (clientFileResult.IsError)
             {
                 _logger.LogWarning("Failed to create client file for existing client: {ClientId}", client.Id);
@@ -350,10 +381,11 @@ public sealed class CreateCaseCommandHandler(
         return (clientFile, clientCase);
     }
 
-    private Result<(Client client, ClientFile clientFile, ClientCase clientCase)> HandleNewClient(
+    private async Task<Result<(Client client, ClientFile clientFile, ClientCase clientCase)>> HandleNewClient(
         NewCaseClientModel request,
         Guid caseId,
-        CourtType courtType)
+        CourtType courtType,
+        CancellationToken ct)
     {
         var personResult = Person.Create(
             Guid.NewGuid(),
@@ -378,7 +410,7 @@ public sealed class CreateCaseCommandHandler(
             return clientResult.Errors;
         }
 
-        var clientFileResult = ClientFile.Create(Guid.NewGuid(), clientResult.Value.Id, courtType);
+        var clientFileResult = await _clientFileFactory.CreateAsync(clientResult.Value.Id, courtType, ct);
         if (clientFileResult.IsError)
         {
             _logger.LogWarning("Failed to create client file for new client: {ClientId}", clientResult.Value.Id);

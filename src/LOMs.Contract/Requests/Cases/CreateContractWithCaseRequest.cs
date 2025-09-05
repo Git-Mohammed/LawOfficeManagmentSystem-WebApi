@@ -14,7 +14,7 @@ namespace LOMs.Contract.Requests.Cases
 
         [Required(ErrorMessage = "قيمة العقد مطلوبة.")]
         [Range(0, double.MaxValue, ErrorMessage = "قيمة العقد يجب أن تكون أكبر من أو تساوي صفر.")]
-        public decimal TotalAmount { get; set; }
+        public decimal BaseAmount { get; set; }
 
         [Required(ErrorMessage = "مقدم العقد مطلوب.")]
         [Range(0, double.MaxValue, ErrorMessage = "مقدم العقد يجب أن يكون أكبر من أو يساوي صفر.")]

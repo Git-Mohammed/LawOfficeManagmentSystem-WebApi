@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using System.Collections.Generic;
 using LOMs.Domain.People.Employees;
 using LOMs.Domain.POAs;
+using LOMs.Domain.Cases.CourtTypes;
 
 namespace LOMs.Application.Common.Interfaces;
 public interface IAppDbContext
@@ -23,6 +24,7 @@ public interface IAppDbContext
     public DbSet<ClientCase> ClientCases { get; }
     public DbSet<Contract> Contracts { get; }
     public DbSet<POA> POAs { get; }
+    public DbSet<CourtType> CourtTypes { get; }
 
     public DbSet<Employee> Employees { get; }
 

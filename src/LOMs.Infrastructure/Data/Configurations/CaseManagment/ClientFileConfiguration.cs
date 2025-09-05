@@ -12,7 +12,14 @@ public class ClientFileConfiguration : IEntityTypeConfiguration<ClientFile>
 
         builder.Property(cf => cf.FileNumber)
             .IsRequired();
+        builder.Property(cf => cf.HijriYear)
+               .IsRequired();
 
+        builder.Property(cf => cf.OrderNumber)
+                .IsRequired();
+
+        builder.Property(cf => cf.CourtTypeCode)
+                .IsRequired();
 
         builder.HasOne(cf => cf.Client)
             .WithMany(c => c.ClientFiles)

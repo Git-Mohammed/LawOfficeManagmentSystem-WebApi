@@ -9,7 +9,7 @@ namespace LOMs.Contract.Requests.Cases
         public string? CaseNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "نوع المحكمة مطلوب.")]
-        public CourtType CourtType { get; set; }
+        public Guid CourtTypeId { get; set; }
 
         public string? CaseSubject { get; set; } = string.Empty;
 
