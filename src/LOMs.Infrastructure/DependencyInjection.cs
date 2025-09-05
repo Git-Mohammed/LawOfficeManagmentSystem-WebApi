@@ -6,6 +6,7 @@ using LOMs.Infrastructure.Mapping.Configs;
 using LOMs.Infrastructure.Services;
 using LOMs.Infrastructure.Services.DomainEventPublishers;
 using LOMs.Infrastructure.Services.EmailSender;
+using LOMs.Infrastructure.Services.FileServices;
 using LOMs.Infrastructure.Services.Image;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +55,7 @@ public static class DependencyInjection
         services.AddEmailSenderService(configuration);
         services.AddScoped<IDomainEventPublisher,LiteBusEventPublisher>();
         services.AddServices();
+        services.AddFileService();
         return services;
     }
 
@@ -84,6 +86,14 @@ public static class DependencyInjection
         // Register the email sender
         services.AddScoped<IEmailSender, SmtpEmailSender>();
 
+        return services;
+    }
+
+    private static IServiceCollection AddFileService(this IServiceCollection services)
+    {
+        services.AddSingleton<IFileValidator,FileValidator>();
+        services.AddScoped<IFileService>(sp =>
+            new LocalFileService("uploads",sp.GetRequiredService<IFileValidator>()));
         return services;
     }
 }
