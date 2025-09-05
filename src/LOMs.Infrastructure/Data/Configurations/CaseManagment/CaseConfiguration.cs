@@ -35,14 +35,11 @@ public class CaseConfiguration : IEntityTypeConfiguration<Case>
             .HasConversion<int>() // يخزن كـ int
             .HasComment("دور العميل في القضية: 1 = مدعي، 2 = مدعى عليه");
 
-        builder.Property(c => c.CourtType)
-            .IsRequired()
-            .HasConversion<int>() // يخزن كـ int
-            .HasComment("نوع المحكمة: 100 = عامة، 200 = جزئية، 300 = عمالية، 400 = أحوال شخصية، 600 = إدارية، 700 = لجان شبه قضائية، 800 = أخرى");
-
         builder.HasOne(x => x.Employee)
             .WithMany(x => x.Cases)
             .HasForeignKey(x => x.AssignedEmployeeId)
-            .IsRequired();
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Restrict);
+
     }
 }

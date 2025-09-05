@@ -1,210 +1,194 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LiteBus.Queries.Abstractions;
 using LOMs.Application.Features.Cases.Commands.CreateCase;
+using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Application.Features.Cases.Queries.GetCaseByIdQuery;
+using LOMs.Application.Features.Customers.Dtos;
 using LOMs.Application.Features.People.Clients.Commands.CreateClient;
-using LOMs.Contract.Commons.Enums;
 using LOMs.Contract.Requests.Cases;
-using LOMs.Domain.Cases.Enums;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace LOMs.Api.Controllers;
 
 [Route("api/cases")]
 public class CasesController(ICommandMediator command, IQueryMediator query) : ApiController
 {
-    [HttpGet("{Id:guid}", Name = "GetCaseById")]
-    public async Task<IActionResult> GetById(Guid Id, CancellationToken ct)
+    [HttpGet("{id:guid}", Name = "GetCaseById")]
+    [ProducesResponseType(typeof(CaseDetailsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Retrieves case details by ID.")]
+    [EndpointDescription("Fetches a case and its associated data using the case identifier.")]
+    [EndpointName("GetCaseById")]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var result = await query.QueryAsync(new GetCaseByIdQuery(Id), ct);
-
-        return result.Match(
-            response => Ok(response),
-            Problem);
+        var result = await query.QueryAsync(new GetCaseByIdQuery(id), ct);
+        return result.Match(Ok, Problem);
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Creates a new case.")]
+    [EndpointDescription("Adds a new case to the system with clients, contracts, and POAs.")]
+    [EndpointName("CreateCase")]
     public async Task<IActionResult> CreateCase([FromForm] CreateCaseRequest request, CancellationToken ct)
     {
-        // ✅ تحقق من صحة القيم المدخلة
-        if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.CourtType), request.CourtType))
-            return Problem("نوع المحكمة غير صالح.");
-
         if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.PartyRole), request.PartyRole))
             return Problem("دور العميل في القضية غير صالح.");
 
-        var clientModels = new List<CaseClientModel>();
+        var clients = ParseClients(request.ClientsJson);
+        if (clients is null || clients.Count == 0)
+            return Problem("يجب ان يكون هناك عملاء");
 
-        try
-        {
-            List<CaseClientRequest> clients = new List<CaseClientRequest>();
+        var clientModels = MapClients(clients);
 
-            if (!string.IsNullOrEmpty(request.ClientsJson))
-            {
+        var contracts = request.HasContracts
+            ? ValidateAndMapContracts(request)
+            : new List<CreateContractWithCaseCommand>();
 
+        if (contracts == null) return Problem("بيانات العقود غير صالحة.");
 
-                clients = JsonSerializer.Deserialize<List<CaseClientRequest>>(request.ClientsJson);
-            }
+        var poas = request.HasPOAs
+            ? ValidateAndMapPOAs(request)
+            : new List<CreatePOAWithCaseCommand>();
 
-            else
-            {
-                return Problem("يجب ان يكون هناك عملاء");
+        if (poas == null) return Problem("بيانات الوكالات غير صالحة.");
 
-            }
-
-            if(clients is null ||  clients.Count == 0)
-                return Problem("يجب ان يكون هناك عملاء");
-
-            clientModels = clients.Select<CaseClientRequest, CaseClientModel>(c =>
-            {
-                return c switch
-                {
-                    ExistingClientRequest existing => new ExistingCaseClientModel
-                    {
-                        ExistingClientId = existing.ClientId
-                    },
-                    NewClientRequest newClient => new NewCaseClientModel(
-                        new CreateClientCommand(
-                            new CreatePersonCommand(
-                                newClient.Client.Person.FullName,
-                                newClient.Client.Person.NationalId,
-                                newClient.Client.Person.CountryCode,
-                                newClient.Client.Person.BirthDate,
-                                newClient.Client.Person.PhoneNumber,
-                                newClient.Client.Person.Address
-                            )
-                        )
-                    ),
-                    _ => throw new ValidationException("كل عنصر في قائمة العملاء يجب أن يحتوي إما على معرف موجود أو بيانات عميل جديدة.")
-                };
-            }).ToList();
-        }
-        catch (ValidationException ex)
-        {
-            return Problem(ex.Message);
-        }
-
-        var contracts = new List<CreateContractWithCaseCommand>();
-
-        // The controller receives the flattened DTO
-        if (request.HasContracts)
-        {
-            // 1. Basic validation
-            if (request.ContractsData is null || request.ContractsData.Count == 0)
-            {
-                return Problem("يجب ادخال عقد او اكثر عند وجود عقود");
-            }
-
-            if (request.ContractFiles is null || request.ContractFiles.Count != request.ContractsData.Count)
-            {
-                return Problem("يجب أن يتطابق عدد مرفقات العقود مع عدد بيانات العقود.");
-            }
-
-            // 2. Map and process each file and its corresponding data
-            for (int i = 0; i < request.ContractsData.Count; i++)
-            {
-                var contractData = request.ContractsData[i];
-                var contractFile = request.ContractFiles[i];
-
-                // 3. Perform specific validation for each item
-                if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.ContractType), (LOMs.Contract.Commons.Enums.ContractType)contractData.ContractType))
-                {
-                    return Problem("الرجاء اختيار نوع عقد متوفر.");
-                }
-
-                if (contractFile.Length == 0)
-                {
-                    return Problem("ملف العقد مطلوب.");
-                }
-
-                // 4. Create the command with the file stream and filename
-                var contractCommand = new CreateContractWithCaseCommand(
-                    (LOMs.Domain.Cases.Enums.ContractType)contractData.ContractType,
-                    contractData.IssueDate,
-                    contractData.ExpiryDate,
-                    contractData.TotalAmount,
-                    contractData.InitialPayment,
-                    contractFile.OpenReadStream(),
-                    contractFile.FileName,
-                    contractData.IsAssigned
-                );
-                contracts.Add(contractCommand);
-            }
-            // The rest of your controller logic continues here
-        }
-        List<CreatePOAWithCaseCommand> poas = new List<CreatePOAWithCaseCommand>();
-
-        if (request.HasPOAs)
-        {
-            // 1. Validate that the data and files lists exist and have the same count.
-            if (request.POAsData is null || request.POAFiles is null || request.POAFiles.Count != request.POAsData.Count)
-            {
-                return Problem("يجب أن يتطابق عدد مرفقات الوكالات مع عدد بيانات الوكالات.");
-            }
-
-            // 2. Use a for loop to correctly match each file with its data.
-            for (int i = 0; i < request.POAsData.Count; i++)
-            {
-                var poaData = request.POAsData[i];
-                var poaFile = request.POAFiles[i];
-
-                // 3. Perform specific validation for each item.
-                if (string.IsNullOrWhiteSpace(poaData.POANumber))
-                    return Problem("رقم الوكالة مطلوب.");
-
-                if (string.IsNullOrWhiteSpace(poaData.IssuingAuthority))
-                    return Problem("جهة إصدار الوكالة مطلوبة.");
-
-                if (poaData.IssueDate > DateOnly.FromDateTime(DateTime.UtcNow))
-                    return Problem("تاريخ إصدار الوكالة لا يمكن أن يكون في المستقبل.");
-
-                if (poaFile is null || poaFile.Length == 0)
-                    return Problem("ملف الوكالة مطلوب ويجب أن يكون صالحًا.");
-
-                // 4. Create the command with the file stream and filename.
-                var poaCommand = new CreatePOAWithCaseCommand(
-                    poaData.POANumber.Trim(),
-                    poaData.IssueDate,
-                    poaData.IssuingAuthority.Trim(),
-                    poaFile.OpenReadStream(),
-                    poaFile.FileName);
-
-                poas.Add(poaCommand);
-            }
-        }
-
-        var commandRequest = new CreateCaseCommand(
-                Clients: clientModels,
-                CaseNumber: request.CaseNumber,
-                CaseNotes: request.CaseSubject,
-                CourtType: (LOMs.Domain.Cases.Enums.CourtType)request.CourtType,
-                PartyRole: (LOMs.Domain.Cases.Enums.PartyRole)request.PartyRole,
-                ClientRequests: request.ClientRequestDetails,
-                EstimatedReviewDate: request.EstimatedReviewDate,
-                LawyerOpinion: request.LawyerOpinion,
-                IsDraft: request.IsDraft,
-                HasContracts: request.HasContracts,
-                Contracts: contracts,
-                HasPOAs : request.HasPOAs,
-                POAs: poas,
-                AssignedOfficerId: request.AssignedEmployeeId
+        var createCaseCommand = new CreateCaseCommand(
+            Clients: clientModels,
+            CaseNumber: request.CaseNumber,
+            CaseSubject: request.CaseSubject,
+            CourtTypeId: request.CourtTypeId,
+            PartyRole: (LOMs.Domain.Cases.Enums.PartyRole)request.PartyRole,
+            ClientRequests: request.ClientRequestDetails,
+            EstimatedReviewDate: request.EstimatedReviewDate,
+            LawyerOpinion: request.LawyerOpinion,
+            IsDraft: request.IsDraft,
+            HasContracts: request.HasContracts,
+            Contracts: contracts,
+            HasPOAs: request.HasPOAs,
+            POAs: poas,
+            AssignedOfEmployeeId: request.AssignedEmployeeId
         );
 
-        var result = await command.SendAsync(commandRequest, ct);
+        var result = await command.SendAsync(createCaseCommand, ct);
 
         return result.Match(
-            success => CreatedAtRoute(
-                routeName: "GetCaseById",
-                routeValues: new { Id = success.Id },
-                value: new { Id = success.Id }),
+            success => CreatedAtRoute("GetCaseById", new { Id = success.Id }, new { Id = success.Id }),
             error => Problem(error)
         );
     }
 
+    #region Helpers
+
+    private static List<CaseClientRequest>? ParseClients(string? clientsJson)
+    {
+        if (string.IsNullOrWhiteSpace(clientsJson))
+            return null;
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<CaseClientRequest>>(clientsJson);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static List<CaseClientModel> MapClients(List<CaseClientRequest> clients) =>
+        clients.Select<CaseClientRequest, CaseClientModel>(c => c switch
+        {
+            ExistingClientRequest existing => new ExistingCaseClientModel
+            {
+                ExistingClientId = existing.ClientId
+            },
+            NewClientRequest newClient => new NewCaseClientModel(
+                new CreateClientCommand(
+                    new CreatePersonCommand(
+                        newClient.Client.Person.FullName,
+                        newClient.Client.Person.NationalId,
+                        newClient.Client.Person.CountryCode,
+                        newClient.Client.Person.BirthDate,
+                        newClient.Client.Person.PhoneNumber,
+                        newClient.Client.Person.Address
+                    )
+                )
+            ),
+            _ => throw new ValidationException("كل عنصر في قائمة العملاء يجب أن يحتوي إما على معرف موجود أو بيانات عميل جديدة.")
+        }).ToList();
+
+    private static List<CreateContractWithCaseCommand>? ValidateAndMapContracts(CreateCaseRequest request)
+    {
+        if (request.ContractsData is null || request.ContractsData.Count == 0)
+            return null;
+
+        if (request.ContractFiles is null || request.ContractFiles.Count != request.ContractsData.Count)
+            return null;
+
+        var contracts = new List<CreateContractWithCaseCommand>();
+
+        for (int i = 0; i < request.ContractsData.Count; i++)
+        {
+            var data = request.ContractsData[i];
+            var file = request.ContractFiles[i];
+
+            if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.ContractType), (LOMs.Contract.Commons.Enums.ContractType)data.ContractType))
+                return null;
+
+            if (file.Length == 0)
+                return null;
+
+            contracts.Add(new CreateContractWithCaseCommand(
+                (LOMs.Domain.Cases.Enums.ContractType)data.ContractType,
+                data.IssueDate,
+                data.ExpiryDate,
+                data.BaseAmount,
+                data.InitialPayment,
+                file.OpenReadStream(),
+                file.FileName,
+                data.IsAssigned
+            ));
+        }
+
+        return contracts;
+    }
+
+    private static List<CreatePOAWithCaseCommand>? ValidateAndMapPOAs(CreateCaseRequest request)
+    {
+        if (request.POAsData is null || request.POAFiles is null || request.POAFiles.Count != request.POAsData.Count)
+            return null;
+
+        var poas = new List<CreatePOAWithCaseCommand>();
+
+        for (int i = 0; i < request.POAsData.Count; i++)
+        {
+            var data = request.POAsData[i];
+            var file = request.POAFiles[i];
+
+            if (string.IsNullOrWhiteSpace(data.POANumber) ||
+                string.IsNullOrWhiteSpace(data.IssuingAuthority) ||
+                data.IssueDate > DateOnly.FromDateTime(DateTime.UtcNow) ||
+                file == null || file.Length == 0)
+            {
+                return null;
+            }
+
+            poas.Add(new CreatePOAWithCaseCommand(
+                data.POANumber.Trim(),
+                data.IssueDate,
+                data.IssuingAuthority.Trim(),
+                file.OpenReadStream(),
+                file.FileName
+            ));
+        }
+
+        return poas;
+    }
+
+    #endregion
 }
-
-

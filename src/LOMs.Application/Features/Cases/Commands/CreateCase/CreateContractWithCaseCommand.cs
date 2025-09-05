@@ -9,7 +9,7 @@ public sealed record CreateContractWithCaseCommand(
     ContractType ContractType,
     DateOnly? IssueDate,
     DateOnly? ExpiryDate,
-    decimal TotalAmount,
+    decimal BaseAmount,
     decimal InitialPayment,
     Stream AttachmentFileStream,  // Use a generic Stream
     string AttachmentFileName,    // Use a string for the file name

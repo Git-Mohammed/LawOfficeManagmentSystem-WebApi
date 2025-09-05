@@ -22,6 +22,8 @@ public sealed class GetCaseByIdQueryHandler(
     public async Task<Result<CaseDetailsDto>> HandleAsync(GetCaseByIdQuery request, CancellationToken cancellationToken)
     {
         var caseEntity = await _context.Cases
+            .AsNoTracking()
+            .Include(x => x.CourtType)
             .Include(c => c.Contracts)
             .Include(c => c.ClientCases)
             .ThenInclude(c => c.Client)

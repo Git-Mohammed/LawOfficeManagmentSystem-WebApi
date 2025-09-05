@@ -11,13 +11,12 @@ namespace LOMs.Infrastructure.Mapping.CasesMappers
             // Domain Contract -> ContractDto
             config.NewConfig<Contract, ContractDto>()
                 .Map(dest => dest.ContractId, src => src.Id)
-                .Map(dest => dest.ContractNumber, src => src.DisplayContractNumber)
+                .Map(dest => dest.ContractNumber, src => src.ContractNumber)
                 .Map(dest => dest.IssueDate, src => src.IssuedOn)
                 .Map(dest => dest.ExpiryDate, src => src.ExpiresOn)
-                .Map(dest => dest.TotalAmount, src => src.TotalAmount)
+                .Map(dest => dest.TotalAmount, src => src.BaseAmount)
                 .Map(dest => dest.ContractType, src => src.Type)
                 .Map(dest => dest.ContractFilePath, src => src.FilePath);
-
         }
     }
 }

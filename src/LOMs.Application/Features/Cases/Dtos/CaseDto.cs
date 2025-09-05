@@ -17,7 +17,7 @@ public class CaseDto
     public CaseStatus Status { get; set; }
     public string? LawyerOpinion { get; set; }
     public string AssignedOfficer { get; set; } = null!;
-    public CourtType CourtType { get; set; }
+    public CourtTypeDto CourtType { get; set; }
 
     public ClientFileDto ClientFile { get; set; }
     public List<ClientDto> Clients { get; set; } = new();

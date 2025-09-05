@@ -2,6 +2,7 @@ using LOMs.Application.Common.Interfaces;
 using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
+using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Customers;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
@@ -31,6 +32,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 
     public DbSet<POA> POAs => Set<POA>();
 
+    public DbSet<CourtType> CourtTypes => Set<CourtType>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
