@@ -59,7 +59,7 @@ public class ApplicationDbContextInitializer(
         CourtType.Create(Guid.Parse("e6f4c1d9-4d9f-4d6f-ae4f-3e4f5a6b7c88"), "„Õﬂ„… «·√ÕÊ«· «·‘Œ’Ì…", 400, "„Õﬂ„… «·√ÕÊ«· «·‘Œ’Ì…").Value,
         CourtType.Create(Guid.Parse("f7a5d2ea-5eaf-4e7f-bf5f-4f5a6b7c8d99"), "«·„Õﬂ„… «·≈œ«—Ì…", 600, "«·„Õﬂ„… «·≈œ«—Ì…").Value,
         CourtType.Create(Guid.Parse("a8b6e3fb-6fb0-4f8f-cf6f-5a6b7c8d9e10"), "„Õﬂ„… «··Ã«‰ ‘»Â «·ﬁ÷«∆Ì…", 700, "„Õﬂ„… «··Ã«‰ ‘»Â «·ﬁ÷«∆Ì…").Value,
-        CourtType.Create(Guid.Parse("b9c7f40c-70c1-4f9f-df7f-6b7c8d9e0f21"), "√Œ—Ï", 800, "√Œ—Ï").Value
+        CourtType.Create(Guid.Parse("b9c7f40c-70c1-4f9f-df7f-6b7c8d9e0f21"), "√Œ—Ï", 32000, "√Œ—Ï").Value
     };
 
             _context.CourtTypes.AddRange(courtTypes);

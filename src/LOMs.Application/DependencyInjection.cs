@@ -6,6 +6,7 @@ using LOMs.Application.Features.Cases.Commands.CreateCase;
 using LOMs.Application.Features.Cases.Queries.GetCaseByIdQuery;
 using LOMs.Application.Features.ClientFiles;
 using LOMs.Application.Features.Contracts.Services;
+using LOMs.Application.Features.CourtTypes;
 using LOMs.Application.Features.People.Employees.EventHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,8 @@ public static class DependencyInjection
     {
         services
             .AddLiteBusRegistration()
-            .RegisterFactories();
+            .RegisterFactories()
+            .RegisterServices();
 
         return services;
     }
@@ -47,6 +49,13 @@ public static class DependencyInjection
     {
         services.AddScoped<IClientFileFactory, ClientFileFactory>();
         services.AddScoped<IContractFactory, ContractFactory>();
+
+        return services;
+    }
+
+    private static IServiceCollection RegisterServices(this IServiceCollection services)
+    {
+        services.AddScoped<ICourtTypeService, CourtTypeService>();
 
         return services;
     }
