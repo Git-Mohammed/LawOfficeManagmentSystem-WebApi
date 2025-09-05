@@ -11,6 +11,9 @@ namespace LOMs.Api.Controllers;
 [Route("api/clients")]
 public class ClientsController(ICommandMediator command, IQueryMediator query) : ApiController
 {
+    private readonly IQueryMediator _query = query;
+    private readonly ICommandMediator _command = command;
+
     [HttpGet("{clientId:guid}", Name = nameof(GetClientById))]
     [ProducesResponseType(typeof(ClientDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -21,7 +24,7 @@ public class ClientsController(ICommandMediator command, IQueryMediator query) :
     public async Task<IActionResult> GetClientById(Guid clientId, CancellationToken ct)
     {
         var queryRequest = new GetClientByIdQuery(clientId);
-        var result = await query.QueryAsync(queryRequest, ct);
+        var result = await _query.QueryAsync(queryRequest, ct);
 
         return result.Match(Ok, Problem);
     }
@@ -36,7 +39,7 @@ public class ClientsController(ICommandMediator command, IQueryMediator query) :
     public async Task<IActionResult> GetClientByNationalId(string nationalId, CancellationToken ct)
     {
         var queryRequest = new GetClientByNationalIdQuery(nationalId);
-        var result = await query.QueryAsync(queryRequest, ct);
+        var result = await _query.QueryAsync(queryRequest, ct);
 
         return result.Match(Ok, Problem);
     }
@@ -59,7 +62,7 @@ public class ClientsController(ICommandMediator command, IQueryMediator query) :
             Address: request.Person.Address);
 
         var commandRequest = new CreateClientCommand(personCommand);
-        var result = await command.SendAsync(commandRequest, ct);
+        var result = await _command.SendAsync(commandRequest, ct);
 
         return result.Match(
             response => CreatedAtRoute(

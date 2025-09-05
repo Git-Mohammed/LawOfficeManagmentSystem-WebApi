@@ -14,6 +14,9 @@ namespace LOMs.Api.Controllers;
 [Route("api/cases")]
 public class CasesController(ICommandMediator command, IQueryMediator query) : ApiController
 {
+    private readonly IQueryMediator _query = query;
+    private readonly ICommandMediator _command = command;
+
     [HttpGet("{caseId:guid}", Name = nameof(GetCaseById))]
     [ProducesResponseType(typeof(CaseDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -24,7 +27,7 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
     public async Task<IActionResult> GetCaseById(Guid caseId, CancellationToken ct)
     {
         var queryRequest = new GetCaseByIdQuery(caseId);
-        var result = await query.QueryAsync(queryRequest, ct);
+        var result = await _query.QueryAsync(queryRequest, ct);
 
         return result.Match(Ok, Problem);
     }
@@ -76,7 +79,7 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
             AssignedOfEmployeeId: request.AssignedEmployeeId
         );
 
-        var result = await command.SendAsync(createCaseCommand, ct);
+        var result = await _command.SendAsync(createCaseCommand, ct);
 
         return result.Match(
             success => CreatedAtRoute(
