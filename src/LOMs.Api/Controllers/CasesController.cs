@@ -3,7 +3,6 @@ using LiteBus.Queries.Abstractions;
 using LOMs.Application.Features.Cases.Commands.CreateCase;
 using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Application.Features.Cases.Queries.GetCaseByIdQuery;
-using LOMs.Application.Features.Customers.Dtos;
 using LOMs.Application.Features.People.Clients.Commands.CreateClient;
 using LOMs.Contract.Requests.Cases;
 using Microsoft.AspNetCore.Mvc;
@@ -15,26 +14,28 @@ namespace LOMs.Api.Controllers;
 [Route("api/cases")]
 public class CasesController(ICommandMediator command, IQueryMediator query) : ApiController
 {
-    [HttpGet("{id:guid}", Name = "GetCaseById")]
+    [HttpGet("{caseId:guid}", Name = nameof(GetCaseById))]
     [ProducesResponseType(typeof(CaseDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [EndpointSummary("Retrieves case details by ID.")]
     [EndpointDescription("Fetches a case and its associated data using the case identifier.")]
-    [EndpointName("GetCaseById")]
-    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    [EndpointName(nameof(GetCaseById))]
+    public async Task<IActionResult> GetCaseById(Guid caseId, CancellationToken ct)
     {
-        var result = await query.QueryAsync(new GetCaseByIdQuery(id), ct);
+        var queryRequest = new GetCaseByIdQuery(caseId);
+        var result = await query.QueryAsync(queryRequest, ct);
+
         return result.Match(Ok, Problem);
     }
 
-    [HttpPost]
+    [HttpPost(Name = nameof(CreateCase))]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [EndpointSummary("Creates a new case.")]
     [EndpointDescription("Adds a new case to the system with clients, contracts, and POAs.")]
-    [EndpointName("CreateCase")]
+    [EndpointName(nameof(CreateCase))]
     public async Task<IActionResult> CreateCase([FromForm] CreateCaseRequest request, CancellationToken ct)
     {
         if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.PartyRole), request.PartyRole))
@@ -78,9 +79,11 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
         var result = await command.SendAsync(createCaseCommand, ct);
 
         return result.Match(
-            success => CreatedAtRoute("GetCaseById", new { Id = success.Id }, new { Id = success.Id }),
-            error => Problem(error)
-        );
+            success => CreatedAtRoute(
+                routeName: nameof(GetCaseById),
+                routeValues: new { caseId = success.Id },
+                value: new { Id = success.Id }),
+            Problem);
     }
 
     #region Helpers
