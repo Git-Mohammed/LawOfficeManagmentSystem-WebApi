@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 
-// áæ ÇáãÌáÏ ãÇ ßÇä ãæÌæÏ¡ ÃäÔÆå
+
 if (!Directory.Exists(builder.Environment.WebRootPath))
 {
     Directory.CreateDirectory(builder.Environment.WebRootPath);
@@ -34,6 +34,19 @@ builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .AllowAnyOrigin()   // Allow any (Postman, Swagger, Angular, React,..)
+            .AllowAnyMethod()   // Allow any Request (GET, POST, PUT, DELETE ...)
+            .AllowAnyHeader();  // Allow any Header
+    });
+});
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -59,7 +72,7 @@ else
 app.UseStaticFiles();
 
 app.UseCoreMiddlewares(builder.Configuration);
-
+app.UseCors("AllowAll");
 app.MapControllers();
 
 app.MapStaticAssets();
