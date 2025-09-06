@@ -1,4 +1,5 @@
 using LOMs.Application.Common.Interfaces;
+using LOMs.Domain.Common.Options;
 using LOMs.Infrastructure.Data;
 using LOMs.Infrastructure.Data.Interceptors;
 using LOMs.Infrastructure.Identity;
@@ -52,6 +53,10 @@ public static class DependencyInjection
         services.AddPasswordGenerator();
         services.AddEmailSenderService(configuration);
         services.AddScoped<IDomainEventPublisher,LiteBusEventPublisher>();
+
+        services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
+        services.Configure<PasswordGeneratorOptions>(configuration.GetSection("PasswordGenerator"));
+
         return services;
     }
 
@@ -67,7 +72,7 @@ public static class DependencyInjection
     
     private static IServiceCollection AddPasswordGenerator(this IServiceCollection services)
     {
-        return services.AddSingleton<IPasswordGenerator, RandomPasswordGenerator>();
+        return services.AddSingleton<IPasswordGenerator, PasswordGenerator>();
     }
     private static IServiceCollection AddEmailSenderService(this IServiceCollection services, IConfiguration configuration)
     {
