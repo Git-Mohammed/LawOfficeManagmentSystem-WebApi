@@ -2,5 +2,8 @@
 
 public interface IPasswordGenerator
 {
-    string Generate();
+    string GenerateTempPassword();
+    string? IsTempPassword(string password);
+    string DecryptPassword(string password);
+    string EncryptPassword(string password);
 }
