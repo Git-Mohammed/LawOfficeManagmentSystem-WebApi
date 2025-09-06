@@ -7,6 +7,8 @@ using LOMs.Infrastructure.Mapping.Configs;
 using LOMs.Infrastructure.Services;
 using LOMs.Infrastructure.Services.DomainEventPublishers;
 using LOMs.Infrastructure.Services.EmailSender;
+using LOMs.Infrastructure.Services.FileServices;
+using LOMs.Infrastructure.Services.Image;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -57,10 +59,17 @@ public static class DependencyInjection
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
         services.Configure<PasswordGeneratorOptions>(configuration.GetSection("PasswordGenerator"));
 
+        services.AddServices();
+        services.AddFileService();
         return services;
     }
 
+    private static IServiceCollection AddServices(this IServiceCollection services)
+    {
+        services.AddScoped<IImageService, ImageService>();
 
+        return services;
+    }
     private static IServiceCollection MapsterRegister(this IServiceCollection services)
     {
         MappingConfig.Configure();
@@ -82,6 +91,14 @@ public static class DependencyInjection
         // Register the email sender
         services.AddScoped<IEmailSender, SmtpEmailSender>();
 
+        return services;
+    }
+
+    private static IServiceCollection AddFileService(this IServiceCollection services)
+    {
+        services.AddSingleton<IFileValidator,FileValidator>();
+        services.AddScoped<IFileService>(sp =>
+            new LocalFileService("uploads",sp.GetRequiredService<IFileValidator>()));
         return services;
     }
 }

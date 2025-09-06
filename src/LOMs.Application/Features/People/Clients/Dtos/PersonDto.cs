@@ -8,5 +8,6 @@
         public DateOnly BirthDate { get; init; }
         public string PhoneNumber { get; init; } = null!;
         public string Address { get; init; } = null!;
+        public string CountryCode { get; init; } = null!;
     }
 }

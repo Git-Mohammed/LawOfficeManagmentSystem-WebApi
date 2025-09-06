@@ -1,4 +1,5 @@
-﻿using LOMs.Domain.Common;
+﻿using LOMs.Domain.Cases;
+using LOMs.Domain.Common;
 using LOMs.Domain.Common.Extensions;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.Identity;
@@ -7,20 +8,19 @@ namespace LOMs.Domain.People.Employees;
 
 public sealed class Employee : AuditableEntity
 {
-    public Guid Id { get; }
     public Guid PersonId { get; }
     public Person Person { get; } = null!;
     public Role Role { get; }
     public string Email { get; }
     public string UserId { get; private set; }
 
+    public ICollection<Case> Cases { get; set; } = [];
     private Employee()
     {
     }
 
     private Employee(Guid id,string email ,Person person, Role role) : base(id)
     {
-        Id = id;
         Person = person ?? throw new ArgumentNullException(nameof(person));
         PersonId = person.Id;
         Role = role;

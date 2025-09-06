@@ -34,6 +34,7 @@ namespace LOMs.Application.Features.People.Clients.Commands.CreateClient
                 Guid.NewGuid(),
                 message.Person.FullName,
                 message.Person.NationalId,
+                message.Person.CountryCode,
                 message.Person.BirthDate,
                 phoneNumber,
                 message.Person.Address);

@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using LOMs.Domain.Common;
+using LOMs.Domain.Common.Extensions;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
@@ -12,13 +13,14 @@ public sealed class Person : AuditableEntity
     public string NationalId { get; private set; } = null!;
     public DateOnly BirthDate { get; private set; }
     public string PhoneNumber { get; private set; } = null!;
-    public string Address { get; private set; } = null!;
+    public string? Address { get; private set; }
+    public CountryCode CountryCode { get; private set; }
 
     public Client? Client { get; set; }
     public Employee? Employee { get; set; }
     private Person() { }
 
-    private Person(Guid id, string fullName, string nationalId, DateOnly birthDate, string phoneNumber, string address)
+    private Person(Guid id, string fullName, string nationalId,CountryCode countryCode, DateOnly birthDate, string phoneNumber, string address)
         : base(id)
     {
         FullName = fullName;
@@ -26,14 +28,15 @@ public sealed class Person : AuditableEntity
         BirthDate = birthDate;
         PhoneNumber = phoneNumber;
         Address = address;
+        CountryCode = countryCode;
     }
 
-    public static Result<Person> Create(Guid id, string fullName, string nationalId, DateOnly birthDate, string phoneNumber, string address)
+    public static Result<Person> Create(Guid id, string fullName, string nationalId,string countryCode ,DateOnly birthDate, string phoneNumber, string address)
     {
         if (string.IsNullOrWhiteSpace(fullName) || fullName.Length < 3)
             return PersonErrors.FullNameRequired;
 
-        if (string.IsNullOrWhiteSpace(nationalId) || !Regex.IsMatch(nationalId, @"^\d{11}$"))
+        if (string.IsNullOrWhiteSpace(nationalId) || !Regex.IsMatch(nationalId, @"^\d{10}$"))
             return PersonErrors.InvalidNationalId;
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -41,13 +44,24 @@ public sealed class Person : AuditableEntity
         if (birthDate > today || age < 18)
             return PersonErrors.InvalidBirthDate;
 
-        if (string.IsNullOrWhiteSpace(phoneNumber) || !Regex.IsMatch(phoneNumber, @"^\+?\d{7,15}$"))
+        if (phoneNumber.StartsWith("05") && (string.IsNullOrWhiteSpace(phoneNumber) || !Regex.IsMatch(phoneNumber, @"^\+?\d{7,15}$")))
             return PersonErrors.InvalidPhoneNumber;
 
-        if (string.IsNullOrWhiteSpace(address) || address.Length < 10)
-            return PersonErrors.InvalidAddress;
-
-        return new Person(id, fullName, nationalId, birthDate, phoneNumber, address);
+        if (string.IsNullOrWhiteSpace(countryCode))
+            return PersonErrors.CountryCodeRequired;
+        countryCode = countryCode.Trim().ToUpper();
+        CountryCode code;
+        try
+        {
+            code = countryCode.ToEnum<CountryCode>();
+        }
+        catch (Exception e)
+        {
+            return PersonErrors.CountryCodeInvalid;
+        }
+         
+        
+        return new Person(id, fullName, nationalId,code,birthDate, phoneNumber, address);
     }
 
     public Result<Updated> Update(string fullName, string nationalId, DateOnly birthDate, string phoneNumber, string address)

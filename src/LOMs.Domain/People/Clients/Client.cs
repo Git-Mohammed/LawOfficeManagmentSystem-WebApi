@@ -1,4 +1,6 @@
-﻿using LOMs.Domain.Common;
+﻿using LOMs.Domain.Cases;
+using LOMs.Domain.Cases.ClientFiles;
+using LOMs.Domain.Common;
 using LOMs.Domain.Common.Results;
 using System;
 using System.Collections.Generic;
@@ -11,8 +13,10 @@ namespace LOMs.Domain.People.Clients
     public sealed class Client : AuditableEntity
     {
         public Guid PersonId { get; }
-        public Person? Person { get;  set; } 
-
+        public Person? Person { get;  set; }
+        private readonly List<ClientFile> _clientFiles = [];
+        public IEnumerable<ClientFile> ClientFiles => _clientFiles.AsReadOnly();
+        public ICollection<ClientCase> CaseClients { get; private set; } = new List<ClientCase>();
         private Client()
         {
             

@@ -28,5 +28,11 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(p => p.Address)
                .IsRequired()
                .HasMaxLength(250);
+
+        builder.Property(p => p.CountryCode).HasConversion<string>()
+               .IsRequired();
+        
+        builder.HasIndex(p => p.NationalId);
+        builder.ToTable("People","UserManagement");
     }
 }

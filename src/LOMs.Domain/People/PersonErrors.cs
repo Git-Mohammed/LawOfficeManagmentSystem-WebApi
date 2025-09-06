@@ -4,33 +4,39 @@ namespace LOMs.Domain.People;
 
 public static class PersonErrors
 {
-    public static Error FullNameRequired =>
-        Error.Validation("Person_FullName_Required", "Full name is required and must be at least 3 characters.");
+    public static readonly Error FullNameRequired =
+        Error.Validation("Person.FullNameRequired", "الاسم الكامل مطلوب ويجب أن لا يقل عن 3 أحرف.");
 
-    public static Error InvalidNationalId =>
-        Error.Validation("Person_NationalId_Invalid", "National ID must be exactly 11 digits.");
-    public static Error ExistingNationalId =>
-        Error.Validation("Person_Existing_NationalId", "National ID already exists.");
+    public static readonly Error InvalidNationalId =
+        Error.Validation("Person.InvalidNationalId", "رقم الهوية الوطنية يجب أن يتكون من 10 أرقام بالضبط.");
 
-    public static Error InvalidBirthDate =>
-        Error.Validation("Person_BirthDate_Invalid", "Person must be at least 18 years old.");
+    public static readonly Error ExistingNationalId =
+        Error.Conflict("Person.ExistingNationalId", "رقم الهوية الوطنية موجود بالفعل.");
 
-    public static Error PhoneNumberRequired =>
-        Error.Validation("Person_PhoneNumber_Required", "Phone number is required.");
+    public static readonly Error CountryCodeRequired =
+        Error.Validation("Person.CountryCodeRequired", "رمز الدولة مطلوب.");
 
-    public static Error InvalidPhoneNumber =>
-        Error.Conflict("Person_PhoneNumber_Invalid", "Phone number must be 7–15 digits and may start with '+'.");
+    public static readonly Error CountryCodeInvalid =
+        Error.Validation("Person.CountryCodeInvalid", "رمز الدولة غير صالح (يجب أن يكون ISO Alpha-2).");
 
-    public static Error AddressRequired =>
-        Error.Validation("Person_Address_Required", "Address is required and must contain sufficient details.");
+    public static readonly Error InvalidBirthDate =
+        Error.Validation("Person.InvalidBirthDate", "يجب أن يكون عمر الشخص 18 سنة على الأقل.");
 
-    public static Error PersonAlreadyExists =>
-        Error.Conflict("Person_Already_Exists", "A person with this national ID already exists.");
+    public static readonly Error PhoneNumberRequired =
+        Error.Validation("Person.PhoneNumberRequired", "رقم الهاتف مطلوب.");
 
-    public static Error InvalidAddress =>
-    Error.Validation("Person_Address_Invalid", "Address must be at least 10 characters and contain sufficient details.");
+    public static readonly Error InvalidPhoneNumber =
+        Error.Validation("Person.InvalidPhoneNumber", "رقم الهاتف يجب أن يتكون من 7 إلى 15 رقمًا وقد يبدأ بـ '+'.");
 
-    public static Error PhoneNumberAlreadyExists =>
-    Error.Conflict("Person_PhoneNumber_AlreadyExists", "A person with this phone number already exists.");
+    public static readonly Error AddressRequired =
+        Error.Validation("Person.AddressRequired", "العنوان مطلوب ويجب أن يحتوي على تفاصيل كافية.");
 
+    public static readonly Error InvalidAddress =
+        Error.Validation("Person.InvalidAddress", "العنوان يجب أن لا يقل عن 10 أحرف ويحتوي على تفاصيل كافية.");
+
+    public static readonly Error PersonAlreadyExists =
+        Error.Conflict("Person.AlreadyExists", "يوجد شخص بنفس رقم الهوية الوطنية.");
+
+    public static readonly Error PhoneNumberAlreadyExists =
+        Error.Conflict("Person.PhoneNumberAlreadyExists", "يوجد شخص بنفس رقم الهاتف.");
 }

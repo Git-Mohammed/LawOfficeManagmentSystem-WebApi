@@ -35,6 +35,7 @@ public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityServic
             Guid.NewGuid(),
             command.Person.FullName,
             nationalId,
+            command.Person.CountryCode,
             command.Person.BirthDate,
             command.Person.PhoneNumber,
             command.Person.Address
