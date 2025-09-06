@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace LOMs.Infrastructure.Data.Migrations
+namespace LOMs.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class init : Migration
@@ -18,19 +18,13 @@ namespace LOMs.Infrastructure.Data.Migrations
                 name: "Identity");
 
             migrationBuilder.CreateTable(
-                name: "Cases",
+                name: "CourtTypes",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CaseNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    CaseSubject = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    PartyRole = table.Column<int>(type: "int", nullable: false, comment: "دور العميل في القضية: 1 = مدعي، 2 = مدعى عليه"),
-                    ClientRequests = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    EstimatedReviewDate = table.Column<DateOnly>(type: "date", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false, comment: "الحالة الحالية للقضية: 0 = مسودة، 1 = قيد الانتظار، 2 = قيد المعالجة، 3 = منتهية، 4 = ملغية"),
-                    LawyerOpinion = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    AssignedOfficer = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false, comment: "اسم الموظف المسؤول عن متابعة القضية"),
-                    CourtType = table.Column<int>(type: "int", nullable: false, comment: "نوع المحكمة: 100 = عامة، 200 = جزئية، 300 = عمالية، 400 = أحوال شخصية، 600 = إدارية، 700 = لجان شبه قضائية، 800 = أخرى"),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Code = table.Column<short>(type: "smallint", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastModifiedUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -38,7 +32,7 @@ namespace LOMs.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cases", x => x.Id)
+                    table.PrimaryKey("PK_CourtTypes", x => x.Id)
                         .Annotation("SqlServer:Clustered", false);
                 });
 
@@ -63,6 +57,7 @@ namespace LOMs.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateTable(
                 name: "People",
+                schema: "UserManagement",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -70,7 +65,8 @@ namespace LOMs.Infrastructure.Data.Migrations
                     NationalId = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
                     BirthDate = table.Column<DateOnly>(type: "date", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    CountryCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastModifiedUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -103,6 +99,7 @@ namespace LOMs.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -124,37 +121,6 @@ namespace LOMs.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Contracts",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CaseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ContractNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false, comment: "نوع العقد: 1 = محدد، 2 = غير محدد"),
-                    IssuedOn = table.Column<DateOnly>(type: "date", nullable: true),
-                    ExpiresOn = table.Column<DateOnly>(type: "date", nullable: true),
-                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    InitialPayment = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    FilePath = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    IsAssigned = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastModifiedUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Contracts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Contracts_Cases_CaseId",
-                        column: x => x.CaseId,
-                        principalTable: "Cases",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Clients",
                 columns: table => new
                 {
@@ -172,6 +138,7 @@ namespace LOMs.Infrastructure.Data.Migrations
                     table.ForeignKey(
                         name: "FK_Clients_People_PersonId",
                         column: x => x.PersonId,
+                        principalSchema: "UserManagement",
                         principalTable: "People",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -199,6 +166,7 @@ namespace LOMs.Infrastructure.Data.Migrations
                     table.ForeignKey(
                         name: "FK_Employees_People_PersonId",
                         column: x => x.PersonId,
+                        principalSchema: "UserManagement",
                         principalTable: "People",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -328,6 +296,9 @@ namespace LOMs.Infrastructure.Data.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ClientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     FileNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HijriYear = table.Column<short>(type: "smallint", nullable: false),
+                    CourtTypeCode = table.Column<short>(type: "smallint", nullable: false),
+                    OrderNumber = table.Column<int>(type: "int", nullable: false),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastModifiedUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -341,6 +312,44 @@ namespace LOMs.Infrastructure.Data.Migrations
                         name: "FK_ClientFiles_Clients_ClientId",
                         column: x => x.ClientId,
                         principalTable: "Clients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Cases",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CaseNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    CaseSubject = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    PartyRole = table.Column<int>(type: "int", nullable: false, comment: "دور العميل في القضية: 1 = مدعي، 2 = مدعى عليه"),
+                    ClientRequests = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    EstimatedReviewDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false, comment: "الحالة الحالية للقضية: 0 = مسودة، 1 = قيد الانتظار، 2 = قيد المعالجة، 3 = منتهية، 4 = ملغية"),
+                    LawyerOpinion = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AssignedEmployeeId = table.Column<Guid>(type: "uniqueidentifier", maxLength: 100, nullable: false, comment: "اسم الموظف المسؤول عن متابعة القضية"),
+                    CourtTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastModifiedUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    LastModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cases", x => x.Id)
+                        .Annotation("SqlServer:Clustered", false);
+                    table.ForeignKey(
+                        name: "FK_Cases_CourtTypes_CourtTypeId",
+                        column: x => x.CourtTypeId,
+                        principalTable: "CourtTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Cases_Employees_AssignedEmployeeId",
+                        column: x => x.AssignedEmployeeId,
+                        principalSchema: "UserManagement",
+                        principalTable: "Employees",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -375,6 +384,78 @@ namespace LOMs.Infrastructure.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "Contracts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CaseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ContractNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HijriYear = table.Column<short>(type: "smallint", nullable: false),
+                    CourtTypeCode = table.Column<short>(type: "smallint", nullable: false),
+                    OrderNumber = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false, comment: "نوع العقد: 1 = محدد، 2 = غير محدد"),
+                    IssuedOn = table.Column<DateOnly>(type: "date", nullable: true),
+                    ExpiresOn = table.Column<DateOnly>(type: "date", nullable: true),
+                    BaseAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    InitialPayment = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    FilePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsAssigned = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastModifiedUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    LastModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Contracts", x => x.Id)
+                        .Annotation("SqlServer:Clustered", false);
+                    table.ForeignKey(
+                        name: "FK_Contracts_Cases_CaseId",
+                        column: x => x.CaseId,
+                        principalTable: "Cases",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "POAs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CaseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    POANumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false, comment: "Official POA number as stated in the document"),
+                    IssueDate = table.Column<DateOnly>(type: "date", nullable: false, comment: "Date the POA was issued"),
+                    IssuingAuthority = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false, comment: "The authority that issued the POA, such as a court or notary"),
+                    AttachmentPath = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false, comment: "Path or URL to the attached POA document"),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastModifiedUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    LastModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_POAs", x => x.Id)
+                        .Annotation("SqlServer:Clustered", false);
+                    table.ForeignKey(
+                        name: "FK_POAs_Cases_CaseId",
+                        column: x => x.CaseId,
+                        principalTable: "Cases",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cases_AssignedEmployeeId",
+                table: "Cases",
+                column: "AssignedEmployeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cases_CourtTypeId",
+                table: "Cases",
+                column: "CourtTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ClientCases_ClientFileId",
@@ -420,6 +501,17 @@ namespace LOMs.Infrastructure.Data.Migrations
                 schema: "UserManagement",
                 table: "Employees",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_People_NationalId",
+                schema: "UserManagement",
+                table: "People",
+                column: "NationalId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_POAs_CaseId",
+                table: "POAs",
+                column: "CaseId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
@@ -481,8 +573,7 @@ namespace LOMs.Infrastructure.Data.Migrations
                 name: "Customers");
 
             migrationBuilder.DropTable(
-                name: "Employees",
-                schema: "UserManagement");
+                name: "POAs");
 
             migrationBuilder.DropTable(
                 name: "RoleClaims",
@@ -522,7 +613,15 @@ namespace LOMs.Infrastructure.Data.Migrations
                 name: "Clients");
 
             migrationBuilder.DropTable(
-                name: "People");
+                name: "CourtTypes");
+
+            migrationBuilder.DropTable(
+                name: "Employees",
+                schema: "UserManagement");
+
+            migrationBuilder.DropTable(
+                name: "People",
+                schema: "UserManagement");
         }
     }
 }
