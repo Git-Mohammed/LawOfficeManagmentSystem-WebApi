@@ -1,4 +1,9 @@
 
+using LOMs.Domain.Cases.CourtTypes;
+using LOMs.Domain.People;
+using LOMs.Domain.People.Clients;
+using LOMs.Infrastructure.Data;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,8 +16,6 @@ public class ApplicationDbContextInitializer(
 {
     private readonly ILogger<ApplicationDbContextInitializer> _logger = logger;
     private readonly AppDbContext _context = context;
-    //private readonly UserManager<AppUser> _userManager = userManager;
-    //private readonly RoleManager<IdentityRole> _roleManager = roleManager;
 
     public async Task InitialiseAsync()
     {
@@ -31,165 +34,111 @@ public class ApplicationDbContextInitializer(
         }
     }
 
-    //public async Task SeedAsync()
-    //{
-    //    try
-    //    {
-    //        await TrySeedAsync();
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError(ex, "An error occurred while seeding the database.");
-    //        throw;
-    //    }
-    //}
+    public async Task SeedAsync()
+    {
+        try
+        {
+            await TrySeedAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while seeding the database.");
+            throw;
+        }
+    }
 
-    //public async Task TrySeedAsync()
-    //{
-    //    // Default roles
-    //    var managerRole = new IdentityRole(nameof(Role.Manager));
+    private async Task TrySeedAsync()
+{
+        if (!_context.CourtTypes.Any())
+        {
+            var courtTypes = new[]
+            {
+        CourtType.Create(Guid.Parse("b3a1f8b4-1e6a-4b3e-9c3d-0a9f8d8a1b11"), "ÇáãÍßãÉ ÇáÚÇãÉ", 100, "ÇáãÍßãÉ ÇáÚÇãÉ").Value,
+        CourtType.Create(Guid.Parse("c4f2a9d7-2b7e-4a4f-8b2e-1c2d3e4f5a66"), "ÇáãÍßãÉ ÇáÌÒÆíÉ", 200, "ÇáãÍßãÉ ÇáÌÒÆíÉ").Value,
+        CourtType.Create(Guid.Parse("d5e3b0c8-3c8f-4c5f-9d3f-2d3e4f5a6b77"), "ÇáãÍßãÉ ÇáÚãÇáíÉ", 300, "ÇáãÍßãÉ ÇáÚãÇáíÉ").Value,
+        CourtType.Create(Guid.Parse("e6f4c1d9-4d9f-4d6f-ae4f-3e4f5a6b7c88"), "ãÍßãÉ ÇáÃÍæÇá ÇáÔÎÕíÉ", 400, "ãÍßãÉ ÇáÃÍæÇá ÇáÔÎÕíÉ").Value,
+        CourtType.Create(Guid.Parse("f7a5d2ea-5eaf-4e7f-bf5f-4f5a6b7c8d99"), "ÇáãÍßãÉ ÇáÅÏÇÑíÉ", 600, "ÇáãÍßãÉ ÇáÅÏÇÑíÉ").Value,
+        CourtType.Create(Guid.Parse("a8b6e3fb-6fb0-4f8f-cf6f-5a6b7c8d9e10"), "ãÍßãÉ ÇááÌÇä ÔÈå ÇáÞÖÇÆíÉ", 700, "ãÍßãÉ ÇááÌÇä ÔÈå ÇáÞÖÇÆíÉ").Value,
+        CourtType.Create(Guid.Parse("b9c7f40c-70c1-4f9f-df7f-6b7c8d9e0f21"), "ÃÎÑì", 32000, "ÃÎÑì").Value
+    };
 
-    //    if (_roleManager.Roles.All(r => r.Name != managerRole.Name))
-    //    {
-    //        await _roleManager.CreateAsync(managerRole);
-    //    }
+            _context.CourtTypes.AddRange(courtTypes);
+            await _context.SaveChangesAsync();
+        }
+        // --- Clients Seed Data ---
+        if (!_context.Clients.Any())
+        {
+            var clients = new List<Client>();
 
-    //    var laborRole = new IdentityRole(nameof(Role.Labor));
+            // Client 1
+            var person1 = Person.Create(
+                Guid.Parse("11111111-aaaa-4bbb-cccc-111111111111"),
+                "Ahmed Al-Harbi",
+                "1234567890",
+                "SA",
+                new DateOnly(1990, 5, 12),
+                "+966501234567",
+                "Riyadh, Saudi Arabia"
+            ).Value;
 
-    //    if (_roleManager.Roles.All(r => r.Name != laborRole.Name))
-    //    {
-    //        await _roleManager.CreateAsync(laborRole);
-    //    }
+            var client1 = Client.Create(
+                Guid.Parse("aaaa1111-bbbb-4ccc-dddd-111111111111"),
+                person1
+            ).Value;
 
-    //    // Default users
-    //    var manager = new AppUser
-    //    {
-    //        Id = "19a59129-6c20-417a-834d-11a208d32d96",
-    //        Email = "pm@localhost",
-    //        UserName = "pm@localhost",
-    //        EmailConfirmed = true
-    //    };
+            // Client 2
+            var person2 = Person.Create(
+                Guid.Parse("22222222-bbbb-4ccc-dddd-222222222222"),
+                "Fatimah Al-Qahtani",
+                "2345678901",
+                "SA",
+                new DateOnly(1985, 11, 3),
+                "+966502345678",
+                "Jeddah, Saudi Arabia"
+            ).Value;
 
-    //    if (_userManager.Users.All(u => u.Email != manager.Email))
-    //    {
-    //        await _userManager.CreateAsync(manager, manager.Email);
+            var client2 = Client.Create(
+                Guid.Parse("bbbb2222-cccc-4ddd-eeee-222222222222"),
+                person2
+            ).Value;
 
-    //        if (!string.IsNullOrWhiteSpace(managerRole.Name))
-    //        {
-    //            await _userManager.AddToRolesAsync(manager, [managerRole.Name]);
-    //        }
-    //    }
+            // Client 3
+            var person3 = Person.Create(
+                Guid.Parse("33333333-cccc-4ddd-eeee-333333333333"),
+                "Mohammed Al-Shehri",
+                "3456789012",
+                "SA",
+                new DateOnly(1992, 2, 20),
+                "+966503456789",
+                "Dammam, Saudi Arabia"
+            ).Value;
 
-    //    var labor01 = new AppUser
-    //    {
-    //        Id = "b6327240-0aea-46fc-863a-777fc4e42560",
-    //        Email = "john.labor@localhost",
-    //        UserName = "john.labor@localhost",
-    //        EmailConfirmed = true
-    //    };
+            var client3 = Client.Create(
+                Guid.Parse("cccc3333-dddd-4eee-ffff-333333333333"),
+                person3
+            ).Value;
 
-    //    if (_userManager.Users.All(u => u.Email != labor01.Email))
-    //    {
-    //        await _userManager.CreateAsync(labor01, labor01.Email);
+            // Add to context
+            _context.People.AddRange(person1, person2, person3);
+            _context.Clients.AddRange(client1, client2, client3);
 
-    //        if (!string.IsNullOrWhiteSpace(laborRole.Name))
-    //        {
-    //            await _userManager.AddToRolesAsync(labor01, [laborRole.Name]);
-    //        }
-    //    }
+            await _context.SaveChangesAsync();
+        }
 
-    //    var labor02 = new AppUser
-    //    {
-    //        Id = "8104ab20-26c2-4651-b1de-c0baf04dbbd9",
-    //        Email = "peter.labor@localhost",
-    //        UserName = "peter.labor@localhost",
-    //        EmailConfirmed = true
-    //    };
-
-    //    if (_userManager.Users.All(u => u.Email != labor02.Email))
-    //    {
-    //        await _userManager.CreateAsync(labor02, labor02.Email);
-
-    //        if (!string.IsNullOrWhiteSpace(laborRole.Name))
-    //        {
-    //            await _userManager.AddToRolesAsync(labor02, [laborRole.Name]);
-    //        }
-    //    }
-
-    //    var labor03 = new AppUser
-    //    {
-    //        Id = "e17c83de-1089-4f19-bf79-5f789133d37f",
-    //        Email = "kevin.labor@localhost",
-    //        UserName = "kevin.labor@localhost",
-    //        EmailConfirmed = true
-    //    };
-
-    //    if (_userManager.Users.All(u => u.Email != labor03.Email))
-    //    {
-    //        await _userManager.CreateAsync(labor03, labor03.Email);
-
-    //        if (!string.IsNullOrWhiteSpace(laborRole.Name))
-    //        {
-    //            await _userManager.AddToRolesAsync(labor03, [laborRole.Name]);
-    //        }
-    //    }
-
-    //    var labor04 = new AppUser
-    //    {
-    //        Id = "54cd01ba-b9ae-4c14-bab6-f3df0219ba4c",
-    //        Email = "suzan.labor@localhost",
-    //        UserName = "suzan.labor@localhost",
-    //        EmailConfirmed = true
-    //    };
-
-    //    if (_userManager.Users.All(u => u.Email != labor04.Email))
-    //    {
-    //        await _userManager.CreateAsync(labor04, labor04.Email);
-
-    //        if (!string.IsNullOrWhiteSpace(laborRole.Name))
-    //        {
-    //            await _userManager.AddToRolesAsync(labor04, [laborRole.Name]);
-    //        }
-    //    }
-
-    //    if (!_context.Employees.Any())
-    //    {
-    //        _context.Employees.AddRange(
-    //        [
-    //            Employee.Create(Guid.Parse(manager.Id), "Primary", "Manager", Role.Manager).Value,
-    //            Employee.Create(Guid.Parse(labor01.Id), "John", "S.", Role.Labor).Value,
-    //            Employee.Create(Guid.Parse(labor02.Id), "Peter", "R.", Role.Labor).Value,
-    //            Employee.Create(Guid.Parse(labor03.Id), "Kevin", "M.", Role.Labor).Value,
-    //            Employee.Create(Guid.Parse(labor04.Id), "Suzan", "L.", Role.Labor).Value
-    //        ]);
-    //    }
-
-    //    if (!_context.Customers.Any())
-    //    {
-    //        List<Vehicle> vehicles = [
-    //                    Vehicle.Create(id: Guid.Parse("61401e63-007b-4b1c-8914-9eb6e9bd95c5"), make: "Toyota", model: "Camry", year: 2020, licensePlate: "ABC123").Value,
-    //                    Vehicle.Create(id: Guid.Parse("13c80914-41ad-4d46-b7bb-60f6c89ad01e"), make: "Honda", model: "Civic", year: 2018, licensePlate: "XYZ456").Value,
-    //                ];
-
-    //        _context.Customers.AddRange(
-    //        [
-    //            Customer.Create(id: Guid.Parse("f522bbe5-e3b1-4e2c-a8a3-c41550dcf39d"), name: "John Doe", phoneNumber: "123456789", email: "john.doe@localhost", vehicles: vehicles).Value,
-    //            Customer.Create(id: Guid.Parse("73a04dd3-c81a-4a54-9882-ef1017eb192d"), name: "Sarah Peter", phoneNumber: "987654321", email: "sarah.peter@localhost", vehicles: [Vehicle.Create(id: Guid.Parse("a04f329d-0f5a-46a0-beae-699c034ae401"), make: "Ford", model: "Focus", year: 2021, licensePlate: "DEF789").Value, Vehicle.Create(id: Guid.Parse("cf60e95b-5752-4c26-aa07-31a34164606c"), make: "Chevrolet", model: "Malibu", year: 2019, licensePlate: "GHI012").Value,]).Value,
-    //        ]);
-    //    }
-    //}
+    }
 }
 
-//public static class InitialiserExtensions
-//{
-//    public static async Task InitialiseDatabaseAsync(this WebApplication app)
-//    {
-//        using var scope = app.Services.CreateScope();
 
-//        var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
+public static class InitialiserExtensions
+{
+    public static async Task InitialiseDatabaseAsync(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
 
-//        await initialiser.InitialiseAsync();
+        var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
 
-//        await initialiser.SeedAsync();
-//    }
-//}
+        await initialiser.InitialiseAsync();
+
+        await initialiser.SeedAsync();
+    }
+}
