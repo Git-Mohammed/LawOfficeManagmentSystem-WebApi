@@ -1,6 +1,4 @@
-﻿using LOMs.Application.Features.Customers.Dtos;
-using LOMs.Application.Features.People.Clients.Dtos;
-using LOMs.Domain.Customers;
+﻿using LOMs.Application.Features.People.Clients.Dtos;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using Mapster;

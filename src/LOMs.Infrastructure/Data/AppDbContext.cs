@@ -3,7 +3,6 @@ using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.CourtTypes;
-using LOMs.Domain.Customers;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
@@ -17,7 +16,6 @@ namespace LOMs.Infrastructure.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser,ApplicationRole,string>(options), IAppDbContext
 {
-    public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Person> People => Set<Person>();
     public DbSet<Client> Clients => Set<Client>();
 
