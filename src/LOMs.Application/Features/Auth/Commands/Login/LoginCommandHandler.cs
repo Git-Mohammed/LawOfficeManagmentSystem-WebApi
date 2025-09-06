@@ -1,50 +1,76 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.Auth.Dtos;
-using LOMs.Application.Features.Customers.Commands.CreateCustomer;
-using LOMs.Application.Features.Customers.Dtos;
 using LOMs.Domain.Common.Results;
-using LOMs.Domain.Customers;
-using LOMs.Domain.User;
-using Microsoft.EntityFrameworkCore;
+using LOMs.Domain.Identity.DomainEvents;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace LOMs.Application.Features.Auth.Commands.Login
 {
-    //public class LoginCommandHandler(ILogger<LoginCommandHandler> logger,
-    //IAppDbContext context,
-    //IMapper mapper)
-    //: ICommandHandler<LoginCommand, Result<TokenDto>>
-    //{
-    //    private readonly ILogger<LoginCommandHandler> _logger = logger;
-    //    private readonly IAppDbContext _context = context;
+    public class LoginCommandHandler(ILogger<LoginCommandHandler> logger,
+         IIdentityService identityService, IPasswordGenerator passwordGenerator, IDomainEventPublisher eventPublisher)
+    : ICommandHandler<LoginCommand, Result<TokenDto>>
+    {
+        private readonly ILogger<LoginCommandHandler> _logger = logger;
+        private readonly IIdentityService _identityService = identityService;
+        private readonly IPasswordGenerator _passwordGenerator = passwordGenerator;
+        private readonly IDomainEventPublisher _eventPublisher = eventPublisher;
 
-    //    public async Task<Result<TokenDto>> HandleAsync(LoginCommand command, CancellationToken ct)
-    //    {
-    //        var email = command.Email.Trim().ToLower();
+        public async Task<Result<TokenDto>> HandleAsync(LoginCommand command, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Login attempt for user: {Username}", command.Username);
 
-    //        // TODO add index on email
-    //        var exists = await _context.Users.AnyAsync(
-    //            u => u.Email!.ToLower() == email,
-    //            ct);
+            var username = command.Username.Trim().ToLower();
+            var userResult = await _identityService.GetUserByNameAsync(username);
 
-    //        if (exists)
-    //        {
-    //            _logger.LogWarning("User not exists.");
-    //            // TODO add errors
-    //            //return UserErrors.CustomerExists;
-    //        }
+            if (userResult.IsError || userResult.Value is null)
+            {
+                _logger.LogWarning("Login failed: user not found. Username: {Username}", username);
+                return userResult.Errors;
+            }
 
+            var user = userResult.Value;
+            //var decryptedPassword = _passwordGenerator.IsTempPassword(command.Password);
+            var decryptedPassword = _passwordGenerator.DecryptPassword(command.Password);
+            var isPermanentPassword = decryptedPassword.StartsWith("Temp-");
+            var password = decryptedPassword;
 
-    //        // Login
-            
+            var loginResult = await _identityService.AuthenticateAsync(username, command.Password!);
 
-    //        _logger.LogInformation("User logged in successfully. Id: {UserId}", Id);
-    //    }
-    //}
+            if (loginResult.IsError)
+            {
+                _logger.LogWarning("Login failed: authentication error for user {Username}", username);
+                return loginResult.Errors;
+            }
+
+            var tokenResult = await _identityService.GenerateTokenAsync(user);
+            if (tokenResult.IsError)
+            {
+                _logger.LogError("Login failed: token generation error for user {Username}", username);
+                return tokenResult.Errors;
+            }
+
+            var addRTResult = await _identityService.UpdateRefreshToken(user.UserId, tokenResult.Value.RefreshToken!);
+            if (addRTResult.IsError)
+            {
+                _logger.LogError("Login failed: could not update refresh token for user {UserId}", user.UserId);
+                return addRTResult.Errors;
+            }
+
+            var tokenDto = new TokenDto(
+                User: user,
+                AccessToken: tokenResult.Value.AccessToken,
+                RefreshToken: tokenResult.Value.RefreshToken,
+                ExpiresOn: tokenResult.Value.ExpiresOn,
+                SetPermanentPassword: isPermanentPassword
+            );
+
+         
+            await _eventPublisher.PublishAsync(new UserLoggedInEvent(user.UserId,user.Username,DateTime.UtcNow), cancellationToken);
+
+            _logger.LogInformation("User logged in successfully. Id: {UserId}", user.UserId);
+            return tokenDto;
+        }
+    }
 }
