@@ -3,6 +3,7 @@ using LiteBus.Queries.Abstractions;
 using LOMs.Application.Features.People.Clients.Commands.CreateClient;
 using LOMs.Application.Features.People.Employees.Commands;
 using LOMs.Application.Features.People.Employees.Queries;
+using LOMs.Application.Features.People.Employees.Queries.GetEmployees;
 using LOMs.Contract.Requests.Employees;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,6 +11,14 @@ namespace LOMs.Api.Controllers;
 [Route("api/employees")]
 public class EmployeesController(ICommandMediator command, IQueryMediator query):ApiController
 {
+    [HttpGet]
+    public async Task<IActionResult> GetEmployees(CancellationToken ct)
+    {
+        var result = await query.QueryAsync(new GetEmployeesQuery(),ct);
+        return result.Match(response => Ok(response),Problem);
+    }
+    
+    
     [HttpGet("{id:guid}", Name = "GetEmployeeById")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
