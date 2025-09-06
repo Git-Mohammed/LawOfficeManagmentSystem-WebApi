@@ -1,21 +1,26 @@
 
 using LOMs.Domain.Cases.CourtTypes;
+using  LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using LOMs.Infrastructure.Data;
+using LOMs.Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
 namespace LOMs.Infrastructure.Data;
 
 public class ApplicationDbContextInitializer(
     ILogger<ApplicationDbContextInitializer> logger,
-    AppDbContext context)
+    AppDbContext context,
+    RoleManager<ApplicationRole> roleManager
+    )
 {
     private readonly ILogger<ApplicationDbContextInitializer> _logger = logger;
     private readonly AppDbContext _context = context;
+    private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
 
     public async Task InitialiseAsync()
     {
@@ -48,22 +53,46 @@ public class ApplicationDbContextInitializer(
     }
 
     private async Task TrySeedAsync()
-{
+    {
         if (!_context.CourtTypes.Any())
         {
             var courtTypes = new[]
             {
-        CourtType.Create(Guid.Parse("b3a1f8b4-1e6a-4b3e-9c3d-0a9f8d8a1b11"), "ÇáãÍßãÉ ÇáÚÇãÉ", 100, "ÇáãÍßãÉ ÇáÚÇãÉ").Value,
-        CourtType.Create(Guid.Parse("c4f2a9d7-2b7e-4a4f-8b2e-1c2d3e4f5a66"), "ÇáãÍßãÉ ÇáÌÒÆíÉ", 200, "ÇáãÍßãÉ ÇáÌÒÆíÉ").Value,
-        CourtType.Create(Guid.Parse("d5e3b0c8-3c8f-4c5f-9d3f-2d3e4f5a6b77"), "ÇáãÍßãÉ ÇáÚãÇáíÉ", 300, "ÇáãÍßãÉ ÇáÚãÇáíÉ").Value,
-        CourtType.Create(Guid.Parse("e6f4c1d9-4d9f-4d6f-ae4f-3e4f5a6b7c88"), "ãÍßãÉ ÇáÃÍæÇá ÇáÔÎÕíÉ", 400, "ãÍßãÉ ÇáÃÍæÇá ÇáÔÎÕíÉ").Value,
-        CourtType.Create(Guid.Parse("f7a5d2ea-5eaf-4e7f-bf5f-4f5a6b7c8d99"), "ÇáãÍßãÉ ÇáÅÏÇÑíÉ", 600, "ÇáãÍßãÉ ÇáÅÏÇÑíÉ").Value,
-        CourtType.Create(Guid.Parse("a8b6e3fb-6fb0-4f8f-cf6f-5a6b7c8d9e10"), "ãÍßãÉ ÇááÌÇä ÔÈå ÇáÞÖÇÆíÉ", 700, "ãÍßãÉ ÇááÌÇä ÔÈå ÇáÞÖÇÆíÉ").Value,
-        CourtType.Create(Guid.Parse("b9c7f40c-70c1-4f9f-df7f-6b7c8d9e0f21"), "ÃÎÑì", 32000, "ÃÎÑì").Value
-    };
+                CourtType.Create(Guid.Parse("b3a1f8b4-1e6a-4b3e-9c3d-0a9f8d8a1b11"), "ÇáãÍßãÉ ÇáÚÇãÉ", 100, "ÇáãÍßãÉ ÇáÚÇãÉ").Value,
+                CourtType.Create(Guid.Parse("c4f2a9d7-2b7e-4a4f-8b2e-1c2d3e4f5a66"), "ÇáãÍßãÉ ÇáÌÒÆíÉ", 200, "ÇáãÍßãÉ ÇáÌÒÆíÉ").Value,
+                CourtType.Create(Guid.Parse("d5e3b0c8-3c8f-4c5f-9d3f-2d3e4f5a6b77"), "ÇáãÍßãÉ ÇáÚãÇáíÉ", 300, "ÇáãÍßãÉ ÇáÚãÇáíÉ").Value,
+                CourtType.Create(Guid.Parse("e6f4c1d9-4d9f-4d6f-ae4f-3e4f5a6b7c88"), "ãÍßãÉ ÇáÃÍæÇá ÇáÔÎÕíÉ", 400, "ãÍßãÉ ÇáÃÍæÇá ÇáÔÎÕíÉ").Value,
+                CourtType.Create(Guid.Parse("f7a5d2ea-5eaf-4e7f-bf5f-4f5a6b7c8d99"), "ÇáãÍßãÉ ÇáÅÏÇÑíÉ", 600, "ÇáãÍßãÉ ÇáÅÏÇÑíÉ").Value,
+                CourtType.Create(Guid.Parse("a8b6e3fb-6fb0-4f8f-cf6f-5a6b7c8d9e10"), "ãÍßãÉ ÇááÌÇä ÔÈå ÇáÞÖÇÆíÉ", 700, "ãÍßãÉ ÇááÌÇä ÔÈå ÇáÞÖÇÆíÉ").Value,
+                CourtType.Create(Guid.Parse("b9c7f40c-70c1-4f9f-df7f-6b7c8d9e0f21"), "ÃÎÑì", 32000, "ÃÎÑì").Value
+            };
 
             _context.CourtTypes.AddRange(courtTypes);
             await _context.SaveChangesAsync();
+        }
+        if (_roleManager != null)
+        {
+            var roles = new[]
+            {
+        Role.GeneralManager.ToString(),
+        Role.ExecutiveManager.ToString(),
+        Role.Consultant.ToString(),
+        Role.Lawyer.ToString()
+           };
+
+            foreach (var roleName in roles)
+            {
+                if (!await _roleManager.RoleExistsAsync(roleName))
+                {
+                    var result = await _roleManager.CreateAsync(new ApplicationRole { Name = roleName });
+
+                    if (!result.Succeeded)
+                    {
+                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                        _logger.LogWarning($"Failed to create role '{roleName}': {errors}");
+                    }
+                }
+            }
         }
         // --- Clients Seed Data ---
         if (!_context.Clients.Any())
@@ -124,7 +153,6 @@ public class ApplicationDbContextInitializer(
 
             await _context.SaveChangesAsync();
         }
-
     }
 }
 
