@@ -1,5 +1,5 @@
 ﻿using LiteBus.Commands.Abstractions;
-using LiteBus.Events.Abstractions;
+using LOMs.Domain.Identity;
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.People.Employees.DTOs;
 using LOMs.Domain.Common.Results;
@@ -48,9 +48,9 @@ public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityServic
         if (employee.IsError)
             return employee.Errors;
         
-        // create user
-        var randomPassword = _passwordGenerator.Generate();
-        var userResult = await _identityService.CreateUserAsync(nationalId, email, randomPassword);
+        // create userf
+        var randomPassword = _passwordGenerator.GenerateTempPassword();
+        var userResult = await _identityService.CreateUserAsync(nationalId, email, randomPassword, employee.Value.Role.ToString());
 
         if (userResult.IsError || string.IsNullOrEmpty(userResult.Value))
         {
