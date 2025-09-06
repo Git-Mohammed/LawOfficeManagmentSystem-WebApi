@@ -31,10 +31,9 @@ namespace LOMs.Application.Features.Auth.Commands.Login
             }
 
             var user = userResult.Value;
-            //var decryptedPassword = _passwordGenerator.IsTempPassword(command.Password);
-            var decryptedPassword = _passwordGenerator.DecryptPassword(command.Password);
-            var isPermanentPassword = decryptedPassword.StartsWith("Temp-");
-            var password = decryptedPassword;
+            var decryptedPassword = _passwordGenerator.IsTempPassword(command.Password);
+
+            var isTempPassword = decryptedPassword is not null;
 
             var loginResult = await _identityService.AuthenticateAsync(username, command.Password!);
 
@@ -63,7 +62,7 @@ namespace LOMs.Application.Features.Auth.Commands.Login
                 AccessToken: tokenResult.Value.AccessToken,
                 RefreshToken: tokenResult.Value.RefreshToken,
                 ExpiresOn: tokenResult.Value.ExpiresOn,
-                SetPermanentPassword: isPermanentPassword
+                SetPermanentPassword: isTempPassword
             );
 
          

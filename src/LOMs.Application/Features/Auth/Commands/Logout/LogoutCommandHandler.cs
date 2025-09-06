@@ -25,14 +25,14 @@ public class LogoutCommandHandler : ICommandHandler<LogoutCommand, Result<Succes
         _logger.LogInformation("Logout attempt with refresh token: {RefreshToken}", command.RefreshToken);
 
         var userResult = await _identityService.GetUserByRefreshTokenAsync(command.RefreshToken);
-        if (!userResult.IsSuccess)
+        if (userResult.IsError)
         {
             _logger.LogWarning("Logout failed: user not found. Refresh token: {RefreshToken}", command.RefreshToken);
             return userResult.Errors;
         }
 
         var result = await _identityService.RemoveRefreshTokenAsync(command.RefreshToken);
-        if (!result.IsSuccess)
+        if (result.IsError)
         {
             _logger.LogWarning("Logout failed for refresh token: {RefreshToken}", command.RefreshToken);
             return userResult.Errors;
