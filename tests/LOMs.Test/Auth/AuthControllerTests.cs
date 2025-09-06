@@ -1,9 +1,8 @@
-﻿using LOMs.Api;
+﻿
 using System.Net;
 using System.Net.Http.Json;
 using LOMs.Contract.Requests.Auth;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Xunit;
 
 namespace LOMs.Test.Auth
 {
@@ -12,7 +11,7 @@ namespace LOMs.Test.Auth
         private readonly HttpClient _client;
 
 
-        internal AuthControllerTests(WebApplicationFactory<Program> factory) => _client = factory.CreateClient(); // Simplified constructor using primary constructor
+        public AuthControllerTests(WebApplicationFactory<Program> factory) => _client = factory.CreateClient(); // Simplified constructor using primary constructor
 
         [Fact]
         public async Task Login_ReturnsOk_ForValidCredentials()
