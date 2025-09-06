@@ -1,58 +1,78 @@
 using LOMs.Api;
 using LOMs.Infrastructure.Data;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
-var builder = WebApplication.CreateBuilder(args);
+[assembly: InternalsVisibleTo("LOMs.Test")]
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services
-    .AddPresentation()
-    .AddApplication()
-    .AddInfrastructure(builder.Configuration);
-var app = builder.Build();
-
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+public class Program
 {
-    app.MapOpenApi();
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
+    public static async Task Main(string[] args)
     {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "LOMs API V1");
-        options.EnableDeepLinking();
-        options.DisplayRequestDuration();
-        options.EnableFilter();
-    });
+        var builder = WebApplication.CreateBuilder(args);
 
+        builder.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 
-    //await app.InitialiseDatabaseAsync();
+        if (!Directory.Exists(builder.Environment.WebRootPath))
+        {
+            Directory.CreateDirectory(builder.Environment.WebRootPath);
+        }
 
-}
-else
-{
-    app.UseHsts();
-}
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new() { Title = "LOMs API", Version = "v1" });
+            options.CustomSchemaIds(type => type.FullName);
 
-app.UseHttpsRedirection();
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            if (File.Exists(xmlPath))
+            {
+                options.IncludeXmlComments(xmlPath);
+            }
+        });
 
-app.UseAuthorization();
+        builder.Services
+            .AddPresentation()
+            .AddApplication()
+            .AddInfrastructure(builder.Configuration);
 
-app.MapControllers();
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+            });
+        });
 
-await SeedDataBase();
+        var app = builder.Build();
 
-app.Run();
-return;
+        if (app.Environment.IsDevelopment())
+        {
+            app.MapOpenApi();
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "LOMs API V1");
+                options.EnableDeepLinking();
+                options.DisplayRequestDuration();
+                options.EnableFilter();
+            });
 
-async Task SeedDataBase()
-{
-    using var scope = app.Services.CreateScope();
+            await app.InitialiseDatabaseAsync();
+        }
+        else
+        {
+            app.UseHsts();
+        }
 
-    var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
+        app.UseStaticFiles();
+        app.UseCoreMiddlewares(builder.Configuration);
+        app.UseCors("AllowAll");
+        app.MapControllers();
+        app.MapStaticAssets();
 
-    await initialiser.InitialiseAsync();
+        app.Run();
+    }
 }
