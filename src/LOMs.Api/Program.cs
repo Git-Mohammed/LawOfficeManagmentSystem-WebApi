@@ -1,6 +1,8 @@
 using LOMs.Api;
 using LOMs.Infrastructure.Data;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+[assembly: InternalsVisibleTo("LOMs.Test")]
 
 var builder = WebApplication.CreateBuilder(args);
 

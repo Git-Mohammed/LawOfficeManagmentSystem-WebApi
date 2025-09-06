@@ -5,7 +5,6 @@ using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Customers;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
-using LOMs.Domain.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using System.Collections.Generic;
@@ -27,7 +26,6 @@ public interface IAppDbContext
     public DbSet<CourtType> CourtTypes { get; }
 
     public DbSet<Employee> Employees { get; }
-
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 };
