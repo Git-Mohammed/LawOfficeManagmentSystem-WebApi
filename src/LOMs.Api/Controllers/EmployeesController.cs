@@ -10,6 +10,16 @@ namespace LOMs.Api.Controllers;
 [Route("api/employees")]
 public class EmployeesController(ICommandMediator command, IQueryMediator query):ApiController
 {
+
+    [HttpGet("names", Name = "GetEmployeeNames")]
+    public async Task<IActionResult> GetEmployeeNames(CancellationToken ct)
+    {
+        var result = await query.QueryAsync(new GetEmployeeNamesQuery(), ct);
+        return result.Match(
+            response => Ok(response),
+            Problem
+        );
+    }
     [HttpGet("{id:guid}", Name = "GetEmployeeById")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {

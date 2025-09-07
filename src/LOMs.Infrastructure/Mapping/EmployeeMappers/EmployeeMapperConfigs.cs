@@ -20,5 +20,11 @@ public class EmployeeMapperConfigs: IRegister
             .Map(dest => dest.Role, src => src.Role.ToString())
             .Map(dest => dest.Person, src => src.Person)
             .Map(dest => dest.Email, src => src.Email);
+
+        // Employee -> EmployeeDto
+        config.NewConfig<Employee, EmployeeNameDto>()
+            .Map(dest => dest.EmployeeId, src => src.Id)
+            .Map(dest => dest.FullName, src => src.Person.FullName);
+
     }
 }
