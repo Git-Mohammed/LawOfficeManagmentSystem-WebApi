@@ -7,6 +7,7 @@ using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
 using LOMs.Domain.POAs;
+using LOMs.Infrastructure.Enums;
 using LOMs.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -36,14 +37,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     {
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        var identitySchema = DatabaseSchema.Identity.ToString();
         #region Rename Identity Tables Names
-        builder.Entity<ApplicationUser>().ToTable("Users", "Identity");
-        builder.Entity<ApplicationRole>().ToTable("Roles", "Identity");
-        builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", "Identity");
-        builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims", "Identity");
-        builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins", "Identity");
-        builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims", "Identity");
-        builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens", "Identity");
+        builder.Entity<ApplicationUser>().ToTable("Users", identitySchema);
+        builder.Entity<ApplicationRole>().ToTable("Roles", identitySchema);
+        builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", identitySchema);
+        builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims", identitySchema);
+        builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins", identitySchema);
+        builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims", identitySchema);
+        builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens", identitySchema);
         #endregion
     }
 }

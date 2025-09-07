@@ -1,22 +1,17 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LOMs.Application.Common.Interfaces;
-using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Application.Features.ClientFiles;
 using LOMs.Application.Features.Contracts.Services;
 using LOMs.Application.Utilities;
 using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
-using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Cases.Enums;
-using LOMs.Domain.Common.Enums;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
-using LOMs.Domain.POAs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 
 namespace LOMs.Application.Features.Cases.Commands.CreateCase;
 
@@ -27,7 +22,7 @@ public sealed class CreateCaseCommandHandler(
     IImageService imageService,
     IClientFileFactory clientFileFactory,
     IContractFactory contractFactory
-) : ICommandHandler<CreateCaseCommand, Result<CaseDto>>
+) : ICommandHandler<CreateCaseCommand, Result<Guid>>
 {
     private readonly ILogger<CreateCaseCommandHandler> _logger = logger;
     private readonly IAppDbContext _context = context;
@@ -36,7 +31,7 @@ public sealed class CreateCaseCommandHandler(
     private readonly IClientFileFactory _clientFileFactory = clientFileFactory;
     private readonly IContractFactory _contractFactory = contractFactory;
 
-    public async Task<Result<CaseDto>> HandleAsync(CreateCaseCommand message, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid>> HandleAsync(CreateCaseCommand message, CancellationToken cancellationToken = default)
     {
 
         // All existing validation and entity creation logic for clients and cases...
@@ -135,25 +130,6 @@ public sealed class CreateCaseCommandHandler(
         }
 
         var (caseEntity, clients, clientFiles, clientCases) = validationResult.Value;
-        var savedFilePaths = new List<string>();
-
-        if (message.HasContracts && !message.Contracts.Any())
-            return CaseErrors.ContractFilesMissing;
-
-        var contractsResult = await ProcessContractsAsync(message.Contracts, caseEntity, courtType, savedFilePaths, cancellationToken);
-        if (contractsResult.IsError)
-        {
-            return contractsResult.Errors;
-        }
-
-        if (message.HasPOAs && !message.Contracts.Any())
-            return CaseErrors.PoasMissing;
-
-        var poasResult = await ProcessPoasAsync(message.POAs, caseEntity, savedFilePaths, cancellationToken);
-        if (poasResult.IsError)
-        {
-            return poasResult.Errors;
-        }
 
         // Final persistence in a single try-catch block
         try
@@ -171,24 +147,14 @@ public sealed class CreateCaseCommandHandler(
             if (clientCases.Count > 0)
                 await _context.ClientCases.AddRangeAsync(clientCases, cancellationToken);
 
-            if (message.Contracts.Count > 0 && message.HasContracts)
-                await _context.Contracts.AddRangeAsync(contractsResult.Value, cancellationToken);
-
-            if (message.POAs.Count > 0 && message.HasPOAs)
-                await _context.POAs.AddRangeAsync(poasResult.Value, cancellationToken);
-
             await _context.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Case creation completed successfully. CaseId: {CaseId}", caseEntity.Id);
-            return _mapper.Map<Case, CaseDto>(caseEntity);
+            return caseEntity.Id;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while creating case. Rolling back transaction.");
-            foreach (var path in savedFilePaths)
-            {
-                _imageService.DeleteImage(path);
-            }
             return CaseErrors.UnexpectedFailure;
         }
     }
@@ -271,82 +237,6 @@ public sealed class CreateCaseCommandHandler(
         return  (caseEntity, clients, clientFiles, clientCases);
     }
 
-    private async Task<Result<List<Contract>>> ProcessContractsAsync(IEnumerable<CreateContractWithCaseCommand> contractCommands, Case caseEntity,CourtType courtType, List<string> savedFilePaths, CancellationToken cancellationToken)
-    {
-        var contracts = new List<Contract>();
-        if (contractCommands is null || !contractCommands.Any())
-        {
-            return contracts; // Return an empty list if no contracts are provided
-        }
-
-        try
-        {
-            foreach (var command in contractCommands)
-            {
-                var filePath = await _imageService.SaveImageAsync(command.AttachmentFileStream, command.AttachmentFileName, ImageFolder.Contracts);
-                savedFilePaths.Add(filePath);
-
-                var contractResult = await _contractFactory.CreateAsync(caseEntity.Id, courtType, command.ContractType, command.IssueDate, command.ExpiryDate, command.BaseAmount, command.InitialPayment, filePath, command.IsAssigned);
-
-                if (contractResult.IsError)
-                {
-                    // Clean up already saved files
-                    foreach (var path in savedFilePaths)
-                    {
-                        _imageService.DeleteImage(path);
-                    }
-                    return contractResult.Errors;
-                }
-                contracts.Add(contractResult.Value);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while saving contract files. Rolling back.");
-            return CaseErrors.SaveContractFileFailure;
-        }
-
-        return contracts;
-    }
-
-    private async Task<Result<List<POA>>> ProcessPoasAsync(IEnumerable<CreatePOAWithCaseCommand> poaCommands, Case caseEntity, List<string> savedFilePaths, CancellationToken cancellationToken)
-    {
-        var poas = new List<POA>();
-        if (poaCommands is null || !poaCommands.Any())
-        {
-            return poas; // Return an empty list if no POAs are provided
-        }
-
-        try
-        {
-            foreach (var command in poaCommands)
-            {
-                var filePath = await _imageService.SaveImageAsync(command.AttachmentFileStream, command.AttachmentFileName, ImageFolder.POAs);
-                savedFilePaths.Add(filePath);
-
-                var poaResult = POA.Create(Guid.NewGuid(), caseEntity.Id, command.POANumber, command.IssueDate, command.IssuingAuthority, filePath);
-
-                if (poaResult.IsError)
-                {
-                    // Clean up already saved files
-                    foreach (var path in savedFilePaths)
-                    {
-                        _imageService.DeleteImage(path);
-                    }
-                    return poaResult.Errors;
-                }
-                poas.Add(poaResult.Value);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while saving POA files. Rolling back.");
-            return CaseErrors.ImageSaveFailure;
-        }
-
-        return poas;
-    }
-    
     private async Task<Result<(ClientFile? clientFile, ClientCase clientCase)>> HandleExistingClient(
         ExistingCaseClientModel request,
         Guid caseId,
@@ -359,7 +249,7 @@ public sealed class CreateCaseCommandHandler(
             _logger.LogWarning("Existing client not found: {ClientId}", request.ExistingClientId);
             return CaseErrors.ClientNotFoundWithId(request.ExistingClientId);
         }
-        var currentHijriYear = HijriDateConverter.GetCurrentHijriYear();
+        var currentHijriYear = HijriDateConverter.GetFullHijriYear();
 
         var existingFile = client.ClientFiles.FirstOrDefault(x => x.CourtTypeCode == courtType.Code && x.HijriYear == currentHijriYear);
 

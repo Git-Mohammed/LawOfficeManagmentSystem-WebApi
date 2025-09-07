@@ -27,6 +27,7 @@ public sealed class GetClientByNationalIdQueryHandler(
         var clientEntity = await _context.Clients.AsNoTracking()
            .Include(x => x.Person)
            .FirstOrDefaultAsync(x => x.Person.NationalId == request.NationalId);
+
         if (clientEntity is null)
         {
             _logger.LogWarning("Client with NationalId {NationalId} not found.", request.NationalId);

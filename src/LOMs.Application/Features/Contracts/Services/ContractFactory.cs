@@ -1,4 +1,5 @@
 ﻿using LOMs.Application.Common.Interfaces;
+using LOMs.Application.Utilities;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Cases.Enums;
@@ -8,29 +9,10 @@ using System.Globalization;
 
 namespace LOMs.Application.Features.Contracts.Services
 {
-    public interface IContractFactory
-    {
-        Task<Result<Contract>> CreateAsync(
-            Guid caseId,
-            CourtType courtType,
-            ContractType type,
-            DateOnly? issuedOn,
-            DateOnly? expiresOn,
-            decimal totalAmount,
-            decimal initialPayment,
-            string filePath,
-            bool isAssigned,
-            CancellationToken ct = default);
-    }
 
-    public sealed class ContractFactory : IContractFactory
+    public sealed class ContractFactory(IAppDbContext context) : IContractFactory
     {
-        private readonly IAppDbContext _context;
-
-        public ContractFactory(IAppDbContext context)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-        }
+        private readonly IAppDbContext _context = context;
 
         public async Task<Result<Contract>> CreateAsync(
             Guid caseId,
@@ -45,7 +27,7 @@ namespace LOMs.Application.Features.Contracts.Services
             CancellationToken ct = default)
         {
 
-            var hijriYear = new HijriCalendar().GetYear(DateTime.UtcNow) % 100;
+            var hijriYear = HijriDateConverter.GetFullHijriYear();
 
             var existingCount = await _context.Contracts
                 .CountAsync(c => c.CourtTypeCode == courtType.Code && c.HijriYear == hijriYear,

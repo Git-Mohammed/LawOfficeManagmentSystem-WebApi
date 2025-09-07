@@ -4,6 +4,7 @@ using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using LOMs.Domain.Common.Results;
+using LOMs.Application.Utilities;
 
 namespace LOMs.Application.Features.ClientFiles
 {
@@ -13,7 +14,7 @@ namespace LOMs.Application.Features.ClientFiles
 
         public async Task<Result<ClientFile>> CreateAsync(Guid clientId, CourtType courtType, CancellationToken ct = default)
         {
-            var hijriYear = new HijriCalendar().GetYear(DateTime.UtcNow) % 100;
+            var hijriYear = HijriDateConverter.GetFullHijriYear();
 
             var existingCount = await _context.ClientFiles
                 .CountAsync(x => x.CourtTypeCode == courtType.Code && x.HijriYear == hijriYear, ct);
@@ -29,10 +30,5 @@ namespace LOMs.Application.Features.ClientFiles
             return result.Value;
         }
 
-    }
-
-    public interface IClientFileFactory
-    {
-        Task<Result<ClientFile>> CreateAsync(Guid clientId, CourtType courtType, CancellationToken ct = default);
     }
 }

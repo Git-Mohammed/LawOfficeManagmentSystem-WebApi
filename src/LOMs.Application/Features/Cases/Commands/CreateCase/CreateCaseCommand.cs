@@ -14,8 +14,4 @@ public sealed record CreateCaseCommand(List<CaseClientModel> Clients,
             DateOnly EstimatedReviewDate,
             string? LawyerOpinion,
             bool IsDraft,
-            bool HasContracts,
-            List<CreateContractWithCaseCommand> Contracts,
-            bool HasPOAs,
-            List<CreatePOAWithCaseCommand> POAs,
-            Guid AssignedOfEmployeeId) : ICommand<Result<CaseDto>>;
+            Guid AssignedOfEmployeeId) : ICommand<Result<Guid>>;

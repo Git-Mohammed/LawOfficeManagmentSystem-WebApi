@@ -66,7 +66,7 @@ namespace LOMs.Domain.Cases.ClientFiles
         private static string GenerateClientFileNumber(int hijriYear, short courtCode, int orderNumber)
         {
             // Format: YY-CourtCode-Order
-            return $"{hijriYear:D2}-{courtCode}-{orderNumber}";
+            return $"{(hijriYear % 100):D2}-{courtCode}-{orderNumber:D4}";
         }
         public override string ToString() => $"ClientFile #{FileNumber}";
     }
