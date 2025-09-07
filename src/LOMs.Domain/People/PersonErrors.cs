@@ -39,4 +39,13 @@ public static class PersonErrors
 
     public static readonly Error PhoneNumberAlreadyExists =
         Error.Conflict("Person.PhoneNumberAlreadyExists", "يوجد شخص بنفس رقم الهاتف.");
+
+    public static readonly Error AlreadyAssignedAsEmployee =
+        Error.Conflict("Person.AlreadyAssignedAsEmployee", "تم تعيين هذا الشخص كموظف بالفعل.");
+
+    public static readonly Error AlreadyAssignedAsClient =
+        Error.Conflict("Person.AlreadyAssignedAsClient", "تم تعيين هذا الشخص كعميل بالفعل.");
+
+    public static readonly Error RoleAssignmentConflict =
+        Error.Conflict("Person.RoleAssignmentConflict", "لا يمكن تعيين هذا الدور لأن الشخص مرتبط بالفعل بدور آخر يتعارض معه.");
 }

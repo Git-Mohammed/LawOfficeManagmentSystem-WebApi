@@ -125,7 +125,7 @@ public sealed class Contract : AuditableEntity
     /// </summary>
     private static string GenerateFileNumber(CourtType courtType, short hijriYear, int orderNumber)
     {
-        return $"ع{hijriYear:D2}-{courtType.Code}-{orderNumber:D4}";
+        return $"ع{(hijriYear % 100):D2}-{courtType.Code}-{orderNumber:D4}";
     }
 
     public override string ToString() => $"Contract #{ContractNumber}";

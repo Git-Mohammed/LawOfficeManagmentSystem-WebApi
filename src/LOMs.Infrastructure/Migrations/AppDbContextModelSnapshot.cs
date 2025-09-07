@@ -31,11 +31,11 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<Guid>("AssignedEmployeeId")
                         .HasMaxLength(100)
                         .HasColumnType("uniqueidentifier")
-                        .HasComment("اسم الموظف المسؤول عن متابعة القضية");
+                        .HasComment("The ID of the employee assigned to follow up on the case");
 
                     b.Property<string>("CaseNumber")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("CaseSubject")
                         .HasMaxLength(1000)
@@ -68,11 +68,11 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<int>("PartyRole")
                         .HasColumnType("int")
-                        .HasComment("دور العميل في القضية: 1 = مدعي، 2 = مدعى عليه");
+                        .HasComment("Client's role in the case: 1 = Plaintiff, 2 = Defendant");
 
                     b.Property<int>("Status")
                         .HasColumnType("int")
-                        .HasComment("الحالة الحالية للقضية: 0 = مسودة، 1 = قيد الانتظار، 2 = قيد المعالجة، 3 = منتهية، 4 = ملغية");
+                        .HasComment("Current status of the case: 0 = Draft, 1 = Pending, 2 = In Progress, 3 = Completed, 4 = Cancelled");
 
                     b.HasKey("Id");
 
@@ -82,7 +82,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("CourtTypeId");
 
-                    b.ToTable("Cases");
+                    b.ToTable("Cases", "Case");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.ClientCase", b =>
@@ -102,7 +102,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("ClientId");
 
-                    b.ToTable("ClientCases");
+                    b.ToTable("ClientCases", "Case");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.ClientFiles.ClientFile", b =>
@@ -145,7 +145,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("ClientId");
 
-                    b.ToTable("ClientFiles");
+                    b.ToTable("ClientFiles", "Case");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.Contracts.Contract", b =>
@@ -214,7 +214,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("Contracts");
+                    b.ToTable("Contracts", "Finance");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.CourtTypes.CourtType", b =>
@@ -250,46 +250,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.ToTable("CourtTypes", (string)null);
-                });
-
-            modelBuilder.Entity("LOMs.Domain.Customers.Customer", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.HasKey("Id");
-
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
-
-                    b.ToTable("Customers");
+                    b.ToTable("CourtTypes", "Case");
                 });
 
             modelBuilder.Entity("LOMs.Domain.POAs.POA", b =>
@@ -341,7 +302,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("POAs");
+                    b.ToTable("POAs", "Case");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Clients.Client", b =>
@@ -372,7 +333,7 @@ namespace LOMs.Infrastructure.Migrations
                     b.HasIndex("PersonId")
                         .IsUnique();
 
-                    b.ToTable("Clients");
+                    b.ToTable("Clients", "User");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Employees.Employee", b =>
@@ -421,7 +382,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Employees", "UserManagement");
+                    b.ToTable("Employees", "User");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Person", b =>
@@ -475,7 +436,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("NationalId");
 
-                    b.ToTable("People", "UserManagement");
+                    b.ToTable("People", "User");
                 });
 
             modelBuilder.Entity("LOMs.Infrastructure.Identity.ApplicationRole", b =>

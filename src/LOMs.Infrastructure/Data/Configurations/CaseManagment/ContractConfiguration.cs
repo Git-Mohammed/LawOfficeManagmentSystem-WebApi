@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using LOMs.Domain.Cases.Contracts;
+using LOMs.Infrastructure.Enums;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using LOMs.Domain.Cases.Contracts;
 
 namespace LOMs.Infrastructure.Data.Configurations.CaseManagment
 {
@@ -46,6 +47,9 @@ namespace LOMs.Infrastructure.Data.Configurations.CaseManagment
 
             builder.Property(cf => cf.CourtTypeCode)
                 .IsRequired();
+
+            builder.ToTable("Contracts", DatabaseSchema.Finance.ToString());
+
         }
     }
 }

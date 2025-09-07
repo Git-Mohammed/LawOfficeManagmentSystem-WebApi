@@ -1,4 +1,5 @@
 ﻿using LOMs.Domain.POAs;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -33,5 +34,8 @@ public class POAConfiguration : IEntityTypeConfiguration<POA>
             .IsRequired()
             .HasMaxLength(500)
             .HasComment("Path or URL to the attached POA document");
+
+        builder.ToTable("POAs", DatabaseSchema.Case.ToString());
+
     }
 }

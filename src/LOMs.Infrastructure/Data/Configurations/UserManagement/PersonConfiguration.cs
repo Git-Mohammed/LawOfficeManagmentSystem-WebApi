@@ -1,4 +1,5 @@
 ﻿using LOMs.Domain.People;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -29,10 +30,12 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
                .IsRequired()
                .HasMaxLength(250);
 
-        builder.Property(p => p.CountryCode).HasConversion<string>()
+        builder.Property(p => p.CountryCode)
+            .HasConversion<string>()
                .IsRequired();
-        
+
+
         builder.HasIndex(p => p.NationalId);
-        builder.ToTable("People","UserManagement");
+        builder.ToTable("People",DatabaseSchema.User.ToString());
     }
 }

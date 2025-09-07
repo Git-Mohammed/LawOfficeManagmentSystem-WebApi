@@ -1,8 +1,9 @@
 ﻿using LOMs.Domain.Cases;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LOMs.Infrastructure.Data.Configurations.CaseManagment;
+namespace LOMs.Infrastructure.Data.Configurations.CaseManagement;
 
 public class CaseConfiguration : IEntityTypeConfiguration<Case>
 {
@@ -12,34 +13,37 @@ public class CaseConfiguration : IEntityTypeConfiguration<Case>
 
         builder.Property(c => c.CaseNumber)
             .IsRequired(false)
-            .HasMaxLength(100);
+            .HasMaxLength(200);
 
         builder.Property(c => c.CaseSubject)
+            .IsRequired(false)
             .HasMaxLength(1000);
 
         builder.Property(c => c.ClientRequests)
+            .IsRequired(false)
             .HasMaxLength(1000);
 
         builder.Property(c => c.AssignedEmployeeId)
             .IsRequired()
             .HasMaxLength(100)
-            .HasComment("اسم الموظف المسؤول عن متابعة القضية");
+            .HasComment("The ID of the employee assigned to follow up on the case");
 
         builder.Property(c => c.Status)
             .IsRequired()
-            .HasConversion<int>() // يخزن كـ int
-            .HasComment("الحالة الحالية للقضية: 0 = مسودة، 1 = قيد الانتظار، 2 = قيد المعالجة، 3 = منتهية، 4 = ملغية");
+            .HasConversion<int>() // Stored as integer
+            .HasComment("Current status of the case: 0 = Draft, 1 = Pending, 2 = In Progress, 3 = Completed, 4 = Cancelled");
 
         builder.Property(c => c.PartyRole)
             .IsRequired()
-            .HasConversion<int>() // يخزن كـ int
-            .HasComment("دور العميل في القضية: 1 = مدعي، 2 = مدعى عليه");
+            .HasConversion<int>() // Stored as integer
+            .HasComment("Client's role in the case: 1 = Plaintiff, 2 = Defendant");
 
-        builder.HasOne(x => x.Employee)
-            .WithMany(x => x.Cases)
-            .HasForeignKey(x => x.AssignedEmployeeId)
+        builder.HasOne(c => c.Employee)
+            .WithMany(e => e.Cases)
+            .HasForeignKey(c => c.AssignedEmployeeId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.ToTable("Cases", DatabaseSchema.Case.ToString());
     }
 }

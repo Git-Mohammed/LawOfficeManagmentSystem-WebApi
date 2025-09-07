@@ -1,4 +1,5 @@
 ﻿using LOMs.Domain.People.Clients;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,5 +16,8 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
                .HasForeignKey<Client>(x => x.PersonId)
                .IsRequired()
                .OnDelete(DeleteBehavior.Restrict);
+
+        builder.ToTable("Clients", DatabaseSchema.User.ToString());
+
     }
 }
