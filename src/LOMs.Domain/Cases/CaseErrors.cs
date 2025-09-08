@@ -8,6 +8,9 @@ public static class CaseErrors
     // 🔹 General Validation Errors
     // ─────────────────────────────
 
+    public static readonly Error CaseNotFound =
+    Error.NotFound("Case.NotFound", "لم يتم العثور على القضية المطلوبة.");
+
     public static readonly Error InvalidCaseId =
         Error.Validation("Case.InvalidCaseId", "معرّف القضية لا يمكن أن يكون فارغًا.");
 

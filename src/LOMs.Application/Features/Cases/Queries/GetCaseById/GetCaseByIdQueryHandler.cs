@@ -24,19 +24,17 @@ public sealed class GetCaseByIdQueryHandler(
         var caseEntity = await _context.Cases
             .AsNoTracking()
             .Include(x => x.CourtType)
-            .Include(c => c.Contracts)
             .Include(c => c.ClientCases)
             .ThenInclude(c => c.Client)
-            .ThenInclude(c => c.Person)
+            .ThenInclude(c => c!.Person)
             .Include(c => c.Employee)
-            .ThenInclude(c => c.Person)
-            .Include(c => c.POAs)
+            .ThenInclude(c => c!.Person)
             .FirstOrDefaultAsync(c => c.Id == request.CaseId, cancellationToken);
 
         if (caseEntity is null)
         {
             _logger.LogWarning("Case with Id {CaseId} not found.", request.CaseId);
-            return Error.NotFound();
+            return CaseErrors.CaseNotFound;
         }
 
         _logger.LogInformation("Case with Id {CaseId} retrieved successfully.", request.CaseId);

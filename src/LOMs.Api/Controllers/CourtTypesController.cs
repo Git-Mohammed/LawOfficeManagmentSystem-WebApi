@@ -21,4 +21,17 @@ public class CourtTypesController(ICourtTypeService courtTypeService) : ApiContr
         var result = await _courtTypeService.GetAllAsync(ct);
         return result.Match(Ok, Problem);
     }
+
+    [HttpGet("{courtTypeId:guid}/years")]
+    [ProducesResponseType(typeof(List<short>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Retrieves Hijri years for a specific court type.")]
+    [EndpointDescription("Returns a distinct list of Hijri years associated with the given court type, ordered descending.")]
+    [EndpointName(nameof(GetHijriYearsByCourtTypeById))]
+    public async Task<IActionResult> GetHijriYearsByCourtTypeById(Guid courtTypeId, CancellationToken ct)
+    {
+        var result = await _courtTypeService.GetYearsByCourtTypeAsync(courtTypeId, ct);
+        return result.Match(Ok, Problem);
+    }
 }
