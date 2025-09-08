@@ -38,6 +38,16 @@ public class CaseMapperConfigs : IRegister
                     PhoneNumber = cc.Client.Person.PhoneNumber,
                     CountryCode = cc.Client.Person.CountryCode.ToString()
                 }).ToList());
+        // Domain Case → CaseQuickStatsDto
+        config.NewConfig<Case, CaseQuickStatsDto>()
+            .Map(dest => dest.CaseId, src => src.Id)
+            .Map(dest => dest.Status, src => src.Status)
+            .Map(dest => dest.FileNumber,
+                 src => src.ClientCases.FirstOrDefault().ClientFile.FileNumber ?? string.Empty)
+            .Map(dest => dest.ClientName,
+                 src => src.ClientCases.FirstOrDefault().Client.Person.FullName ?? string.Empty)
+            .Map(dest => dest.CaseNumber,
+                 src => src.CaseNumber ?? string.Empty);
 
         // Domain Contract -> ContractDto
         config.NewConfig<POA, POADto>()
