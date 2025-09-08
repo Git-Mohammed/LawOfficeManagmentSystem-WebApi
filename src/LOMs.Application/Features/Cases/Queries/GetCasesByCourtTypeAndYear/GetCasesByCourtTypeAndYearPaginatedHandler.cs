@@ -27,8 +27,8 @@ public class GetCasesByCourtTypeAndYearPaginatedHandler
     }
 
     public async Task<Result<PaginatedList<CaseQuickStatsDto>>> HandleAsync(
-        GetCasesByCourtTypeAndYearPaginatedQuery query,
-        CancellationToken cancellationToken)
+       GetCasesByCourtTypeAndYearPaginatedQuery query,
+       CancellationToken cancellationToken)
     {
         _logger.LogInformation(
             "Fetching cases for CourtTypeId: {CourtTypeId}, HijriYear: {HijriYear}, Page: {PageNumber}, Size: {PageSize}",
@@ -36,14 +36,21 @@ public class GetCasesByCourtTypeAndYearPaginatedHandler
 
         var baseQuery = _context.Cases
             .AsNoTracking()
-            .Include(c => c.ClientCases)
-                .ThenInclude(cc => cc.ClientFile)
-            .Include(c => c.ClientCases)
-                .ThenInclude(cc => cc.Client)
-                    .ThenInclude(cl => cl.Person)
             .Where(c => c.CourtTypeId == query.CourtTypeId &&
                         c.ClientCases.Any(cc => cc.ClientFile.HijriYear == query.HijriYear))
-            .OrderBy(c => c.CaseNumber);
+            .OrderBy(c => c.ClientCases.FirstOrDefault().ClientFile.FileNumber)
+            .Select(c => new CaseQuickStatsDto
+            {
+                CaseId = c.Id,
+                CaseNumber = c.CaseNumber,
+                FileNumber = c.ClientCases
+                    .Select(cc => cc.ClientFile.FileNumber)
+                    .FirstOrDefault() ?? string.Empty,
+                ClientName = c.ClientCases
+                    .Select(cc => cc.Client.Person.FullName)
+                    .FirstOrDefault() ?? string.Empty,
+                Status = c.Status
+            });
 
         var totalCount = await baseQuery.CountAsync(cancellationToken);
 
@@ -52,11 +59,9 @@ public class GetCasesByCourtTypeAndYearPaginatedHandler
             .Take(query.PageSize)
             .ToListAsync(cancellationToken);
 
-        var dtoList = _mapper.Map<List<Case>, List<CaseQuickStatsDto>>(items);
-
         var paginatedResult = new PaginatedList<CaseQuickStatsDto>
         {
-            Items = dtoList,
+            Items = items,
             TotalItemsCount = totalCount,
             PageIndex = query.PageNumber,
             PageSize = query.PageSize
