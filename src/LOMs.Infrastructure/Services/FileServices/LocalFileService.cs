@@ -10,34 +10,50 @@ public class LocalFileService(string rootPath, IFileValidator validator) : IFile
     public bool ValidateFile(string fileName, string contentType, long fileSize)
         => _validator.Validate(fileName, contentType, fileSize);
 
-    public async Task<string> SaveFileAsync(Stream fileStream, string fileName, string contentType)
+    private string GetFullPath(string relativePath)
+        => Path.Combine(_rootPath, relativePath.Replace("/", Path.DirectorySeparatorChar.ToString()));
+
+    private string GenerateRelativePath(string folder, string fileName)
     {
-        var folder = Path.Combine(_rootPath, DateTime.UtcNow.ToString("yyyyMMdd"));
-        Directory.CreateDirectory(folder);
-
-        var filePath = Path.Combine(folder, $"{Guid.NewGuid()}_{fileName}");
-
-        using (var fileStreamOut = new FileStream(filePath, FileMode.Create))
-        {
-            await fileStream.CopyToAsync(fileStreamOut);
-        }
-
-        return filePath;
+        var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(fileName)}";
+        return Path.Combine(folder, uniqueFileName).Replace("\\", "/");
     }
 
-    public async Task<Stream?> GetFileAsync(string filePath)
+    public async Task<string> SaveFileAsync(Stream fileStream, string fileName, string folder)
     {
-        if (!File.Exists(filePath))
-            return null;
+        var relativePath = GenerateRelativePath(folder, fileName);
+        var fullPath = GetFullPath(relativePath);
 
-        return await Task.FromResult(new FileStream(filePath, FileMode.Open, FileAccess.Read));
+        var directory = Path.GetDirectoryName(fullPath);
+        if (!string.IsNullOrEmpty(directory))
+            Directory.CreateDirectory(directory);
+
+        await using var output = new FileStream(fullPath, FileMode.Create, FileAccess.Write);
+        await fileStream.CopyToAsync(output);
+
+        return relativePath;
     }
 
-    public Task DeleteFileAsync(string filePath)
+    public async Task<Stream?> GetFileAsync(string relativePath)
     {
-        if (File.Exists(filePath))
-            File.Delete(filePath);
+        var fullPath = GetFullPath(relativePath);
+        if (!File.Exists(fullPath)) return null;
+
+        return await Task.FromResult(new FileStream(fullPath, FileMode.Open, FileAccess.Read));
+    }
+
+    public Task DeleteFileAsync(string relativePath)
+    {
+        var fullPath = GetFullPath(relativePath);
+        if (File.Exists(fullPath))
+            File.Delete(fullPath);
 
         return Task.CompletedTask;
+    }
+
+    public async Task<string> ReplaceFileAsync(Stream fileStream, string fileName, string oldRelativePath, string folder)
+    {
+        await DeleteFileAsync(oldRelativePath);
+        return await SaveFileAsync(fileStream, fileName, folder);
     }
 }
