@@ -20,7 +20,7 @@ public class CourtTypeService(IAppDbContext context, IMapper mapper, ILogger<Cou
                 .OrderBy(c => c.Code)
                 .ToListAsync(ct);
 
-            var dtos = mapper.Map<List<CourtType>,List<CourtTypeDto>>(entities);
+            var dtos = mapper.Map<List<CourtType>, List<CourtTypeDto>>(entities);
 
             return dtos;
         }
@@ -28,6 +28,35 @@ public class CourtTypeService(IAppDbContext context, IMapper mapper, ILogger<Cou
         {
             logger.LogError(ex, "Failed to retrieve court types.");
             return CourtTypeErrors.FailedToRetrieveCourtTypes;
+        }
+    }
+
+    public async Task<Result<List<short>>> GetYearsByCourtTypeAsync(Guid courtTypeId, CancellationToken ct)
+    {
+        try
+        {
+            var courtType =await _context.CourtTypes.FirstOrDefaultAsync(x => x.Id.Equals(courtTypeId));
+
+            if (courtType is null)
+            {
+                return CourtTypeErrors.NotFound;
+            }
+
+
+            var years = await _context.ClientFiles
+                .AsNoTracking()
+                .Where(cf => cf.CourtTypeCode == courtType.Code)
+                .Select(cf => cf.HijriYear)
+                .Distinct()
+                .OrderByDescending(y => y)
+                .ToListAsync(ct);
+
+            return years;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to retrieve Hijri years for CourtTypeId: {CourtTypeId}", courtTypeId);
+            return CourtTypeErrors.FailedToRetrieveYears;
         }
     }
 }
