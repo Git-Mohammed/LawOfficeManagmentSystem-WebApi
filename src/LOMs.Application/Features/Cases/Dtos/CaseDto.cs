@@ -10,15 +10,11 @@ public class CaseDto
     public Guid ClientFileId { get; set; }
 
     public string? CaseNumber { get; set; }
-    public string? CaseNotes { get; set; }
-    public PartyRole Role { get; set; }
-    public string? ClientRequests { get; set; }
+    public string? CaseSubject { get; set; }
+    public PartyRole PartyRole { get; set; }
+    public string? ClientRequestDetails { get; set; }
     public DateOnly? EstimatedReviewDate { get; set; }
-    public CaseStatus Status { get; set; }
+    public CaseStatus CaseStatus { get; set; }
     public string? LawyerOpinion { get; set; }
     public string AssignedOfficer { get; set; } = null!;
-    public CourtTypeDto CourtType { get; set; }
-
-    public ClientFileDto ClientFile { get; set; }
-    public List<ClientDto> Clients { get; set; } = new();
 }

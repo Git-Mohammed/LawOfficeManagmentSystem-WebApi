@@ -1,4 +1,5 @@
 using LOMs.Api;
+using LOMs.Domain.Cases.Enums;
 using LOMs.Infrastructure.Data;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -18,7 +19,14 @@ public class Program
             Directory.CreateDirectory(builder.Environment.WebRootPath);
         }
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new PartyRoleJsonConverter());
+                options.JsonSerializerOptions.Converters.Add(new ContractTypeJsonConverter());
+                options.JsonSerializerOptions.Converters.Add(new CaseStatusJsonConverter());
+
+            });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {

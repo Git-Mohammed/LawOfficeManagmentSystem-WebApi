@@ -1,11 +1,48 @@
-﻿namespace LOMs.Domain.Cases.Enums
+﻿using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace LOMs.Domain.Cases.Enums
 {
+    [JsonConverter(typeof(CaseStatusJsonConverter))]
     public enum CaseStatus
     {
-        Draft = 0,       // Case is being prepared, not yet submitted
-        Pending = 1,     // Awaiting review or action
-        Processing = 2,  // Actively being handled
-        Complete = 3,    // Successfully resolved
-        Cancelled = 4    // Terminated before resolution
+        Draft = 0,       // مسودة
+        Pending = 1,     // معلق
+        Processing = 2,  // قيد المعالجة
+        Complete = 3,    // مكتمل
+        Cancelled = 4    // ملغى
+    }
+
+    public class CaseStatusJsonConverter : JsonConverter<CaseStatus>
+    {
+        public override CaseStatus Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            string? value = reader.GetString();
+            return value switch
+            {
+                "مسودة" => CaseStatus.Draft,
+                "معلق" => CaseStatus.Pending,
+                "قيد المعالجة" => CaseStatus.Processing,
+                "مكتمل" => CaseStatus.Complete,
+                "ملغى" => CaseStatus.Cancelled,
+                _ => throw new JsonException($"قيمة غير صالحة: {value}")
+            };
+        }
+
+        public override void Write(Utf8JsonWriter writer, CaseStatus value, JsonSerializerOptions options)
+        {
+            string stringValue = value switch
+            {
+                CaseStatus.Draft => "مسودة",
+                CaseStatus.Pending => "معلق",
+                CaseStatus.Processing => "قيد المعالجة",
+                CaseStatus.Complete => "مكتمل",
+                CaseStatus.Cancelled => "ملغى",
+                _ => throw new JsonException($"قيمة غير معروفة: {value}")
+            };
+
+            writer.WriteStringValue(stringValue);
+        }
     }
 }
