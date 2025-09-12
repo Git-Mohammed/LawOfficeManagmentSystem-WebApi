@@ -19,7 +19,6 @@ public sealed class CreateCaseCommandHandler(
     IMapper mapper,
     ILogger<CreateCaseCommandHandler> logger,
     IAppDbContext context,
-    IImageService imageService,
     IClientFileFactory clientFileFactory,
     IContractFactory contractFactory
 ) : ICommandHandler<CreateCaseCommand, Result<Guid>>
@@ -27,7 +26,6 @@ public sealed class CreateCaseCommandHandler(
     private readonly ILogger<CreateCaseCommandHandler> _logger = logger;
     private readonly IAppDbContext _context = context;
     private readonly IMapper _mapper = mapper;
-    private readonly IImageService _imageService = imageService;
     private readonly IClientFileFactory _clientFileFactory = clientFileFactory;
     private readonly IContractFactory _contractFactory = contractFactory;
 
