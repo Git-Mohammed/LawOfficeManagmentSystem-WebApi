@@ -23,13 +23,27 @@ public sealed class GetCaseByIdQueryHandler(
     {
         var caseEntity = await _context.Cases
             .AsNoTracking()
-            .Include(x => x.CourtType)
-            .Include(c => c.ClientCases)
-            .ThenInclude(c => c.Client)
-            .ThenInclude(c => c!.Person)
-            .Include(c => c.Employee)
-            .ThenInclude(c => c!.Person)
-            .FirstOrDefaultAsync(c => c.Id == request.CaseId, cancellationToken);
+            .Where(x => x.Id == request.CaseId)
+            .Select(x => new CaseDetailsDto
+            {
+                CaseId = x.Id,
+                CaseNumber = x.CaseNumber,
+                CaseSubject = x.CaseSubject,
+                CourtTypeName = x.CourtType.Name,
+                AssignedEmployeeName = x.AssignedEmployeeId != null ? x.Employee.Person.FullName : string.Empty,
+                Status = x.Status,
+                Clients = x.ClientCases
+                    .Select(cc => new CaseClientDto
+                    {
+                        ClientId = cc.Client.Id,
+                        FullName = cc.Client.Person.FullName ?? string.Empty,
+                        NationalId = cc.Client.Person.NationalId ?? string.Empty,
+                        PhoneNumber = cc.Client.Person.PhoneNumber ?? string.Empty,
+                        CountryCode = cc.Client.Person.CountryCode.ToString() ?? string.Empty,
+                    })
+                    .ToList()
+            })
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (caseEntity is null)
         {
@@ -39,6 +53,6 @@ public sealed class GetCaseByIdQueryHandler(
 
         _logger.LogInformation("Case with Id {CaseId} retrieved successfully.", request.CaseId);
 
-        return _mapper.Map<Case, CaseDetailsDto>(caseEntity);
+        return caseEntity;
     }
 }
