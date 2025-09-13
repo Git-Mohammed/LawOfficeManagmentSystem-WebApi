@@ -21,4 +21,8 @@ public static class CourtTypeErrors
 
     public static readonly Error FailedToRetrieveYears =
         Error.Unexpected("CourtType.FailedToRetrieveYears", "حدث خطأ أثناء جلب السنوات الهجرية المرتبطة بنوع المحكمة.");
+
+        public static readonly Error NoCourtTypesFound =
+    Error.NotFound("CourtType.NoneFound", "لم يتم العثور على أنواع محاكم تحتوي على ملفات عملاء.");
+
 }
