@@ -1,5 +1,6 @@
 ﻿using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Application.Features.CourtTypes;
+using LOMs.Application.Features.CourtTypes.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Controllers;
@@ -34,4 +35,18 @@ public class CourtTypesController(ICourtTypeService courtTypeService) : ApiContr
         var result = await _courtTypeService.GetYearsByCourtTypeAsync(courtTypeId, ct);
         return result.Match(Ok, Problem);
     }
+
+[HttpGet("with-hijri-years")]
+[ProducesResponseType(typeof(List<CourtTypeWithYearsDto>), StatusCodes.Status200OK)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+[EndpointSummary("Retrieves all court types with their associated Hijri years.")]
+[EndpointDescription("Returns a list of court types, each including its distinct Hijri years from client files.")]
+[EndpointName(nameof(GetCourtTypesWithHijriYears))]
+public async Task<IActionResult> GetCourtTypesWithHijriYears(CancellationToken ct)
+{
+    var result = await _courtTypeService.GetCourtTypesWithHijriYears(ct);
+    return result.Match(Ok, Problem);
+}
+
 }
