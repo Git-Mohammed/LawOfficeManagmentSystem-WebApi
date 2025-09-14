@@ -18,6 +18,8 @@ public interface IIdentityService
     Task<Result<Success>> CreateRoleAsync(string roleName);
     Task<Result<bool>> AuthorizeAsync(string userId, string policyName);
     Task<Result<Success>> ResetPasswordAsync(string username, string token, string newPassword);
+    Task<Result<Success>> ChangePasswordAsync(string username, string currentPassword, string newPassword);
+
     Task<Result<string>> CreateUserAsync(string userName, string email, string password, string roles);
     Task<Result<bool>> DeleteUserAsync(string userId);
     // Add for reset password (below)

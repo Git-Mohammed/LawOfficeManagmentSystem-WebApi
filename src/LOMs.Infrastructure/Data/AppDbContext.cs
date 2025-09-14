@@ -10,13 +10,15 @@ using LOMs.Domain.People.Employees;
 using LOMs.Domain.POAs;
 using LOMs.Infrastructure.Enums;
 using LOMs.Infrastructure.Identity;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace LOMs.Infrastructure.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser,ApplicationRole,string>(options), IAppDbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser,ApplicationRole,string>(options), IAppDbContext,IDataProtectionKeyContext
 {
     public DbSet<Person> People => Set<Person>();
     public DbSet<Client> Clients => Set<Client>();
@@ -34,6 +36,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 
     public DbSet<CourtType> CourtTypes => Set<CourtType>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<DataProtectionKey> DataProtectionKeys =>  Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

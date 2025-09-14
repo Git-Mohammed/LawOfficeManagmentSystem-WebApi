@@ -1,17 +1,23 @@
+using LOMs.Api.Infrastructure;
 using LOMs.Api.Services;
 using LOMs.Application.Common.Interfaces;
-using LOMs.Api.Infrastructure; // <-- Add this for GlobalExceptionHandler
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 namespace LOMs.Api;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddPresentation(this IServiceCollection services)
+    public static IServiceCollection AddPresentation(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddIdentityInfrastructure();
-        services.AddExceptionHandlingInfrastructure(); // <-- Add this line
+        services
+            .AddIdentityInfrastructure()
+            .AddExceptionHandlingInfrastructure()
+            .AddSwaggerInfrastructure()
+            .AddCorsInfrastructure(configuration);
+
         return services;
     }
 
@@ -29,31 +35,89 @@ public static class DependencyInjection
         return services;
     }
 
+    private static IServiceCollection AddSwaggerInfrastructure(this IServiceCollection services)
+    {
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new() { Title = "LOMs API", Version = "v1" });
+            options.CustomSchemaIds(type => type.FullName);
+
+            //  JWT Bearer token support
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Enter your JWT token in the format: Bearer {your token}"
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+
+            //  XML comments
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            if (File.Exists(xmlPath))
+            {
+                options.IncludeXmlComments(xmlPath);
+            }
+        });
+
+        return services;
+    }
+
+    private static IServiceCollection AddCorsInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        var policyName = configuration["AppSettings:CorsPolicyName"] ?? "AllowAll";
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy(policyName, policy =>
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            });
+        });
+
+        return services;
+    }
+
     public static IApplicationBuilder UseCoreMiddlewares(this IApplicationBuilder app, IConfiguration configuration)
     {
         // 1. Exception handling should be FIRST to catch all errors
         app.UseExceptionHandler();
 
-        // 2. Status code pages for handling HTTP status codes
-   //     app.UseStatusCodePages();
-
-        // 3. HTTPS redirection (before any other middleware that might generate URLs)
+        // 2. HTTPS redirection
         app.UseHttpsRedirection();
 
-        // 5. CORS (before authentication/authorization)
-      //  app.UseCors(configuration["AppSettings:CorsPolicyName"]!);
+        // 3. Static files
+        app.UseStaticFiles();
 
-        // 6. Rate limiting (before authentication to protect auth endpoints)
-    //    app.UseRateLimiter();
+        // 4. CORS
+        var policyName = configuration["AppSettings:CorsPolicyName"] ?? "AllowAll";
+        app.UseCors(policyName);
 
-        // 7. Authentication (must come before authorization)
-    //    app.UseAuthentication();
+        // 5. Authentication
+        app.UseAuthentication();
 
-        // 8. Authorization (must come after authentication)
-    //    app.UseAuthorization();
-
-        // 9. Output caching (after auth to cache based on user context)
-     //   app.UseOutputCache();
+        // 6. Authorization
+        app.UseAuthorization();
 
         return app;
     }

@@ -5,12 +5,21 @@ namespace LOMs.Api.Services;
 
 public class CurrentUser : IUser
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ClaimsPrincipal? _user;
 
     public CurrentUser(IHttpContextAccessor httpContextAccessor)
     {
-        _httpContextAccessor = httpContextAccessor;
+        _user = httpContextAccessor.HttpContext?.User;
     }
 
-    public string? Id => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+    public string? Id => _user?.FindFirstValue(ClaimTypes.NameIdentifier);
+    public string? Username => _user?.FindFirstValue("username");
+    public string? Email => _user?.FindFirstValue(ClaimTypes.Email);
+    public bool IsAuthenticated => _user?.Identity?.IsAuthenticated == true;
+
+    public IEnumerable<string> Roles =>
+        _user?.FindAll(ClaimTypes.Role).Select(c => c.Value) ?? Enumerable.Empty<string>();
+
+    public bool HasClaim(string type, string value) =>
+        _user?.HasClaim(type, value) == true;
 }
