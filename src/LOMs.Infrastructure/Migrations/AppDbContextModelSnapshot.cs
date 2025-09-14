@@ -280,7 +280,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -290,7 +290,9 @@ namespace LOMs.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[Token] IS NOT NULL");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", "User");
                 });
 
             modelBuilder.Entity("LOMs.Domain.POAs.POA", b =>
@@ -748,6 +750,15 @@ namespace LOMs.Infrastructure.Migrations
                     b.Navigation("Case");
                 });
 
+            modelBuilder.Entity("LOMs.Domain.Identity.RefreshToken", b =>
+                {
+                    b.HasOne("LOMs.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("LOMs.Domain.POAs.POA", b =>
                 {
                     b.HasOne("LOMs.Domain.Cases.Case", "Case")
@@ -868,6 +879,11 @@ namespace LOMs.Infrastructure.Migrations
                     b.Navigation("Client");
 
                     b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("LOMs.Infrastructure.Identity.ApplicationUser", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

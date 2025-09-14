@@ -8,7 +8,6 @@ public sealed class RefreshToken : AuditableEntity
     public string? Token { get; }
     public string? UserId { get; }
     public DateTimeOffset ExpiresOnUtc { get; }
-
     private RefreshToken()
     { }
 

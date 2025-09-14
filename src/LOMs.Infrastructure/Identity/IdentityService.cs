@@ -108,7 +108,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
         }
 
         // 2. Find the user associated with this refresh token
-        var user = await _userManager.FindByIdAsync(refreshTokenEntity.UserId);
+        var user = await _userManager.FindByIdAsync(refreshTokenEntity.UserId!);
         if (user is null)
         {
             _logger.LogWarning("Remove refresh token failed: user not found for token {RefreshToken}", refreshToken);
@@ -175,17 +175,11 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
     {
         _logger.LogInformation("Retrieving user by refresh token: {RefreshToken}", refreshToken);
 
-        var refreshTokenEntity = await _context.RefreshTokens
+        var user = await _userManager.Users
+            .Where(u => u.RefreshTokens.Any(rt => rt.Token == refreshToken && rt.UserId == u.Id))
             .AsNoTracking()
-            .SingleOrDefaultAsync(rt => rt.Token == refreshToken);
+            .SingleOrDefaultAsync();
 
-        if (refreshTokenEntity is null)
-        {
-            _logger.LogWarning("Invalid refresh token: {RefreshToken}", refreshToken);
-            return UserErrors.InvalidRefreshToken;
-        }
-
-        var user = await _userManager.FindByIdAsync(refreshTokenEntity.UserId!);
         if (user is null)
         {
             _logger.LogWarning("User not found for refresh token: {RefreshToken}", refreshToken);

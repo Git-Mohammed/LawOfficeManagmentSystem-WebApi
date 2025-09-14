@@ -1,4 +1,6 @@
 using LOMs.Domain.Identity;
+using LOMs.Infrastructure.Enums;
+using LOMs.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,7 +10,7 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 {
     public void Configure(EntityTypeBuilder<RefreshToken> builder)
     {
-        builder.ToTable("RefreshTokens");
+        builder.ToTable("RefreshTokens",DatabaseSchema.User.ToString());
 
         builder.HasKey(rt => rt.Id).IsClustered(false);
 
@@ -19,5 +21,10 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
         builder.Property(rt => rt.UserId).IsRequired();
 
         builder.Property(rt => rt.ExpiresOnUtc).IsRequired();
+
+        builder.HasOne<ApplicationUser>()
+            .WithMany(u => u.RefreshTokens)
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
