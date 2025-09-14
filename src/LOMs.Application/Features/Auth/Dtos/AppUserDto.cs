@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 
 namespace LOMs.Application.Features.Auth.Dtos;
-    public sealed record AppUserDto(string UserId, string Email,string Username, IList<string> Roles, IList<Claim> Claims);
+    public sealed record AppUserDto(string UserId, string Email,string Username,bool IsUsingTempPassword ,IList<string> Roles, IList<Claim> Claims);
 
     //public class AppUserDto
     //{

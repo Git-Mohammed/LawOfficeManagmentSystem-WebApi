@@ -32,10 +32,11 @@ namespace LOMs.Application.Features.Auth.Commands.ResetPassword
 
 
             var result = await _identityService.ResetPasswordAsync(command.Username, command.Token, command.NewPassword);
-            if (result.IsSuccess)
-                _logger.LogInformation("Password reset successful for user: {Username}", command.Username);
-            else
+            if (!result.IsSuccess)
+            {
                 _logger.LogWarning("Password reset failed for user: {Username}", command.Username);
+                return result.Errors;
+            }
 
 
             var user = userResult.Value;

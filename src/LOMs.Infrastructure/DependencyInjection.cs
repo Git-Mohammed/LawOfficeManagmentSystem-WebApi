@@ -82,6 +82,8 @@ public static class DependencyInjection
 
         // Register the email sender
         services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddScoped<ITokenProvider, TokenProvider>();
+
 
         return services;
     }

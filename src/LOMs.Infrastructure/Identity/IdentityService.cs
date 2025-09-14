@@ -4,6 +4,7 @@ using LOMs.Domain.Common.Options;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.Identity; // <-- Add this for UserErrors
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -15,9 +16,11 @@ using System.Text;
 namespace LOMs.Infrastructure.Identity;
 
 public class IdentityService(UserManager<ApplicationUser> userManager,RoleManager<ApplicationRole> _roleManager,
-    IOptions<JwtOptions> jwtOptions, ILogger<IdentityService> logger) : IIdentityService
+    IOptions<JwtOptions> jwtOptions, ILogger<IdentityService> logger, ITokenProvider tokenProvider, IAppDbContext context) : IIdentityService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly ITokenProvider _tokenProvider = tokenProvider;
+    private readonly IAppDbContext _context = context;
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
     private readonly ILogger<IdentityService> _logger = logger;
 
@@ -31,11 +34,12 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
             _logger.LogWarning("Authentication failed: user not found. Username: {Username}", username);
             return UserErrors.UserNotFound;
         }
-        if (!user.EmailConfirmed)
-        {
-            _logger.LogWarning("Authentication failed: email not confirmed. Username: {Username}", username);
-            return UserErrors.EmailNotConfirmed;
-        }
+
+        //if (!user.EmailConfirmed)
+        //{
+        //    _logger.LogWarning("Authentication failed: email not confirmed. Username: {Username}", username);
+        //    return UserErrors.EmailNotConfirmed;
+        //}
 
         if (!await _userManager.CheckPasswordAsync(user, password))
         {
@@ -45,51 +49,20 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
         var roles = await _userManager.GetRolesAsync(user);
         var claims = await _userManager.GetClaimsAsync(user);
         _logger.LogInformation("Authentication successful for user: {UserId}", user.Id);
-        return new AppUserDto(user.Id, user.Email!, user.UserName!, roles, claims);
+        return new AppUserDto(user.Id, user.Email!, user.UserName!, user.IsUsingTempPassword, roles, claims);
     }
 
-    public async Task<Result<TokenGenerationDto>> GenerateTokenAsync(AppUserDto user)
+    public async Task<Result<TokenResponse>> GenerateTokenAsync(AppUserDto user)
+
     {
-        try
+        var result = await _tokenProvider.GenerateJwtTokenAsync(user);
+        if (result.IsError)
         {
-            _logger.LogInformation("Generating token for user: {UserId}", user.UserId);
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserId),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("username", user.Username),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-            foreach (var role in user.Roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            }
-            claims.AddRange(user.Claims);
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key ?? throw new InvalidOperationException("JWT Key is missing.")));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expiry = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpiryMinutes);
-            var token = new JwtSecurityToken(
-                issuer: _jwtOptions.Issuer,
-                audience: _jwtOptions.Audience,
-                claims: claims,
-                expires: expiry,
-                signingCredentials: creds
-            );
-            var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
-            var refreshToken = Guid.NewGuid().ToString();
-            var tokenResult = new TokenGenerationDto(
-                AccessToken: accessToken,
-                RefreshToken: refreshToken,
-                ExpiresOn: expiry
-            );
-            _logger.LogInformation("Token generated for user: {UserId}", user.UserId);
-            return tokenResult;
+            _logger.LogError("Token generation failed for user: {UserId}", user.UserId);
+            return result.Errors;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to generate token for user: {UserId}", user.UserId);
-            return UserErrors.TokenGenerationFailed;
-        }
+
+        return result.Value;
     }
 
     public async Task<Result<Success>> UpdateRefreshToken(string userId, string refreshToken)
@@ -103,7 +76,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
                 _logger.LogWarning("Update refresh token failed: user not found. UserId: {UserId}", userId);
                 return UserErrors.UserNotFound;
             }
-            user.RefreshToken = refreshToken;
+            //user.RefreshToken = refreshToken;
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
@@ -120,22 +93,32 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
         }
     }
 
-    public async Task<Result<Success>> RemoveRefreshTokenAsync(string refreshToken)
+    public async Task<Result<Success>> RemoveRefreshTokenAsync(string refreshToken, CancellationToken ct)
     {
         _logger.LogInformation("Removing refresh token: {RefreshToken}", refreshToken);
-        var user = _userManager.Users.SingleOrDefault(u => u.RefreshToken == refreshToken);
-        if (user == null)
+
+        // 1. Find the refresh token record
+        var refreshTokenEntity = await _context.RefreshTokens
+            .SingleOrDefaultAsync(rt => rt.Token == refreshToken);
+
+        if (refreshTokenEntity is null)
         {
             _logger.LogWarning("Remove refresh token failed: token not found. Token: {RefreshToken}", refreshToken);
-            return UserErrors.InvalidRefreshToken; 
+            return UserErrors.InvalidRefreshToken;
         }
-        user.RefreshToken = null!;
-        var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded)
+
+        // 2. Find the user associated with this refresh token
+        var user = await _userManager.FindByIdAsync(refreshTokenEntity.UserId);
+        if (user is null)
         {
-            _logger.LogError("Remove refresh token failed for user: {UserId}", user.Id);
-            return UserErrors.RefreshTokenRemoveFailed;
+            _logger.LogWarning("Remove refresh token failed: user not found for token {RefreshToken}", refreshToken);
+            return UserErrors.InvalidRefreshToken;
         }
+
+        // 3. Remove the refresh token from DB
+        _context.RefreshTokens.Remove(refreshTokenEntity);
+        await _context.SaveChangesAsync(ct);
+
         _logger.LogInformation("Refresh token removed for user: {UserId}", user.Id);
         return Result.Success;
     }
@@ -151,7 +134,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
         }
         var roles = await _userManager.GetRolesAsync(user);
         var claims = await _userManager.GetClaimsAsync(user);
-        return new AppUserDto(user.Id, user.Email!, user.UserName!, roles, claims);
+        return new AppUserDto(user.Id, user.Email!, user.UserName!, user.IsUsingTempPassword, roles, claims);
     }
 
     public Task<Result<string>> GetUserNameAsync(string userId)
@@ -171,7 +154,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
         }
         var roles = await _userManager.GetRolesAsync(user);
         var claims = await _userManager.GetClaimsAsync(user);
-        return new AppUserDto(user.Id, user.Email!, user.UserName!, roles, claims);
+        return new AppUserDto(user.Id, user.Email!, user.UserName!, user.IsUsingTempPassword, roles, claims);
     }
 
     public async Task<Result<AppUserDto?>> GetUserByIdAsync(string userId)
@@ -185,21 +168,43 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
         }
         var roles = await _userManager.GetRolesAsync(user);
         var claims = await _userManager.GetClaimsAsync(user);
-        return new AppUserDto(user.Id, user.Email!, user.UserName!, roles, claims);
+        return new AppUserDto(user.Id, user.Email!, user.UserName!,user.IsUsingTempPassword, roles, claims);
     }
 
     public async Task<Result<AppUserDto?>> GetUserByRefreshTokenAsync(string refreshToken)
     {
-        _logger.LogInformation("Getting user by refresh token: {RefreshToken}", refreshToken);
-        var user = _userManager.Users.SingleOrDefault(u => u.RefreshToken == refreshToken);
-        if (user == null)
+        _logger.LogInformation("Retrieving user by refresh token: {RefreshToken}", refreshToken);
+
+        var refreshTokenEntity = await _context.RefreshTokens
+            .AsNoTracking()
+            .SingleOrDefaultAsync(rt => rt.Token == refreshToken);
+
+        if (refreshTokenEntity is null)
         {
-            _logger.LogWarning("Get user by refresh token failed: user not found. Token: {RefreshToken}", refreshToken);
+            _logger.LogWarning("Invalid refresh token: {RefreshToken}", refreshToken);
             return UserErrors.InvalidRefreshToken;
         }
+
+        var user = await _userManager.FindByIdAsync(refreshTokenEntity.UserId!);
+        if (user is null)
+        {
+            _logger.LogWarning("User not found for refresh token: {RefreshToken}", refreshToken);
+            return UserErrors.InvalidRefreshToken;
+        }
+
         var roles = await _userManager.GetRolesAsync(user);
         var claims = await _userManager.GetClaimsAsync(user);
-        return new AppUserDto(user.Id, user.Email!, user.UserName!, roles, claims);
+
+        var dto = new AppUserDto(
+            user.Id,
+            user.Email!,
+            user.UserName!,
+            user.IsUsingTempPassword,
+            roles,
+            claims
+        );
+
+        return dto;
     }
 
     public Task<Result<bool>> AuthorizeAsync(string userId, string policyName)
@@ -207,26 +212,39 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
         _logger.LogInformation("Authorizing user: {UserId} for policy: {PolicyName}", userId, policyName);
         throw new NotImplementedException();
     }
-   
+
     public async Task<Result<Success>> ResetPasswordAsync(string username, string token, string newPassword)
     {
-        _logger.LogInformation("Resetting password for user: {Username}", username);
+        _logger.LogInformation("Attempting password reset for user: {Username}", username);
+
         var user = await _userManager.FindByNameAsync(username);
-        if (user == null)
+        if (user is null)
         {
-            _logger.LogWarning("Reset password failed: user not found. Username: {Username}", username);
+            _logger.LogWarning("Password reset failed: user not found. Username: {Username}", username);
             return UserErrors.UserNotFound;
         }
+
+
         var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-        if (result.Succeeded)
+        if (!result.Succeeded)
         {
-            _logger.LogInformation("Password reset successful for user: {Username}", username);
-            return Result.Success;
+            _logger.LogWarning("Password reset failed for user: {Username}", username);
+            return UserErrors.PasswordResetFailed;
         }
-        _logger.LogWarning("Password reset failed for user: {Username}", username);
-        return UserErrors.PasswordResetFailed;
+
+        user.IsUsingTempPassword = false;
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+        {
+            _logger.LogError("Failed to persist IsUsingTempPassword flag for user: {Username}", username);
+            return UserErrors.PasswordResetFailed;
+        }
+
+        _logger.LogInformation("Password reset successful for user: {Username}", username);
+        return Result.Success;
     }
-  
+
+
     public Task<Result<bool>> IsInRoleAsync(string userId, string role)
     {
         _logger.LogInformation("Checking if user: {UserId} is in role: {Role}", userId, role);
@@ -236,7 +254,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
     public async Task<Result<string>> CreateUserAsync(string userName, string email, string password,string role)
     {
         _logger.LogInformation("Creating user: {UserName}", userName);
-        var user = new ApplicationUser { UserName = userName, Email = email };
+        var user = new ApplicationUser { UserName = userName, Email = email, IsUsingTempPassword = true };
         var result = await _userManager.CreateAsync(user, password);
 
         if (!result.Succeeded)
@@ -260,7 +278,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
         //    }
         //}
 
-        if (!await _roleManager.RoleExistsAsync(role))
+        if (await _roleManager.RoleExistsAsync(role))
         {
             var roleAssignResult = await _userManager.AddToRoleAsync(user, role);
             if (!roleAssignResult.Succeeded)

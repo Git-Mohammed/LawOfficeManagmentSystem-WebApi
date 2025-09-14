@@ -2,12 +2,13 @@
 using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
+using LOMs.Domain.Cases.CourtTypes;
+using LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
-using Microsoft.EntityFrameworkCore;
 using LOMs.Domain.People.Employees;
 using LOMs.Domain.POAs;
-using LOMs.Domain.Cases.CourtTypes;
+using Microsoft.EntityFrameworkCore;
 
 namespace LOMs.Application.Common.Interfaces;
 public interface IAppDbContext
@@ -22,6 +23,7 @@ public interface IAppDbContext
     public DbSet<CourtType> CourtTypes { get; }
 
     public DbSet<Employee> Employees { get; }
+    public DbSet<RefreshToken> RefreshTokens { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 };

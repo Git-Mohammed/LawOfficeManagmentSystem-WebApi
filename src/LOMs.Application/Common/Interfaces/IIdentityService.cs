@@ -12,8 +12,8 @@ public interface IIdentityService
     Task<Result<AppUserDto?>> GetUserByRefreshTokenAsync(string refreshToken);
     Task<Result<AppUserDto>> AuthenticateAsync(string username, string password); // Changed: Use username
     Task<Result<Success>> UpdateRefreshToken(string userId, string refreshToken);
-    Task<Result<Success>> RemoveRefreshTokenAsync(string refreshToken);
-    Task<Result<TokenGenerationDto>> GenerateTokenAsync(AppUserDto user);
+    Task<Result<Success>> RemoveRefreshTokenAsync(string refreshToken, CancellationToken ct);
+    Task<Result<TokenResponse>> GenerateTokenAsync(AppUserDto user);
     Task<Result<bool>> IsInRoleAsync(string userId, string role);
     Task<Result<Success>> CreateRoleAsync(string roleName);
     Task<Result<bool>> AuthorizeAsync(string userId, string policyName);
