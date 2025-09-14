@@ -3,8 +3,8 @@ using LOMs.Domain.Common.Results;
 
 namespace LOMs.Application.Features.Auth.Commands.ResetPassword;
 
-public sealed record ResetPasswordCommand(
+public sealed record ChangePasswordCommand(
     string Username,
-    string Token,
+    string CurrentPassword,
     string NewPassword
 ) : ICommand<Result<Success>>;

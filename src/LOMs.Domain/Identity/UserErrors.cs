@@ -28,6 +28,12 @@ public static class UserErrors
     public static Error PasswordResetFailed =>
         Error.Failure("Auth.ResetFailed", "Password reset failed.");
 
+    public static Error PasswordChangeFailed =>
+        Error.Failure("Auth.ChangeFailed", "Password change failed.");
+
+    public static Error UnauthorizedPasswordChange =>
+        Error.Validation("Auth.UnauthorizedChange", "You are not authorized to change another user's password.");
+
     public static Error UserCreationFailed =>
         Error.Failure("Identity_User_not_created", "User could not be created.");
 }

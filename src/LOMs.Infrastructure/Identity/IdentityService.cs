@@ -207,6 +207,37 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
         throw new NotImplementedException();
     }
 
+    public async Task<Result<Success>> ChangePasswordAsync(string username, string currentPassword, string newPassword)
+    {
+        _logger.LogInformation("Attempting password change for user: {Username}", username);
+
+        var user = await _userManager.FindByNameAsync(username);
+        if (user is null)
+        {
+            _logger.LogWarning("Password change failed: user not found. Username: {Username}", username);
+            return UserErrors.UserNotFound;
+        }
+
+        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning("Password change failed for user: {Username}. Errors: {Errors}", username,
+                string.Join(", ", result.Errors.Select(e => $"{e.Code}: {e.Description}")));
+            return UserErrors.PasswordChangeFailed;
+        }
+
+        user.IsUsingTempPassword = false;
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+        {
+            _logger.LogError("Failed to persist IsUsingTempPassword flag for user: {Username}", username);
+            return UserErrors.PasswordChangeFailed;
+        }
+
+        _logger.LogInformation("Password change successful for user: {Username}", username);
+        return Result.Success;
+    }
+
     public async Task<Result<Success>> ResetPasswordAsync(string username, string token, string newPassword)
     {
         _logger.LogInformation("Attempting password reset for user: {Username}", username);
