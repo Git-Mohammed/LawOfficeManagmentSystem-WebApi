@@ -60,12 +60,8 @@ public class GetCasesByCourtTypeAndYearPaginatedHandler
             .ToListAsync(cancellationToken);
 
         var paginatedResult = new PaginatedList<CaseQuickStatsDto>
-        {
-            Items = items,
-            TotalItemsCount = totalCount,
-            PageIndex = query.PageNumber,
-            PageSize = query.PageSize
-        };
+        (items,query.PageNumber,query.PageSize,totalCount);
+
 
         return paginatedResult;
     }

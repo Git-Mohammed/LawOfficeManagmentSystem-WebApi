@@ -1,8 +1,13 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LiteBus.Queries.Abstractions;
+using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Contracts.Commands.CreateContract;
 using LOMs.Application.Features.Contracts.Dtos;
+using LOMs.Application.Features.Contracts.Queries;
 using LOMs.Application.Features.Contracts.Queries.GetContractById;
+using LOMs.Application.Features.Contracts.Queries.GetContractList;
+using LOMs.Application.Features.Contracts.Queries.GetContractList.paged;
+using LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.GetPagedContractsByCaseId;
 using LOMs.Contract.Requests.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +29,67 @@ public class ContractsController(ICommandMediator command, IQueryMediator query)
     public async Task<IActionResult> GetContractById(Guid caseId, Guid contractId, CancellationToken ct)
     {
         var result = await _query.QueryAsync(new GetContractByIdQuery(caseId,contractId), ct);
+        return result.Match(Ok, Problem);
+    }
+
+    [HttpGet(Name = nameof(GetContractsByCaseId))]
+    [ProducesResponseType(typeof(List<ContractDetailsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [EndpointSummary("Retrieves all contracts linked to a specific case.")]
+    [EndpointDescription("Fetches a list of contracts associated with the given case ID.")]
+    [EndpointName(nameof(GetContractsByCaseId))]
+    public async Task<IActionResult> GetContractsByCaseId(Guid caseId, CancellationToken ct)
+    {
+        var result = await _query.QueryAsync(new GetContractsDetailsByCaseIdQuery(caseId), ct);
+        return result.Match(Ok, Problem);
+    }
+
+
+    [HttpGet("paged", Name = nameof(GetPagedContractsByCaseId))]
+    [ProducesResponseType(typeof(PaginatedList<ContractDetailsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [EndpointSummary("Retrieves paginated contracts linked to a specific case.")]
+    [EndpointDescription("Fetches a paginated list of contracts associated with the given case ID.")]
+    [EndpointName(nameof(GetPagedContractsByCaseId))]
+    public async Task<IActionResult> GetPagedContractsByCaseId(
+    Guid caseId,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10,
+    CancellationToken ct = default)
+    {
+        var result = await _query.QueryAsync(
+            new GetPagedContractsByCaseIdQuery(caseId, pageNumber, pageSize),
+            ct);
+
+        return result.Match(Ok, Problem);
+    }
+
+    [HttpGet("/api/contracts/paged", Name = nameof(GetPagedContractList))]
+    [ProducesResponseType(typeof(PaginatedList<ContractListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [EndpointSummary("Retrieves a paginated list of contracts.")]
+    [EndpointDescription("Returns contract number and type for each contract, with pagination.")]
+    [EndpointName(nameof(GetPagedContractList))]
+    public async Task<IActionResult> GetPagedContractList(
+    [FromQuery] int pageIndex = 1,
+    [FromQuery] int pageSize = 10,
+    CancellationToken ct = default)
+    {
+        var result = await _query.QueryAsync(
+            new GetPagedContractListQuery(pageIndex, pageSize),
+            ct);
+
+        return result.Match(Ok, Problem);
+    }
+
+    [HttpGet("/api/contracts", Name = nameof(GetContractList))]
+    [ProducesResponseType(typeof(List<ContractListItemDto>), StatusCodes.Status200OK)]
+    [EndpointSummary("Retrieves a list of contracts.")]
+    [EndpointDescription("Returns contract number and type for each contract.")]
+    [EndpointName(nameof(GetContractList))]
+    public async Task<IActionResult> GetContractList(CancellationToken ct)
+    {
+        var result = await _query.QueryAsync(new GetContractListQuery(), ct);
         return result.Match(Ok, Problem);
     }
 
