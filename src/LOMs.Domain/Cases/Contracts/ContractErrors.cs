@@ -33,11 +33,18 @@ public static class ContractErrors
     public static readonly Error MissingIssueDate =
         Error.Validation("Contract.MissingIssueDate", "تاريخ إصدار العقد مطلوب لعقود المدة المحددة.");
 
+    public static readonly Error InvalidIssueDate =
+        Error.Validation("Contract.InvalidIssueDate", "تاريخ الإصدار غير صالح.");
+
     public static readonly Error MissingExpiryDate =
         Error.Validation("Contract.MissingExpiryDate", "تاريخ انتهاء العقد مطلوب لعقود المدة المحددة.");
 
     public static readonly Error InvalidDateRange =
         Error.Validation("Contract.InvalidDateRange", "تاريخ الإصدار يجب أن يكون قبل تاريخ الانتهاء.");
+
+    // 🔹 Retrieval Errors
+    public static readonly Error ContractsNotFoundByCaseId =
+        Error.NotFound("Contract.ContractsNotFoundByCaseId", "لم يتم العثور على أي عقود مرتبطة بمعرّف القضية المحدد.");
 
     // 🔹 CreateContract-Specific Errors
     public static Error DuplicateContractNumber(string contractNumber) =>
@@ -45,7 +52,4 @@ public static class ContractErrors
 
     public static readonly Error UnexpectedFailure =
         Error.Unexpected("CreateContract.Failure", "حدث خطأ غير متوقع أثناء إنشاء العقد.");
-    public static readonly Error InvalidIssueDate =
-    Error.Validation("Contract.InvalidIssueDate", "تاريخ الإصدار غير صالح.");
-
 }
