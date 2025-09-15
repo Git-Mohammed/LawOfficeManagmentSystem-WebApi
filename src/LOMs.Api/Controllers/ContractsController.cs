@@ -73,7 +73,6 @@ public class ContractsController(ICommandMediator command, IQueryMediator query)
     [HttpGet("/api/contracts/paged", Name = nameof(GetPagedContractList))]
     [ProducesResponseType(typeof(PaginatedList<ContractListItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [EndpointSummary("Retrieves a paginated list of contracts.")]
     [EndpointDescription("Returns contract number and type for each contract, with pagination.")]
@@ -146,7 +145,7 @@ public class ContractsController(ICommandMediator command, IQueryMediator query)
             id => CreatedAtRoute(
                 routeName: nameof(GetContractById),
                 routeValues: new { caseId = caseId, contractId = id },
-                value:new { contractId = id }),
+                value: new { contractId = id }),
             Problem
         );
     }
