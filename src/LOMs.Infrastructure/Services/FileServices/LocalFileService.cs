@@ -1,4 +1,5 @@
 ﻿using LOMs.Application.Common.Interfaces;
+using LOMs.Domain.Common.Results;
 
 namespace LOMs.Infrastructure.Services.FileServices;
 
@@ -19,19 +20,27 @@ public class LocalFileService(string rootPath, IFileValidator validator) : IFile
         return Path.Combine(folder, uniqueFileName).Replace("\\", "/");
     }
 
-    public async Task<string> SaveFileAsync(Stream fileStream, string fileName, string folder)
+    public async Task<Result<string>> SaveFileAsync(Stream fileStream, string fileName, string folder)
     {
-        var relativePath = GenerateRelativePath(folder, fileName);
-        var fullPath = GetFullPath(relativePath);
+        try
+        {
+            var relativePath = GenerateRelativePath(folder, fileName);
+            var fullPath = GetFullPath(relativePath);
 
-        var directory = Path.GetDirectoryName(fullPath);
-        if (!string.IsNullOrEmpty(directory))
-            Directory.CreateDirectory(directory);
+            var directory = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(directory))
+                Directory.CreateDirectory(directory);
 
-        await using var output = new FileStream(fullPath, FileMode.Create, FileAccess.Write);
-        await fileStream.CopyToAsync(output);
+            await using var output = new FileStream(fullPath, FileMode.Create, FileAccess.Write);
+            await fileStream.CopyToAsync(output);
 
-        return relativePath;
+            return relativePath;
+
+        } catch(Exception ex)
+        {
+            // Log the exception (not implemented here)
+            return Error.Unexpected("An error occurred while saving the file.");
+        }
     }
 
     public async Task<Stream?> GetFileAsync(string relativePath)
@@ -54,6 +63,6 @@ public class LocalFileService(string rootPath, IFileValidator validator) : IFile
     public async Task<string> ReplaceFileAsync(Stream fileStream, string fileName, string oldRelativePath, string folder)
     {
         await DeleteFileAsync(oldRelativePath);
-        return await SaveFileAsync(fileStream, fileName, folder);
+        return (await SaveFileAsync(fileStream, fileName, folder)).Value;
     }
 }

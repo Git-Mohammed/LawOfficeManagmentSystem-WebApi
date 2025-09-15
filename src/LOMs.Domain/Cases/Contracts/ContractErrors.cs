@@ -29,6 +29,16 @@ public static class ContractErrors
     public static readonly Error InvalidInitialPayment =
         Error.Validation("Contract.InvalidInitialPayment", "مقدم العقد يجب أن يكون أكبر من أو يساوي صفر.");
 
+    // 🔹 FixedTerm Contract-Specific Errors
+    public static readonly Error MissingIssueDate =
+        Error.Validation("Contract.MissingIssueDate", "تاريخ إصدار العقد مطلوب لعقود المدة المحددة.");
+
+    public static readonly Error MissingExpiryDate =
+        Error.Validation("Contract.MissingExpiryDate", "تاريخ انتهاء العقد مطلوب لعقود المدة المحددة.");
+
+    public static readonly Error InvalidDateRange =
+        Error.Validation("Contract.InvalidDateRange", "تاريخ الإصدار يجب أن يكون قبل تاريخ الانتهاء.");
+
     // 🔹 CreateContract-Specific Errors
     public static Error DuplicateContractNumber(string contractNumber) =>
         Error.Validation("CreateContract.DuplicateContractNumber", $"رقم العقد {contractNumber} موجود بالفعل.");

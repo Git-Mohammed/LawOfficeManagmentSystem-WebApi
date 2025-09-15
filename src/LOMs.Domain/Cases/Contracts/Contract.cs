@@ -22,10 +22,11 @@ public sealed class Contract : AuditableEntity
     public decimal InitialPayment { get; private set; }
     public decimal TaxAmount { get; private set; }
     public decimal TotalAmount => BaseAmount + TaxAmount;
-    public string FilePath { get; private set; } = null!;
     public bool IsAssigned { get; private set; }
 
     public Case? Case { get; private set; }
+    private List<ContractFile> _contractFiles = [];
+    public IReadOnlyList<ContractFile> ContractFiles  => _contractFiles.AsReadOnly();
 
     private Contract() { } // EF Core
     // شوف موضوع TaxAmount
@@ -41,11 +42,11 @@ public sealed class Contract : AuditableEntity
         decimal baseAmount,
         decimal initialPayment,
         decimal taxAmount,
-        string filePath,
         bool isAssigned,
         short courtTypeCode,
         short hijriYear,
-        int orderNumber
+        int orderNumber,
+        List<ContractFile> contractFiles 
     ) : base(id)
     {
         CaseId = caseId;
@@ -56,11 +57,11 @@ public sealed class Contract : AuditableEntity
         BaseAmount = baseAmount;
         InitialPayment = initialPayment;
         TaxAmount = taxAmount;
-        FilePath = filePath;
         IsAssigned = isAssigned;
         CourtTypeCode = courtTypeCode;
         HijriYear = hijriYear;
         OrderNumber = orderNumber;
+        _contractFiles = contractFiles;
     }
 
     public static Result<Contract> Create(
@@ -71,10 +72,10 @@ public sealed class Contract : AuditableEntity
         DateOnly? expiresOn,
         decimal baseAmount,
         decimal initialPayment,
-        string filePath,
         bool isAssigned,
         short hijriYear,
-        int orderNumber
+        int orderNumber,
+        List<ContractFile> contractFiles = null!
     )
     {
         if (caseId == Guid.Empty)
@@ -86,8 +87,20 @@ public sealed class Contract : AuditableEntity
         if (!Enum.IsDefined(typeof(ContractType), type))
             return ContractErrors.InvalidCourtType;
 
-        if (string.IsNullOrWhiteSpace(filePath))
-            return ContractErrors.MissingFilePath;
+        if(type is ContractType.FixedTerm)
+        {
+            if (!issuedOn.HasValue)
+                return ContractErrors.MissingIssueDate;
+            if (!expiresOn.HasValue)
+                return ContractErrors.MissingExpiryDate;
+            if (issuedOn > expiresOn)
+                return ContractErrors.InvalidDateRange;
+        }
+        else
+        {
+            issuedOn = null;
+            expiresOn = null;
+        }
 
         if (baseAmount < 0)
             return ContractErrors.InvalidBaseAmount;
@@ -95,7 +108,12 @@ public sealed class Contract : AuditableEntity
         if (initialPayment < 0)
             return ContractErrors.InvalidInitialPayment;
 
-        var contractNumber = GenerateFileNumber(courtType, hijriYear, orderNumber);
+        if (contractFiles is null || contractFiles.Count <= 0)
+        {
+            return ContractErrors.MissingFilePath;
+        }    
+
+            var contractNumber = GenerateFileNumber(courtType, hijriYear, orderNumber);
         var taxAmount = CalculateTax(baseAmount);
         var contract = new Contract(
             Guid.NewGuid(),
@@ -107,11 +125,11 @@ public sealed class Contract : AuditableEntity
             baseAmount,
             initialPayment,
             taxAmount,
-            filePath,
             isAssigned,
             courtType.Code,
             hijriYear,
-            orderNumber
+            orderNumber,
+            contractFiles
         );
 
         return contract;
