@@ -45,4 +45,7 @@ public static class ContractErrors
 
     public static readonly Error UnexpectedFailure =
         Error.Unexpected("CreateContract.Failure", "حدث خطأ غير متوقع أثناء إنشاء العقد.");
+    public static readonly Error InvalidIssueDate =
+    Error.Validation("Contract.InvalidIssueDate", "تاريخ الإصدار غير صالح.");
+
 }

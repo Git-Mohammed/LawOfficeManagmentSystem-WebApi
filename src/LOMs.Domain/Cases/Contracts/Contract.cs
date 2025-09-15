@@ -86,13 +86,17 @@ public sealed class Contract : AuditableEntity
 
         if (!Enum.IsDefined(typeof(ContractType), type))
             return ContractErrors.InvalidCourtType;
-
-        if(type is ContractType.FixedTerm)
+        if (type is ContractType.FixedTerm)
         {
             if (!issuedOn.HasValue)
                 return ContractErrors.MissingIssueDate;
+
+            if (issuedOn.Value < DateOnly.FromDateTime(Convert.ToDateTime("1900-01-01")))
+                return ContractErrors.InvalidIssueDate;
+
             if (!expiresOn.HasValue)
                 return ContractErrors.MissingExpiryDate;
+
             if (issuedOn > expiresOn)
                 return ContractErrors.InvalidDateRange;
         }
@@ -101,6 +105,7 @@ public sealed class Contract : AuditableEntity
             issuedOn = null;
             expiresOn = null;
         }
+
 
         if (baseAmount < 0)
             return ContractErrors.InvalidBaseAmount;
