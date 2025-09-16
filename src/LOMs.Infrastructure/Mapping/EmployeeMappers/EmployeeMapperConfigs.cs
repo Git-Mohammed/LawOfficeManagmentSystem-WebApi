@@ -1,5 +1,5 @@
 ﻿using LOMs.Application.Features.People.Clients.Dtos;
-using LOMs.Application.Features.People.Employees.DTOs;
+using LOMs.Application.Features.People.Employees.Dtos;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Employees;
 using Mapster;

@@ -2,70 +2,83 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Contracts.Dtos;
+using LOMs.Application.Features.CourtSessions.Dtos;
+using LOMs.Application.Features.CourtSessions.Queries.GetCourtSessionsByCaseId.Paged;
 using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.Contracts;
+using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.GetPagedContractsByCaseId;
-public class GetPagedContractsByCaseIdHandler
-    : IQueryHandler<GetPagedContractsByCaseIdQuery, Result<PaginatedList<ContractDetailsDto>>>
+namespace LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.Paged;
+
+public sealed class GetPaginatedCourtSessionsByCaseIdQueryHandler(
+    IAppDbContext context,
+    ILogger<GetPaginatedCourtSessionsByCaseIdQueryHandler> logger)
+    : IQueryHandler<GetPaginatedCourtSessionsByCaseIdQuery, Result<PaginatedList<CourtSessionDto>>>
 {
-    private readonly IAppDbContext _context;
-    private readonly ILogger<GetPagedContractsByCaseIdHandler> _logger;
-
-    public GetPagedContractsByCaseIdHandler(IAppDbContext context, ILogger<GetPagedContractsByCaseIdHandler> logger)
-    {
-        _context = context;
-        _logger = logger;
-    }
-
-    public async Task<Result<PaginatedList<ContractDetailsDto>>> HandleAsync(
-        GetPagedContractsByCaseIdQuery query,
+    public async Task<Result<PaginatedList<CourtSessionDto>>> HandleAsync(
+        GetPaginatedCourtSessionsByCaseIdQuery query,
         CancellationToken ct)
     {
-        var caseExsting = await _context.Cases.AnyAsync(x => x.Id == query.CaseId);
-
-        if (!caseExsting)
+        if (query.PageNumber < 1)
         {
-            return CaseErrors.CaseNotFound;
+            logger.LogWarning("Invalid page number: {PageNumber}", query.PageNumber);
+            return Error.Validation("Pagination.InvalidPageNumber", "Page number must be at least 1.");
         }
 
-        var totalItemsCount = await _context.Contracts
-            .Where(c => c.CaseId == query.CaseId)
-            .CountAsync(ct);
-
-        if (totalItemsCount == 0)
+        if (query.PageSize < 1 || query.PageSize > 100)
         {
-            _logger.LogWarning("No contracts found for CaseId: {CaseId}", query.CaseId);
-            return ContractErrors.ContractsNotFoundByCaseId;
+            logger.LogWarning("Invalid page size: {PageSize}", query.PageSize);
+            return Error.Validation("Pagination.InvalidPageSize", "Page size must be between 1 and 100.");
         }
 
-        var contracts = await _context.Contracts
+        var caseExists = await context.Cases
             .AsNoTracking()
-            .Where(c => c.CaseId == query.CaseId)
-            .OrderByDescending(c => c.CreatedAtUtc)
+            .AnyAsync(c => c.Id == query.CaseId, ct);
+
+        if (!caseExists)
+        {
+            logger.LogWarning("Fetching court sessions failed: Case not found. CaseId: {CaseId}", query.CaseId);
+            return CourtSessionErrors.CaseNotFound;
+        }
+
+        var sessionsQuery = context.CourtSessions
+            .AsNoTracking()
+            .Where(cs => cs.CaseId == query.CaseId);
+
+        if (query.FromDate is not null)
+        {
+            sessionsQuery = sessionsQuery.Where(cs => cs.ScheduledAt >= query.FromDate);
+        }
+
+        var totalCount = await sessionsQuery.CountAsync(ct);
+
+        var sessions = await sessionsQuery
+            .OrderBy(cs => cs.ScheduledAt)
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)
-            .Select(c => new ContractDetailsDto
+            .Select(cs => new CourtSessionDto
             {
-                ContractId = c.Id,
-                ContractNumber = c.ContractNumber,
-                TotalAmount = c.BaseAmount + c.TaxAmount,
-                InitialPayment = c.InitialPayment,
-                IsAssigned = c.IsAssigned
+                CourtSessionId = cs.Id,
+                CaseId = cs.CaseId,
+                ScheduledAt = cs.ScheduledAt,
+                AssignedTasks = cs.AssignedTasks,
+                AssignedEmployeeId = cs.AssignedEmployeeId
             })
             .ToListAsync(ct);
 
-        var pagedResult = new PaginatedList<ContractDetailsDto>(
-            items: contracts,
+        var paginated = new PaginatedList<CourtSessionDto>(
+            items: sessions,
             pageIndex: query.PageNumber,
             pageSize: query.PageSize,
-            totalItemsCount: totalItemsCount
+            totalItemsCount: totalCount
         );
 
-        return pagedResult;
+        return paginated;
     }
 }
+
+
 

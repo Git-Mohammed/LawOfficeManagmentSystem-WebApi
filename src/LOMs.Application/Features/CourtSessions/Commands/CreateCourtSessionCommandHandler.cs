@@ -37,6 +37,21 @@ public sealed class CreateCourtSessionCommandHandler(
             return CourtSessionErrors.CaseNotFound;
         }
 
+        // Check for scheduling conflict
+        var hasConflict = await _context.CourtSessions
+            .AnyAsync(cs =>
+                cs.AssignedEmployeeId == message.AssignedEmployeeId &&
+                cs.ScheduledAt == message.ScheduledAt,
+                cancellationToken);
+
+        if (hasConflict)
+        {
+            _logger.LogWarning("CourtSession creation failed: Employee already assigned to another session at the same time. EmployeeId: {EmployeeId}, ScheduledAt: {ScheduledAt}",
+                message.AssignedEmployeeId, message.ScheduledAt);
+
+            return CourtSessionErrors.EmployeeScheduleConflict;
+        }
+
         var sessionResult = CourtSession.Create(
             Guid.NewGuid(),
             caseId: message.CaseId,

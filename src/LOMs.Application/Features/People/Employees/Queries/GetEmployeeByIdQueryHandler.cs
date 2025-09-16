@@ -1,6 +1,6 @@
 ﻿using LiteBus.Queries.Abstractions;
 using LOMs.Application.Common.Interfaces;
-using LOMs.Application.Features.People.Employees.DTOs;
+using LOMs.Application.Features.People.Employees.Dtos;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People.Employees;
 using Microsoft.EntityFrameworkCore;

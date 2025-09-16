@@ -1,12 +1,12 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LOMs.Domain.Identity;
 using LOMs.Application.Common.Interfaces;
-using LOMs.Application.Features.People.Employees.DTOs;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Employees;
 using LOMs.Domain.People.Employees.DomainEvents;
 using Microsoft.EntityFrameworkCore;
+using LOMs.Application.Features.People.Employees.Dtos;
 
 namespace LOMs.Application.Features.People.Employees.Commands;
 

@@ -4,33 +4,50 @@ namespace LOMs.Domain.Cases.CourtSessions;
 
 public static class CourtSessionErrors
 {
-    public static readonly Error InvalidId =
-        Error.Validation("CourtSession.InvalidId", "Session ID must not be empty.");
+    // Validation Errors
+    public static readonly Error InvalidId = Error.Validation(
+        code: "CourtSession.InvalidId",
+        description: "Session ID must not be empty.");
 
-    public static readonly Error MissingCaseId =
-        Error.Validation("CourtSession.MissingCaseId", "Case ID is required.");
+    public static readonly Error MissingCaseId = Error.Validation(
+        code: "CourtSession.MissingCaseId",
+        description: "Case ID is required.");
 
-    public static readonly Error MissingEmployeeId =
-        Error.Validation("CourtSession.MissingEmployeeId", "Assigned employee ID is required.");
+    public static readonly Error MissingEmployeeId = Error.Validation(
+        code: "CourtSession.MissingEmployeeId",
+        description: "Assigned employee ID is required.");
 
-    public static readonly Error InvalidScheduledDate =
-        Error.Validation("CourtSession.InvalidScheduledDate", "Scheduled date must be in the future.");
+    public static readonly Error InvalidScheduledDate = Error.Validation(
+        code: "CourtSession.InvalidScheduledDate",
+        description: "Scheduled date must be in the future.");
 
-    public static readonly Error MissingAssignedTasks =
-        Error.Validation("CourtSession.MissingAssignedTasks", "Assigned tasks must not be empty.");
+    public static readonly Error MissingAssignedTasks = Error.Validation(
+        code: "CourtSession.MissingAssignedTasks",
+        description: "Assigned tasks must not be empty.");
 
-    public static readonly Error CannotUpdateExpiredSession =
-    Error.Validation("CourtSession.CannotUpdateExpiredSession", "Cannot update a session that has already expired.");
+    public static readonly Error CannotUpdateExpiredSession = Error.Validation(
+        code: "CourtSession.CannotUpdateExpiredSession",
+        description: "Cannot update a session that has already expired.");
 
-    public static readonly Error CannotRescheduleExpiredSession =
-        Error.Validation("CourtSession.CannotRescheduleExpiredSession", "Cannot reschedule a session that has already expired.");
-    public static readonly Error EmployeeNotFound =
-    Error.NotFound("CourtSession.EmployeeNotFound", "Assigned employee does not exist.");
+    public static readonly Error CannotRescheduleExpiredSession = Error.Validation(
+        code: "CourtSession.CannotRescheduleExpiredSession",
+        description: "Cannot reschedule a session that has already expired.");
 
-    public static readonly Error CaseNotFound =
-        Error.NotFound("CourtSession.CaseNotFound", "Case does not exist.");
-    public static readonly Error SessionNotFound =
-    Error.NotFound("CourtSession.SessionNotFound", "Court session does not exist for the specified case.");
+    // Not Found Errors
+    public static readonly Error EmployeeNotFound = Error.NotFound(
+        code: "CourtSession.EmployeeNotFound",
+        description: "Assigned employee does not exist.");
 
+    public static readonly Error CaseNotFound = Error.NotFound(
+        code: "CourtSession.CaseNotFound",
+        description: "Case does not exist.");
 
+    public static readonly Error SessionNotFound = Error.NotFound(
+        code: "CourtSession.SessionNotFound",
+        description: "Court session does not exist for the specified case.");
+
+    // Conflict Errors
+    public static readonly Error EmployeeScheduleConflict = Error.Conflict(
+        code: "CourtSession.EmployeeScheduleConflict",
+        description: "The assigned employee is already scheduled for another court session at the same time.");
 }

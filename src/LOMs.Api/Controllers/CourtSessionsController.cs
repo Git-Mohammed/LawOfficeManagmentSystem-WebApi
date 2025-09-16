@@ -1,9 +1,13 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LiteBus.Queries.Abstractions;
+using LOMs.Application.Common.Models;
 using LOMs.Application.Features.CourtSessions.Commands;
 using LOMs.Application.Features.CourtSessions.Commands.UpdateCourtSession;
 using LOMs.Application.Features.CourtSessions.Dtos;
 using LOMs.Application.Features.CourtSessions.Queries.GetCourtSessionById;
+using LOMs.Application.Features.CourtSessions.Queries.GetCourtSessionsByCaseId.Paged;
+using LOMs.Application.Features.CourtSessions.Queries.GetFutureCourtSessions;
+using LOMs.Application.Features.CourtSessions.Queries.GetFutureCourtSessions.Paged;
 using LOMs.Contract.Requests.CourtSessions;
 using LOMs.Contract.Requests.CourtSesstions;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +34,57 @@ public class CourtSessionsController(ICommandMediator command, IQueryMediator qu
         var result = await _query.QueryAsync(new GetCourtSessionByIdQuery(caseId, sessionId), ct);
         return result.Match(Ok, Problem);
     }
+
+    [HttpGet("/api/court-sessions/future", Name = nameof(GetFutureCourtSessions))]
+    [ProducesResponseType(typeof(IReadOnlyList<CourtSessionDto>), StatusCodes.Status200OK)]
+    [EndpointSummary("Retrieves all court sessions scheduled in the future.")]
+    [EndpointDescription("Returns a list of court sessions with scheduled dates after now.")]
+    [EndpointName(nameof(GetFutureCourtSessions))]
+    public async Task<IActionResult> GetFutureCourtSessions(CancellationToken ct)
+    {
+        var query = new GetFutureCourtSessionsQuery();
+        var result = await _query.QueryAsync(query, ct);
+        return result.Match(Ok, Problem);
+    }
+
+    [HttpGet("/api/court-sessions/future/paged", Name = nameof(GetPaginatedFutureCourtSessions))]
+    [ProducesResponseType(typeof(PaginatedList<CourtSessionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Retrieves paginated court sessions scheduled in the future.")]
+    [EndpointDescription("Returns a paginated list of court sessions with scheduled dates after now.")]
+    [EndpointName(nameof(GetPaginatedFutureCourtSessions))]
+    public async Task<IActionResult> GetPaginatedFutureCourtSessions(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 20,
+    CancellationToken ct = default)
+    {
+        var query = new GetPaginatedFutureCourtSessionsQuery(pageNumber, pageSize);
+        var result = await _query.QueryAsync(query, ct);
+        return result.Match(Ok, Problem);
+    }
+
+    [HttpGet("paged", Name = nameof(GetPaginatedCourtSessionsByCaseId))]
+    [ProducesResponseType(typeof(PaginatedList<CourtSessionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Retrieves paginated court sessions under a specific case.")]
+    [EndpointDescription("Returns a paginated list of court sessions for the given case ID. Optionally filter by scheduled date.")]
+    [EndpointName(nameof(GetPaginatedCourtSessionsByCaseId))]
+    public async Task<IActionResult> GetPaginatedCourtSessionsByCaseId(
+        Guid caseId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] DateTimeOffset? fromDate = null,
+        CancellationToken ct = default)
+    {
+        var query = new GetPaginatedCourtSessionsByCaseIdQuery(caseId, pageNumber, pageSize, fromDate);
+        var result = await _query.QueryAsync(query, ct);
+        return result.Match(Ok, Problem);
+    }
+
+
 
     [HttpPost(Name = nameof(CreateCourtSession))]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]

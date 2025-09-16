@@ -3,7 +3,7 @@ using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Contracts.Dtos;
 using LOMs.Domain.Common.Results;
 
-namespace LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.GetPagedContractsByCaseId;
+namespace LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.Paged;
 public sealed class GetPagedContractsByCaseIdQuery(
     Guid caseId,
     int pageNumber,
