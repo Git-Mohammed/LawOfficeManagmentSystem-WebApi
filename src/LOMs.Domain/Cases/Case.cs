@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
+using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Cases.Enums;
 using LOMs.Domain.Common;
@@ -21,6 +22,8 @@ namespace LOMs.Domain.Cases
         public string? LawyerOpinion { get; private set; }
         public Guid AssignedEmployeeId { get; private set; } 
         public Guid CourtTypeId { get; private set; }
+
+        public ICollection<CourtSession> CourtSessions { get;  set; } = new List<CourtSession>();
         public ICollection<Contract> Contracts {  get;  set; } = new List<Contract>();
         public ICollection<ClientCase> ClientCases { get;  set; } = new List<ClientCase>();
         public ICollection<POA> POAs { get; set; } = new List<POA>();

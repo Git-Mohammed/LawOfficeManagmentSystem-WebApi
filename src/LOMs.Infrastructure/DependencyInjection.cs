@@ -1,5 +1,6 @@
 ﻿using LOMs.Application.Common.Interfaces;
 using LOMs.Domain.Common.Options;
+using LOMs.Infrastructure.BackgroundServicesJob;
 using LOMs.Infrastructure.Data;
 using LOMs.Infrastructure.Data.Interceptors;
 using LOMs.Infrastructure.Identity;
