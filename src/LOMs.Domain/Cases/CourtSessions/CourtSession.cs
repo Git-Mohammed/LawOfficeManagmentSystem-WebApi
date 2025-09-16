@@ -62,7 +62,7 @@ public sealed class CourtSession : AuditableEntity
         return Result.Success;
     }
 
-    public Result<Success> Update(Guid caseId, Guid assignedEmployeeId, DateTimeOffset newDate, string assignedTasks)
+    public Result<Updated> Update(Guid caseId, Guid assignedEmployeeId, DateTimeOffset newDate, string assignedTasks)
     {
         if (IsSessionDateExpired)
             return CourtSessionErrors.CannotUpdateExpiredSession;
@@ -84,6 +84,6 @@ public sealed class CourtSession : AuditableEntity
         ScheduledAt = newDate;
         AssignedTasks = assignedTasks.Trim();
 
-        return Result.Success;
+        return Result.Updated;
     }
 }

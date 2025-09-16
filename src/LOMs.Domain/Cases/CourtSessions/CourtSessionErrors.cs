@@ -29,5 +29,8 @@ public static class CourtSessionErrors
 
     public static readonly Error CaseNotFound =
         Error.NotFound("CourtSession.CaseNotFound", "Case does not exist.");
+    public static readonly Error SessionNotFound =
+    Error.NotFound("CourtSession.SessionNotFound", "Court session does not exist for the specified case.");
+
 
 }
