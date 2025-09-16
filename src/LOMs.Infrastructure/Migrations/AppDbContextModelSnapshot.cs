@@ -176,10 +176,6 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<DateOnly?>("ExpiresOn")
                         .HasColumnType("date");
 
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<short>("HijriYear")
                         .HasColumnType("smallint");
 
@@ -215,6 +211,43 @@ namespace LOMs.Infrastructure.Migrations
                     b.HasIndex("CaseId");
 
                     b.ToTable("Contracts", "Finance");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.Contracts.ContractFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ContractId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("ContractId");
+
+                    b.ToTable("ContractFiles");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.CourtTypes.CourtType", b =>
@@ -750,6 +783,17 @@ namespace LOMs.Infrastructure.Migrations
                     b.Navigation("Case");
                 });
 
+            modelBuilder.Entity("LOMs.Domain.Cases.Contracts.ContractFile", b =>
+                {
+                    b.HasOne("LOMs.Domain.Cases.Contracts.Contract", "Contract")
+                        .WithMany("ContractFiles")
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Contract");
+                });
+
             modelBuilder.Entity("LOMs.Domain.Identity.RefreshToken", b =>
                 {
                     b.HasOne("LOMs.Infrastructure.Identity.ApplicationUser", null)
@@ -855,6 +899,11 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.ClientFiles.ClientFile", b =>
                 {
                     b.Navigation("CaseClients");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.Contracts.Contract", b =>
+                {
+                    b.Navigation("ContractFiles");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.CourtTypes.CourtType", b =>

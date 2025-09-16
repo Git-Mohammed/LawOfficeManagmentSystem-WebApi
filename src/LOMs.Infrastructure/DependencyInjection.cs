@@ -24,10 +24,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton(TimeProvider.System);
-        services.AddDataProtection()
-            .PersistKeysToDbContext<AppDbContext>();
-            
+        services.AddSingleton(TimeProvider.System);            
 
         RegisterDatabase(services, configuration);
         RegisterIdentity(services);

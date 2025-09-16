@@ -15,8 +15,8 @@ namespace LOMs.Application.Features.Contracts.Services
             DateOnly? expiresOn,
             decimal totalAmount,
             decimal initialPayment,
-            string filePath,
             bool isAssigned,
+            List<ContractFile> contractFiles,
             CancellationToken ct = default);
     }
 }

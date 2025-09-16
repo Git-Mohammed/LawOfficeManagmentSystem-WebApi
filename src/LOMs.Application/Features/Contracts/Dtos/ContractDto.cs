@@ -1,6 +1,6 @@
 ﻿using LOMs.Domain.Cases.Enums;
 
-namespace LOMs.Application.Features.Cases.Dtos
+namespace LOMs.Application.Features.Contracts.Dtos
 {
     public class ContractDto
     {
@@ -12,7 +12,6 @@ namespace LOMs.Application.Features.Cases.Dtos
         public DateOnly? ExpiryDate { get; set; }
         public decimal TotalAmount { get; set; }
         public decimal InitialPayment { get; set; }
-        public string ContractFilePath { get; set; } = string.Empty;
 
         public bool IsAssigned { get; set; }
     }

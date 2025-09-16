@@ -33,9 +33,6 @@ namespace LOMs.Infrastructure.Data.Configurations.CaseManagment
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
 
-            builder.Property(c => c.FilePath)
-                .IsRequired();
-
             builder.Property(c => c.IsAssigned)
                 .IsRequired();
 

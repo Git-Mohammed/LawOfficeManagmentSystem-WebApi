@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace LOMs.Infrastructure.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser,ApplicationRole,string>(options), IAppDbContext,IDataProtectionKeyContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser,ApplicationRole,string>(options), IAppDbContext
 {
     public DbSet<Person> People => Set<Person>();
     public DbSet<Client> Clients => Set<Client>();
@@ -29,6 +29,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<ClientFile> ClientFiles => Set<ClientFile>();
 
     public DbSet<Contract> Contracts => Set<Contract>();
+    public DbSet<ContractFile> ContractFiles => Set<ContractFile>();
 
     public DbSet<Employee> Employees => Set<Employee>();
 
@@ -37,7 +38,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<CourtType> CourtTypes => Set<CourtType>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
-    public DbSet<DataProtectionKey> DataProtectionKeys =>  Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
