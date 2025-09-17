@@ -250,6 +250,48 @@ namespace LOMs.Infrastructure.Migrations
                     b.ToTable("ContractFiles");
                 });
 
+            modelBuilder.Entity("LOMs.Domain.Cases.CourtSessions.CourtSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AssignedEmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AssignedTasks")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("CaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ScheduledAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("AssignedEmployeeId");
+
+                    b.HasIndex("CaseId");
+
+                    b.ToTable("CourtSessions", "Case");
+                });
+
             modelBuilder.Entity("LOMs.Domain.Cases.CourtTypes.CourtType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -794,6 +836,25 @@ namespace LOMs.Infrastructure.Migrations
                     b.Navigation("Contract");
                 });
 
+            modelBuilder.Entity("LOMs.Domain.Cases.CourtSessions.CourtSession", b =>
+                {
+                    b.HasOne("LOMs.Domain.People.Employees.Employee", "AssignedEmployee")
+                        .WithMany()
+                        .HasForeignKey("AssignedEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LOMs.Domain.Cases.Case", "Case")
+                        .WithMany("CourtSessions")
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AssignedEmployee");
+
+                    b.Navigation("Case");
+                });
+
             modelBuilder.Entity("LOMs.Domain.Identity.RefreshToken", b =>
                 {
                     b.HasOne("LOMs.Infrastructure.Identity.ApplicationUser", null)
@@ -892,6 +953,8 @@ namespace LOMs.Infrastructure.Migrations
                     b.Navigation("ClientCases");
 
                     b.Navigation("Contracts");
+
+                    b.Navigation("CourtSessions");
 
                     b.Navigation("POAs");
                 });

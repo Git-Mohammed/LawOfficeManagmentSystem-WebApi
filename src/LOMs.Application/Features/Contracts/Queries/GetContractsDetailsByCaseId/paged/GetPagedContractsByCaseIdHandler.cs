@@ -2,70 +2,75 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Contracts.Dtos;
-using LOMs.Domain.Cases;
-using LOMs.Domain.Cases.Contracts;
+using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.GetPagedContractsByCaseId;
-public class GetPagedContractsByCaseIdHandler
+namespace LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.Paged;
+
+public sealed class GetPagedContractsByCaseIdHandler(
+    IAppDbContext context,
+    ILogger<GetPagedContractsByCaseIdHandler> logger)
     : IQueryHandler<GetPagedContractsByCaseIdQuery, Result<PaginatedList<ContractDetailsDto>>>
 {
-    private readonly IAppDbContext _context;
-    private readonly ILogger<GetPagedContractsByCaseIdHandler> _logger;
-
-    public GetPagedContractsByCaseIdHandler(IAppDbContext context, ILogger<GetPagedContractsByCaseIdHandler> logger)
-    {
-        _context = context;
-        _logger = logger;
-    }
-
     public async Task<Result<PaginatedList<ContractDetailsDto>>> HandleAsync(
         GetPagedContractsByCaseIdQuery query,
         CancellationToken ct)
     {
-        var caseExsting = await _context.Cases.AnyAsync(x => x.Id == query.CaseId);
-
-        if (!caseExsting)
+        if (query.PageNumber < 1)
         {
-            return CaseErrors.CaseNotFound;
+            logger.LogWarning("Invalid page number: {PageNumber}", query.PageNumber);
+            return Error.Validation("Pagination.InvalidPageNumber", "Page number must be at least 1.");
         }
 
-        var totalItemsCount = await _context.Contracts
-            .Where(c => c.CaseId == query.CaseId)
-            .CountAsync(ct);
-
-        if (totalItemsCount == 0)
+        if (query.PageSize < 1 || query.PageSize > 100)
         {
-            _logger.LogWarning("No contracts found for CaseId: {CaseId}", query.CaseId);
-            return ContractErrors.ContractsNotFoundByCaseId;
+            logger.LogWarning("Invalid page size: {PageSize}", query.PageSize);
+            return Error.Validation("Pagination.InvalidPageSize", "Page size must be between 1 and 100.");
         }
 
-        var contracts = await _context.Contracts
+        var caseExists = await context.Cases
             .AsNoTracking()
-            .Where(c => c.CaseId == query.CaseId)
-            .OrderByDescending(c => c.CreatedAtUtc)
+            .AnyAsync(c => c.Id == query.CaseId, ct);
+
+        if (!caseExists)
+        {
+            logger.LogWarning("Fetching court sessions failed: Case not found. CaseId: {CaseId}", query.CaseId);
+            return CourtSessionErrors.CaseNotFound;
+        }
+
+        var contractsQuery = context.Contracts
+            .AsNoTracking()
+            .Where(cs => cs.CaseId == query.CaseId);
+
+
+        var totalCount = await contractsQuery.CountAsync(ct);
+
+        var contracts = await contractsQuery
+            .OrderBy(cs => cs.CreatedAtUtc)
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)
-            .Select(c => new ContractDetailsDto
+            .Select(cs => new ContractDetailsDto
             {
-                ContractId = c.Id,
-                ContractNumber = c.ContractNumber,
-                TotalAmount = c.BaseAmount + c.TaxAmount,
-                InitialPayment = c.InitialPayment,
-                IsAssigned = c.IsAssigned
+                ContractId = cs.Id,
+                ContractNumber = cs.ContractNumber,
+                InitialPayment = cs.InitialPayment,
+                IsAssigned = cs.IsAssigned,
+                TotalAmount = cs.TotalAmount
             })
             .ToListAsync(ct);
 
-        var pagedResult = new PaginatedList<ContractDetailsDto>(
+        var paginated = new PaginatedList<ContractDetailsDto>(
             items: contracts,
             pageIndex: query.PageNumber,
             pageSize: query.PageSize,
-            totalItemsCount: totalItemsCount
+            totalItemsCount: totalCount
         );
 
-        return pagedResult;
+        return paginated;
     }
 }
+
+
 

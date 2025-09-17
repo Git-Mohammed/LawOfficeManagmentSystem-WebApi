@@ -1,5 +1,7 @@
 using LOMs.Api;
 using LOMs.Domain.Cases.Enums;
+using LOMs.Infrastructure.BackgroundJobs;
+using LOMs.Infrastructure.BackgroundServicesJob.CourtSessionReminder;
 using LOMs.Infrastructure.Data;
 using System.Reflection;
 
@@ -22,6 +24,8 @@ builder.Services
     .AddPresentation(builder.Configuration)
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
+
+builder.Services.AddHostedService<CourtSessionReminderService>();
 
 var app = builder.Build();
 

@@ -3,7 +3,7 @@ using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Contracts.Dtos;
 using LOMs.Domain.Common.Results;
 
-namespace LOMs.Application.Features.Contracts.Queries.GetContractList.paged;
+namespace LOMs.Application.Features.Contracts.Queries.GetContractList.Paged;
 
   public sealed record GetPagedContractListQuery
 (

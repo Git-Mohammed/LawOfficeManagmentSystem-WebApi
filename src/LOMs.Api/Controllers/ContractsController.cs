@@ -6,8 +6,8 @@ using LOMs.Application.Features.Contracts.Dtos;
 using LOMs.Application.Features.Contracts.Queries;
 using LOMs.Application.Features.Contracts.Queries.GetContractById;
 using LOMs.Application.Features.Contracts.Queries.GetContractList;
-using LOMs.Application.Features.Contracts.Queries.GetContractList.paged;
-using LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.GetPagedContractsByCaseId;
+using LOMs.Application.Features.Contracts.Queries.GetContractList.Paged;
+using LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.Paged;
 using LOMs.Contract.Requests.Contracts;
 using Microsoft.AspNetCore.Mvc;
 

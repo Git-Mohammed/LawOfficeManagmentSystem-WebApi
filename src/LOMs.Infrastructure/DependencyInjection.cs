@@ -1,5 +1,7 @@
 ﻿using LOMs.Application.Common.Interfaces;
 using LOMs.Domain.Common.Options;
+using LOMs.Infrastructure.BackgroundServicesJob;
+using LOMs.Infrastructure.Configuration;
 using LOMs.Infrastructure.Data;
 using LOMs.Infrastructure.Data.Interceptors;
 using LOMs.Infrastructure.Identity;
@@ -116,6 +118,8 @@ public static class DependencyInjection
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
         services.Configure<PasswordGeneratorOptions>(configuration.GetSection("PasswordGenerator"));
         services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
+        services.Configure<LOMsSettings>(configuration.GetSection("LOMsSettings"));
+
     }
 
     // 🔹 Mapster Mapping
