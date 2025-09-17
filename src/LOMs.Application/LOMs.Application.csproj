@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="LiteBus" Version="3.1.0" />
     <PackageReference Include="LiteBus.Extensions.MicrosoftDependencyInjection" Version="3.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
   </ItemGroup>

@@ -1,17 +1,19 @@
-﻿using LOMs.Application.Common.Interfaces;
+﻿using System.Data;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Azure;
+using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.Auth.Dtos;
 using LOMs.Domain.Common.Options;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.Identity; // <-- Add this for UserErrors
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.Data;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace LOMs.Infrastructure.Identity;
 
@@ -341,5 +343,27 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
     {
         _logger.LogInformation("Deleting user: {UserId}", userId);
         throw new NotImplementedException();
+    }
+
+    public void SetInsideCookie(TokenResponse tokenResponse, HttpContext context)
+    {
+
+        context.Response.Cookies.Append("accessToken", tokenResponse.AccessToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = DateTime.UtcNow.AddMinutes(15),
+            Secure = true,
+            IsEssential = true,
+            SameSite = SameSiteMode.Strict
+        });
+
+        context.Response.Cookies.Append("refreshToken", tokenResponse.RefreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = DateTime.UtcNow.AddDays(7),
+            Secure = true,
+            IsEssential = true,
+            SameSite = SameSiteMode.Strict
+        });
     }
 }
