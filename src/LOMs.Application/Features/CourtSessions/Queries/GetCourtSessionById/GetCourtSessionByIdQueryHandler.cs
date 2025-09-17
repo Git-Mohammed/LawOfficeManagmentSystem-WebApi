@@ -18,8 +18,6 @@ public sealed class GetCourtSessionByIdQueryHandler(
     public async Task<Result<CourtSessionDto>> HandleAsync(GetCourtSessionByIdQuery query, CancellationToken cancellationToken = default)
     {
         var session = await _context.CourtSessions
-            .Include(cs => cs.AssignedEmployee)
-                .ThenInclude(e => e.Person)
             .Where(cs => cs.CaseId == query.CaseId && cs.Id == query.SessionId)
             .Select(cs => new CourtSessionDto
             {

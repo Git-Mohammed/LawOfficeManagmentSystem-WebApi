@@ -24,7 +24,8 @@ public sealed class GetFutureCourtSessionsQueryHandler(
                 CaseId = cs.CaseId,
                 ScheduledAt = cs.ScheduledAt,
                 AssignedTasks = cs.AssignedTasks,
-                AssignedEmployeeId = cs.AssignedEmployeeId
+                AssignedEmployeeId = cs.AssignedEmployeeId,
+                AssignedEmployeeName = cs.AssignedEmployee!.Person.FullName ?? string.Empty
             })
             .ToListAsync(cancellationToken);
 

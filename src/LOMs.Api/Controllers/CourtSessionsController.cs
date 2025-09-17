@@ -9,7 +9,6 @@ using LOMs.Application.Features.CourtSessions.Queries.GetCourtSessionsByCaseId.P
 using LOMs.Application.Features.CourtSessions.Queries.GetFutureCourtSessions;
 using LOMs.Application.Features.CourtSessions.Queries.GetFutureCourtSessions.Paged;
 using LOMs.Contract.Requests.CourtSessions;
-using LOMs.Contract.Requests.CourtSesstions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Controllers;

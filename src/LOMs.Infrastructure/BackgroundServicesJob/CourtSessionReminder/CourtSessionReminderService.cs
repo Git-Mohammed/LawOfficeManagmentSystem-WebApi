@@ -1,29 +1,31 @@
 ﻿using LOMs.Application.Common.Interfaces;
 using LOMs.Infrastructure.BackgroundServicesJob.CourtSessionReminder;
-
+using LOMs.Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LOMs.Infrastructure.BackgroundJobs;
 
 public class CourtSessionReminderService(
     IServiceScopeFactory scopeFactory,
     ILogger<CourtSessionReminderService> logger,
-    TimeProvider timeProvider) : BackgroundService
+    TimeProvider timeProvider,
+    IOptions<LOMsSettings> settings) : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
     private readonly ILogger<CourtSessionReminderService> _logger = logger;
     private readonly TimeProvider _time = timeProvider;
-
+    private readonly int _daysAhead = 1;
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Sending initial court session reminders at {Now}", _time.GetUtcNow());
 
         await SendRemindersAsync(stoppingToken); // Run immediately on startup
 
-        using var timer = new PeriodicTimer(TimeSpan.FromDays(1));
+        using var timer = new PeriodicTimer(TimeSpan.FromDays(_daysAhead));
 
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
@@ -40,7 +42,7 @@ public class CourtSessionReminderService(
             var db = scope.ServiceProvider.GetRequiredService<IAppDbContext>();
             var email = scope.ServiceProvider.GetRequiredService<IEmailSender>();
 
-            var tomorrow = _time.GetUtcNow().Date.AddDays(1);
+            var tomorrow = _time.GetUtcNow().Date.AddDays(_daysAhead);
 
             var sessions = await db.CourtSessions
                 .Include(cs => cs.AssignedEmployee)

@@ -57,7 +57,9 @@ public sealed class GetPaginatedCourtSessionsByCaseIdQueryHandler(
                 CaseId = cs.CaseId,
                 ScheduledAt = cs.ScheduledAt,
                 AssignedTasks = cs.AssignedTasks,
-                AssignedEmployeeId = cs.AssignedEmployeeId
+                AssignedEmployeeId = cs.AssignedEmployeeId,
+                AssignedEmployeeName = cs.AssignedEmployee!.Person.FullName ?? string.Empty,
+                IsSessionDateExpired = cs.IsSessionDateExpired
             })
             .ToListAsync(ct);
 

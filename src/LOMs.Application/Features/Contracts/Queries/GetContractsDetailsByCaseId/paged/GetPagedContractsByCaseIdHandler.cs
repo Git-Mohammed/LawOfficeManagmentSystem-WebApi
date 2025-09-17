@@ -2,10 +2,6 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Contracts.Dtos;
-using LOMs.Application.Features.CourtSessions.Dtos;
-using LOMs.Application.Features.CourtSessions.Queries.GetCourtSessionsByCaseId.Paged;
-using LOMs.Domain.Cases;
-using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
@@ -13,13 +9,13 @@ using Microsoft.Extensions.Logging;
 
 namespace LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.Paged;
 
-public sealed class GetPaginatedCourtSessionsByCaseIdQueryHandler(
+public sealed class GetPagedContractsByCaseIdHandler(
     IAppDbContext context,
-    ILogger<GetPaginatedCourtSessionsByCaseIdQueryHandler> logger)
-    : IQueryHandler<GetPaginatedCourtSessionsByCaseIdQuery, Result<PaginatedList<CourtSessionDto>>>
+    ILogger<GetPagedContractsByCaseIdHandler> logger)
+    : IQueryHandler<GetPagedContractsByCaseIdQuery, Result<PaginatedList<ContractDetailsDto>>>
 {
-    public async Task<Result<PaginatedList<CourtSessionDto>>> HandleAsync(
-        GetPaginatedCourtSessionsByCaseIdQuery query,
+    public async Task<Result<PaginatedList<ContractDetailsDto>>> HandleAsync(
+        GetPagedContractsByCaseIdQuery query,
         CancellationToken ct)
     {
         if (query.PageNumber < 1)
@@ -44,33 +40,29 @@ public sealed class GetPaginatedCourtSessionsByCaseIdQueryHandler(
             return CourtSessionErrors.CaseNotFound;
         }
 
-        var sessionsQuery = context.CourtSessions
+        var contractsQuery = context.Contracts
             .AsNoTracking()
             .Where(cs => cs.CaseId == query.CaseId);
 
-        if (query.FromDate is not null)
-        {
-            sessionsQuery = sessionsQuery.Where(cs => cs.ScheduledAt >= query.FromDate);
-        }
 
-        var totalCount = await sessionsQuery.CountAsync(ct);
+        var totalCount = await contractsQuery.CountAsync(ct);
 
-        var sessions = await sessionsQuery
-            .OrderBy(cs => cs.ScheduledAt)
+        var contracts = await contractsQuery
+            .OrderBy(cs => cs.CreatedAtUtc)
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)
-            .Select(cs => new CourtSessionDto
+            .Select(cs => new ContractDetailsDto
             {
-                CourtSessionId = cs.Id,
-                CaseId = cs.CaseId,
-                ScheduledAt = cs.ScheduledAt,
-                AssignedTasks = cs.AssignedTasks,
-                AssignedEmployeeId = cs.AssignedEmployeeId
+                ContractId = cs.Id,
+                ContractNumber = cs.ContractNumber,
+                InitialPayment = cs.InitialPayment,
+                IsAssigned = cs.IsAssigned,
+                TotalAmount = cs.TotalAmount
             })
             .ToListAsync(ct);
 
-        var paginated = new PaginatedList<CourtSessionDto>(
-            items: sessions,
+        var paginated = new PaginatedList<ContractDetailsDto>(
+            items: contracts,
             pageIndex: query.PageNumber,
             pageSize: query.PageSize,
             totalItemsCount: totalCount

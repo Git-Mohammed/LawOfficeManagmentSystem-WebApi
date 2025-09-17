@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace LOMs.Contract.Requests.CourtSesstions;
+namespace LOMs.Contract.Requests.CourtSessions;
 
 public sealed class UpdateCourtSessionRequest
 {
