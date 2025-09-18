@@ -1,11 +1,13 @@
 ﻿using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Application.Features.CourtTypes;
 using LOMs.Application.Features.CourtTypes.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Controllers;
 
 [Route("api/court-types")]
+[Authorize]
 public class CourtTypesController(ICourtTypeService courtTypeService) : ApiController
 {
     private readonly ICourtTypeService _courtTypeService = courtTypeService;

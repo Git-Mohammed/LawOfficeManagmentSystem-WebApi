@@ -99,6 +99,19 @@ public static class DependencyInjection
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
             };
+
+            // this will take care of extracting the token from the cokie
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = ctx =>
+                {
+                    ctx.Request.Cookies.TryGetValue("accessToken", out var accessToken);
+                    if (!string.IsNullOrEmpty(accessToken))
+                        ctx.Token = accessToken;
+
+                    return Task.CompletedTask;
+                }
+            };
         });
     }
 

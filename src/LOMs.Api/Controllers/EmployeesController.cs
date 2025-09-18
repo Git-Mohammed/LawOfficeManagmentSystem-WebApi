@@ -6,11 +6,13 @@ using LOMs.Application.Features.People.Employees.Dtos;
 using LOMs.Application.Features.People.Employees.Queries;
 using LOMs.Application.Features.People.Employees.Queries.GetAvailableEmployeesByDate;
 using LOMs.Contract.Requests.Employees;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Controllers;
 
 [Route("api/employees")]
+[Authorize]
 public class EmployeesController(ICommandMediator command, IQueryMediator query) : ApiController
 {
     private readonly ICommandMediator _command = command;

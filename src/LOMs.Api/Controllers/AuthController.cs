@@ -1,5 +1,6 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LiteBus.Queries.Abstractions;
+using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.Auth.Commands.ResetPassword;
 using LOMs.Application.Features.Auth.Dtos;
 using LOMs.Application.Features.Auth.Queries.GenerateTokens;
@@ -14,10 +15,11 @@ namespace LOMs.Api.Controllers;
 
 [Route("api/auth")]
 [ApiController]
-public class AuthController(ICommandMediator command, IQueryMediator query) : ApiController
+public class AuthController(ICommandMediator command, IQueryMediator query, IIdentityService identityService) : ApiController
 {
     private readonly ICommandMediator _command = command;
     private readonly IQueryMediator _query = query;
+    private readonly IIdentityService identityService = identityService;
 
     [HttpPost("login")]
     [ProducesResponseType(typeof(LoginTokenDto), StatusCodes.Status200OK)]
@@ -28,7 +30,12 @@ public class AuthController(ICommandMediator command, IQueryMediator query) : Ap
     {
         var queryModel = new GenerateTokenQuery(request.Username, request.Password);
         var result = await _query.QueryAsync(queryModel, ct);
-        return result.Match(Ok, Problem);
+        if (!result.IsError)
+            this.identityService.SetInsideCookie(result.Value.TokenResponse, HttpContext);
+        return result.Match(
+             response => Ok(new { user = response.User, refreshTokenExpiration = response.TokenResponse.ExpiresOn }),
+             Problem
+         );
     }
 
     [HttpPost("token/refresh-token")]
@@ -37,10 +44,18 @@ public class AuthController(ICommandMediator command, IQueryMediator query) : Ap
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [EndpointSummary("Refreshes access token using a valid refresh token.")]
     [EndpointDescription("Exchanges an expired access token and a valid refresh token for a new token pair.")]
-    public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshTokenQuery request, CancellationToken ct)
+    public async Task<IActionResult> RefreshTokenAsync(CancellationToken ct)
     {
-        var result = await _query.QueryAsync(request, ct);
-        return result.Match(Ok, Problem);
+
+        HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
+
+        var result = await _query.QueryAsync(new RefreshTokenQuery(refreshToken), ct);
+    
+        if (!result.IsError)
+            this.identityService.SetInsideCookie(result.Value, HttpContext);
+        return result.Match(
+                _ => Ok(new { refreshTokenExpiration = result.Value.ExpiresOn }),
+                Problem);
     }
 
     [HttpPost("logout")]
@@ -48,13 +63,23 @@ public class AuthController(ICommandMediator command, IQueryMediator query) : Ap
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [EndpointSummary("Logs out the user by invalidating the refresh token.")]
     [EndpointDescription("Removes the refresh token from the system to prevent further use.")]
-    public async Task<IActionResult> LogoutAsync([FromBody] RefreshTokenRequest request, CancellationToken ct)
+    [Authorize]
+    public async Task<IActionResult> LogoutAsync(CancellationToken ct)
     {
-        var commandModel = new LogoutCommand(request.RefreshToken);
-        var result = await _command.SendAsync(commandModel, ct);
-        return result.Match(
-            _ => Ok(new { Message = "Logged out successfully." }),
-            Problem);
+        HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
+
+        if (!string.IsNullOrEmpty(refreshToken))
+        {
+            var commandModel = new LogoutCommand(refreshToken);
+            var result = await _command.SendAsync(commandModel, ct);
+            Response.Cookies.Delete("accessToken");
+            Response.Cookies.Delete("refreshToken");
+            return result.Match(
+                _ => Ok(new { Message = "Logged out successfully." }),
+                Problem);
+        }
+
+        return BadRequest();
     }
 
     [Authorize]

@@ -1,5 +1,6 @@
 ﻿using LOMs.Application.Features.Auth.Dtos;
 using LOMs.Domain.Common.Results;
+using Microsoft.AspNetCore.Http;
 
 namespace LOMs.Application.Common.Interfaces;
 
@@ -22,5 +23,7 @@ public interface IIdentityService
 
     Task<Result<string>> CreateUserAsync(string userName, string email, string password, string roles);
     Task<Result<bool>> DeleteUserAsync(string userId);
+
+    void SetInsideCookie(TokenResponse tokenResponse, HttpContext context);
     // Add for reset password (below)
 }

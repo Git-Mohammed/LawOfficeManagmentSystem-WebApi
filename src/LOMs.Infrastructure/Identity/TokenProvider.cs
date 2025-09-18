@@ -88,7 +88,7 @@ public class TokenProvider(
 
         var refreshTokenResult = RefreshToken.Create(
             Guid.NewGuid(),
-            GenerateRefreshToken(),
+            Guid.NewGuid().ToString(),
             user.UserId,
             DateTime.UtcNow.AddDays(7));
 

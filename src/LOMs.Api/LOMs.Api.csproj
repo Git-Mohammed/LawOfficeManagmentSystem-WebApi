@@ -23,4 +23,8 @@
     <ProjectReference Include="..\LOMs.Infrastructure\LOMs.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 </Project>
