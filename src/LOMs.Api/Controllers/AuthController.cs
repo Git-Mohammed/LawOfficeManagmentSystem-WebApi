@@ -31,7 +31,10 @@ public class AuthController(ICommandMediator command, IQueryMediator query, IIde
         var queryModel = new GenerateTokenQuery(request.Username, request.Password);
         var result = await _query.QueryAsync(queryModel, ct);
         this.identityService.SetInsideCookie(result.Value.TokenResponse, HttpContext);
-        return result.Match(Ok, Problem); // handel how to return the user dto only
+        return result.Match(
+             response => Ok(new { user = response.User, refreshTokenExpiration = response.TokenResponse.ExpiresOn }),
+             Problem
+         );
     }
 
     [HttpPost("token/refresh-token")]
@@ -42,18 +45,16 @@ public class AuthController(ICommandMediator command, IQueryMediator query, IIde
     [EndpointDescription("Exchanges an expired access token and a valid refresh token for a new token pair.")]
     public async Task<IActionResult> RefreshTokenAsync(CancellationToken ct)
     {
-        /*
-         what should happen 
-            the tokens will be extraced from the endpoint and will set the new ones in the cookie
-         */
+
         HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
-        HttpContext.Request.Cookies.TryGetValue("accessToken", out var accessToken);
 
-
-        var result = await _query.QueryAsync(new RefreshTokenQuery(refreshToken, accessToken), ct);
-        //var date = DateTime.Now;
-        this.identityService.SetInsideCookie(new TokenResponse(result.Value.AccessToken, result.Value.RefreshToken), HttpContext);
-        return result.Match(Ok, Problem);
+        var result = await _query.QueryAsync(new RefreshTokenQuery(refreshToken), ct);
+    
+        if (!result.IsError)
+            this.identityService.SetInsideCookie(result.Value, HttpContext);
+        return result.Match(
+                _ => Ok(new { refreshTokenExpiration = result.Value.ExpiresOn }),
+                Problem);
     }
 
     [HttpPost("logout")]

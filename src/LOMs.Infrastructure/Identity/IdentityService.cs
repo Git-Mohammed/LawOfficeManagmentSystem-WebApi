@@ -345,6 +345,7 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
         throw new NotImplementedException();
     }
 
+
     public void SetInsideCookie(TokenResponse tokenResponse, HttpContext context)
     {
 
@@ -354,16 +355,16 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
             Expires = DateTime.UtcNow.AddMinutes(15),
             Secure = true,
             IsEssential = true,
-            SameSite = SameSiteMode.Strict
+            SameSite = SameSiteMode.None
         });
 
         context.Response.Cookies.Append("refreshToken", tokenResponse.RefreshToken, new CookieOptions
         {
             HttpOnly = true,
-            Expires = DateTime.UtcNow.AddDays(7),
+            Expires = tokenResponse.ExpiresOn,
             Secure = true,
             IsEssential = true,
-            SameSite = SameSiteMode.Strict
+            SameSite = SameSiteMode.None
         });
     }
 }
