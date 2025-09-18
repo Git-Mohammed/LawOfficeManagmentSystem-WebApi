@@ -1,6 +1,6 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LOMs.Application.Features.People.Clients.Commands.CreateClient;
-using LOMs.Application.Features.People.Employees.DTOs;
+using LOMs.Application.Features.People.Employees.Dtos;
 using LOMs.Domain.Common.Results;
 
 namespace LOMs.Application.Features.People.Employees.Commands;

@@ -6,7 +6,7 @@ using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LOMs.Application.Features.Contracts.Queries.GetContractList.paged;
+namespace LOMs.Application.Features.Contracts.Queries.GetContractList.Paged;
 
 public sealed class GetPagedContractListQueryHandler(
     IAppDbContext context,
@@ -17,6 +17,18 @@ public sealed class GetPagedContractListQueryHandler(
         GetPagedContractListQuery query,
         CancellationToken ct)
     {
+        if (query.PageIndex < 1)
+        {
+            logger.LogWarning("Invalid page number: {PageNumber}", query.PageIndex);
+            return Error.Validation("Pagination.InvalidPageNumber", "Page number must be at least 1.");
+        }
+
+        if (query.PageSize < 1)
+        {
+            logger.LogWarning("Invalid page size: {PageSize}", query.PageSize);
+            return Error.Validation("Pagination.InvalidPageSize", "Page size must be between 1 and 100.");
+        }
+
         var totalCount = await context.Contracts.CountAsync(ct);
 
         var contracts = await context.Contracts

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using LOMs.Domain.Cases.CourtSessions;
 
 namespace LOMs.Infrastructure.Data;
 
@@ -36,6 +37,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<POA> POAs => Set<POA>();
 
     public DbSet<CourtType> CourtTypes => Set<CourtType>();
+    public DbSet<CourtSession> CourtSessions => Set<CourtSession>();
+
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
 

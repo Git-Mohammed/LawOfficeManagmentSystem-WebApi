@@ -1,7 +1,7 @@
 ﻿using LOMs.Application.Features.People.Clients.Commands.CreateClient;
 using LOMs.Application.Features.People.Clients.Dtos;
 
-namespace LOMs.Application.Features.People.Employees.DTOs;
+namespace LOMs.Application.Features.People.Employees.Dtos;
 
 public sealed class EmployeeDto
 {
