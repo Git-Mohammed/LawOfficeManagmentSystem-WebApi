@@ -1,10 +1,11 @@
+using System.Reflection;
 using LOMs.Api.Infrastructure;
 using LOMs.Api.Services;
 using LOMs.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.OpenApi.Models;
-using System.Reflection;
+using static System.Net.WebRequestMethods;
 
 namespace LOMs.Api;
 
@@ -72,7 +73,7 @@ public static class DependencyInjection
             //  XML comments
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            if (File.Exists(xmlPath))
+            if (System.IO.File.Exists(xmlPath))
             {
                 options.IncludeXmlComments(xmlPath);
             }
@@ -89,9 +90,11 @@ public static class DependencyInjection
         {
             options.AddPolicy(policyName, policy =>
             {
-                policy.AllowAnyOrigin()
+                policy.WithOrigins(["https://localhost:4200"])
                       .AllowAnyMethod()
-                      .AllowAnyHeader();
+                      .AllowAnyHeader()
+                      .AllowCredentials();
+                       
             });
         });
 

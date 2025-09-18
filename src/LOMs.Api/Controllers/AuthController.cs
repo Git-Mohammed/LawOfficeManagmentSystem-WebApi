@@ -30,7 +30,8 @@ public class AuthController(ICommandMediator command, IQueryMediator query, IIde
     {
         var queryModel = new GenerateTokenQuery(request.Username, request.Password);
         var result = await _query.QueryAsync(queryModel, ct);
-        this.identityService.SetInsideCookie(result.Value.TokenResponse, HttpContext);
+        if (!result.IsError)
+            this.identityService.SetInsideCookie(result.Value.TokenResponse, HttpContext);
         return result.Match(
              response => Ok(new { user = response.User, refreshTokenExpiration = response.TokenResponse.ExpiresOn }),
              Problem
@@ -62,13 +63,17 @@ public class AuthController(ICommandMediator command, IQueryMediator query, IIde
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [EndpointSummary("Logs out the user by invalidating the refresh token.")]
     [EndpointDescription("Removes the refresh token from the system to prevent further use.")]
+    [Authorize]
     public async Task<IActionResult> LogoutAsync(CancellationToken ct)
     {
         HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
+
         if (!string.IsNullOrEmpty(refreshToken))
         {
             var commandModel = new LogoutCommand(refreshToken);
             var result = await _command.SendAsync(commandModel, ct);
+            Response.Cookies.Delete("accessToken");
+            Response.Cookies.Delete("refreshToken");
             return result.Match(
                 _ => Ok(new { Message = "Logged out successfully." }),
                 Problem);

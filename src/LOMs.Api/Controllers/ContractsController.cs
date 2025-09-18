@@ -9,11 +9,13 @@ using LOMs.Application.Features.Contracts.Queries.GetContractList;
 using LOMs.Application.Features.Contracts.Queries.GetContractList.Paged;
 using LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.Paged;
 using LOMs.Contract.Requests.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Controllers;
 
 [Route("api/cases/{caseId:guid}/contracts")]
+[Authorize]
 public class ContractsController(ICommandMediator command, IQueryMediator query) : ApiController
 {
     private readonly ICommandMediator _command = command;

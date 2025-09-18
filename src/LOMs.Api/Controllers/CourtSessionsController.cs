@@ -9,11 +9,13 @@ using LOMs.Application.Features.CourtSessions.Queries.GetCourtSessionsByCaseId.P
 using LOMs.Application.Features.CourtSessions.Queries.GetFutureCourtSessions;
 using LOMs.Application.Features.CourtSessions.Queries.GetFutureCourtSessions.Paged;
 using LOMs.Contract.Requests.CourtSessions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Controllers;
 
 [Route("api/cases/{caseId:guid}/court-sessions")]
+[Authorize]
 public class CourtSessionsController(ICommandMediator command, IQueryMediator query) : ApiController
 {
     private readonly ICommandMediator _command = command;

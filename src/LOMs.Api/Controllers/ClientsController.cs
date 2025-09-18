@@ -4,11 +4,13 @@ using LOMs.Application.Features.People.Clients.Commands.CreateClient;
 using LOMs.Application.Features.People.Clients.Dtos;
 using LOMs.Application.Features.People.Clients.Queries.GetClientByNationalIdQuery;
 using LOMs.Contract.Requests.Clients;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Controllers;
 
 [Route("api/clients")]
+[Authorize]
 public class ClientsController(ICommandMediator command, IQueryMediator query) : ApiController
 {
     private readonly IQueryMediator _query = query;

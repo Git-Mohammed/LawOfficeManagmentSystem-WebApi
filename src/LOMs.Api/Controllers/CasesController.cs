@@ -7,12 +7,14 @@ using LOMs.Application.Features.Cases.Queries.GetCaseByIdQuery;
 using LOMs.Application.Features.Cases.Queries.GetCasesByCourtTypeAndYear;
 using LOMs.Application.Features.People.Clients.Commands.CreateClient;
 using LOMs.Contract.Requests.Cases;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
 namespace LOMs.Api.Controllers;
 
 [Route("api/cases")]
+[Authorize]
 public class CasesController(ICommandMediator command, IQueryMediator query) : ApiController
 {
     private readonly IQueryMediator _query = query;
