@@ -23,7 +23,4 @@ public interface IIdentityService
 
     Task<Result<string>> CreateUserAsync(string userName, string email, string password, string roles);
     Task<Result<bool>> DeleteUserAsync(string userId);
-
-    void SetInsideCookie(TokenResponse tokenResponse, HttpContext context);
-    // Add for reset password (below)
 }

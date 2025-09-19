@@ -2,5 +2,5 @@
 
 public sealed record TokenResponse(
     string AccessToken,
-    string? RefreshToken = null,
+    string RefreshToken,
     DateTime ExpiresOn = default);

@@ -105,7 +105,7 @@ public static class DependencyInjection
             {
                 OnMessageReceived = ctx =>
                 {
-                    ctx.Request.Cookies.TryGetValue("accessToken", out var accessToken);
+                    ctx.Request.Cookies.TryGetValue("access-token", out var accessToken);
                     if (!string.IsNullOrEmpty(accessToken))
                         ctx.Token = accessToken;
 

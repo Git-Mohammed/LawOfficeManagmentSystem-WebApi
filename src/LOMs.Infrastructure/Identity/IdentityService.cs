@@ -37,12 +37,6 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
             return UserErrors.UserNotFound;
         }
 
-        //if (!user.EmailConfirmed)
-        //{
-        //    _logger.LogWarning("Authentication failed: email not confirmed. Username: {Username}", username);
-        //    return UserErrors.EmailNotConfirmed;
-        //}
-
         if (!await _userManager.CheckPasswordAsync(user, password))
         {
             _logger.LogWarning("Authentication failed: invalid credentials. Username: {Username}", username);
@@ -343,28 +337,5 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
     {
         _logger.LogInformation("Deleting user: {UserId}", userId);
         throw new NotImplementedException();
-    }
-
-
-    public void SetInsideCookie(TokenResponse tokenResponse, HttpContext context)
-    {
-
-        context.Response.Cookies.Append("accessToken", tokenResponse.AccessToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Expires = DateTime.UtcNow.AddMinutes(15),
-            Secure = true,
-            IsEssential = true,
-            SameSite = SameSiteMode.None
-        });
-
-        context.Response.Cookies.Append("refreshToken", tokenResponse.RefreshToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Expires = tokenResponse.ExpiresOn,
-            Secure = true,
-            IsEssential = true,
-            SameSite = SameSiteMode.None
-        });
     }
 }
