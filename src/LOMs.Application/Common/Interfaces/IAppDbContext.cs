@@ -20,6 +20,7 @@ public interface IAppDbContext
     public DbSet<Case> Cases { get; }
     public DbSet<ClientCase> ClientCases { get; }
     public DbSet<Contract> Contracts { get; }
+    public DbSet<ContractFile> ContractFiles { get; }
     public DbSet<POA> POAs { get; }
     public DbSet<CourtType> CourtTypes { get; }
     public DbSet<CourtSession> CourtSessions { get; }

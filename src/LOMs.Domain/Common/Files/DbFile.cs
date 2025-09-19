@@ -9,7 +9,7 @@ public abstract class DbFile : AuditableEntity
     public string ContentType { get; private set; }
     public FileType FileType { get; private set; }
 
-    protected DbFile(Guid id) : base(id) { }
+    protected DbFile(){}
 
     protected DbFile(Guid id, string filename, string filepath, FileType fileType,long size, string extension, string contentType)
         : base(id)

@@ -16,7 +16,6 @@ namespace LOMs.Application.Features.Contracts.Services
             decimal totalAmount,
             decimal initialPayment,
             bool isAssigned,
-            List<ContractFile> contractFiles,
             CancellationToken ct = default);
     }
 }
