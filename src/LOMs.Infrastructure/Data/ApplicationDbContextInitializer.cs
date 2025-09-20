@@ -58,14 +58,16 @@ public class ApplicationDbContextInitializer(
         {
             var courtTypes = new[]
             {
-    CourtType.Create(Guid.Parse("b3a1f8b4-1e6a-4b3e-9c3d-0a9f8d8a1b11"), "المحكمة العليا", 100, "المحكمة العليا").Value,
-    CourtType.Create(Guid.Parse("c4f2a9d7-2b7e-4a4f-8b2e-1c2d3e4f5a66"), "محكمة الاستئناف", 200, "محكمة الاستئناف").Value,
-    CourtType.Create(Guid.Parse("d5e3b0c8-3c8f-4c5f-9d3f-2d3e4f5a6b77"), "المحكمة الابتدائية", 300, "المحكمة الابتدائية").Value,
-    CourtType.Create(Guid.Parse("e6f4c1d9-4d9f-4d6f-ae4f-3e4f5a6b7c88"), "محكمة الأحوال الشخصية", 400, "محكمة الأحوال الشخصية").Value,
-    CourtType.Create(Guid.Parse("f7a5d2ea-5eaf-4e7f-bf5f-4f5a6b7c8d99"), "المحكمة الجزائية", 500, "المحكمة الجزائية").Value,
-    CourtType.Create(Guid.Parse("a8b6e3fb-6fb0-4f8f-cf6f-5a6b7c8d9e10"), "محكمة القضاء الإداري", 600, "محكمة القضاء الإداري").Value,
-    CourtType.Create(Guid.Parse("b9c7f40c-70c1-4f9f-df7f-6b7c8d9e0f21"), "أخرى", 32000, "أخرى").Value
-};
+                CourtType.Create(Guid.Parse("b3a1f8b4-1e6a-4b3e-9c3d-0a9f8d8a1b11"), "العامة", 100, "المحكمة العامة").Value,
+                CourtType.Create(Guid.Parse("c4f2a9d7-2b7e-4a4f-8b2e-1c2d3e4f5a66"), "الجنائية", 200, "المحكمة الجنائية").Value,
+                CourtType.Create(Guid.Parse("d5e3b0c8-3c8f-4c5f-9d3f-2d3e4f5a6b77"), "العمالية", 300, "المحكمة العمالية").Value,
+                CourtType.Create(Guid.Parse("e6f4c1d9-4d9f-4d6f-ae4f-3e4f5a6b7c88"), "الأحوال الشخصية", 400, "محكمة الأحوال الشخصية").Value,
+                CourtType.Create(Guid.Parse("f7a5d2ea-5eaf-4e7f-bf5f-4f5a6b7c8d99"), "التجارية", 500, "المحكمة التجارية").Value,
+                CourtType.Create(Guid.Parse("a8b6e3fb-6fb0-4f8f-cf6f-5a6b7c8d9e10"), "الإدارية", 600, "المحكمة الإدارية ").Value,
+                CourtType.Create(Guid.Parse("a8b6e3fb-6fb0-4f8f-cf6f-5a6b7c8d9e10"), "اللجان شبه القضائية", 700, "اللجان شبه القضائية ").Value,
+
+                CourtType.Create(Guid.Parse("b9c7f40c-70c1-4f9f-df7f-6b7c8d9e0f21"), "أخرى", 32000, "أخرى").Value
+            };
 
 
             _context.CourtTypes.AddRange(courtTypes);
@@ -75,10 +77,10 @@ public class ApplicationDbContextInitializer(
         {
             var roles = new[]
             {
-        Role.GeneralManager.ToString(),
-        Role.ExecutiveManager.ToString(),
-        Role.Consultant.ToString(),
-        Role.Lawyer.ToString()
+                Role.GeneralManager.ToString(),
+                Role.ExecutiveManager.ToString(),
+                Role.Consultant.ToString(),
+                Role.Lawyer.ToString()
            };
 
             foreach (var roleName in roles)
