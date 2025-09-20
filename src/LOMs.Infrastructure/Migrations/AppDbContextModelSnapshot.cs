@@ -219,6 +219,11 @@ namespace LOMs.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<Guid>("ContractId")
                         .HasColumnType("uniqueidentifier");
 
@@ -228,12 +233,24 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FileName")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("Extension")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("FilePath")
+                    b.Property<string>("FileType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Filename")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Filepath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -241,13 +258,16 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("LastModifiedUtc")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
                     b.HasIndex("ContractId");
 
-                    b.ToTable("ContractFiles");
+                    b.ToTable("ContractFiles", "FileManagement");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.CourtSessions.CourtSession", b =>
