@@ -45,8 +45,7 @@ public sealed class Contract : AuditableEntity
         bool isAssigned,
         short courtTypeCode,
         short hijriYear,
-        int orderNumber,
-        List<ContractFile> contractFiles 
+        int orderNumber
     ) : base(id)
     {
         CaseId = caseId;
@@ -61,7 +60,6 @@ public sealed class Contract : AuditableEntity
         CourtTypeCode = courtTypeCode;
         HijriYear = hijriYear;
         OrderNumber = orderNumber;
-        _contractFiles = contractFiles;
     }
 
     public static Result<Contract> Create(
@@ -74,8 +72,7 @@ public sealed class Contract : AuditableEntity
         decimal initialPayment,
         bool isAssigned,
         short hijriYear,
-        int orderNumber,
-        List<ContractFile> contractFiles = null!
+        int orderNumber
     )
     {
         if (caseId == Guid.Empty)
@@ -113,11 +110,6 @@ public sealed class Contract : AuditableEntity
         if (initialPayment < 0)
             return ContractErrors.InvalidInitialPayment;
 
-        if (contractFiles is null || contractFiles.Count <= 0)
-        {
-            return ContractErrors.MissingFilePath;
-        }    
-
             var contractNumber = GenerateFileNumber(courtType, hijriYear, orderNumber);
         var taxAmount = CalculateTax(baseAmount);
         var contract = new Contract(
@@ -133,8 +125,7 @@ public sealed class Contract : AuditableEntity
             isAssigned,
             courtType.Code,
             hijriYear,
-            orderNumber,
-            contractFiles
+            orderNumber
         );
 
         return contract;

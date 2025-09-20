@@ -23,7 +23,6 @@ namespace LOMs.Application.Features.Contracts.Services
             decimal totalAmount,
             decimal initialPayment,
             bool isAssigned,
-            List<ContractFile> contractFiles,
             CancellationToken ct = default)
         {
 
@@ -45,8 +44,7 @@ namespace LOMs.Application.Features.Contracts.Services
                 initialPayment,
                 isAssigned,
                 (short)hijriYear,
-                orderNumber,
-                contractFiles
+                orderNumber
             );
 
             if (result.IsError)

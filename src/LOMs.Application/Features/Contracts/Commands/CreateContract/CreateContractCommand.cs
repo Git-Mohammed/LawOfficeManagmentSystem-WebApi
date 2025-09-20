@@ -12,6 +12,6 @@ public sealed record CreateContractCommand(
     decimal TotalAmount,
     decimal InitialPayment,
     bool IsAssigned,
-    List<CreateContractFileWithContractCommand> ContractFiles
+    CreateContractFileWithContractCommand ContractFile
 ) : ICommand<Result<Guid>>;
 

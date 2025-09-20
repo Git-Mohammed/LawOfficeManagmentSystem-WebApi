@@ -23,7 +23,7 @@ namespace LOMs.Contract.Requests.Contracts
         public decimal InitialPayment { get; set; }
 
         [Required(ErrorMessage = "File  is required.")]
-        public List<IFormFile> ContractFiles { get; set; } = [];
+        public IFormFile ContractFile { get; set; }
 
         public bool IsAssigned { get; set; }
     }

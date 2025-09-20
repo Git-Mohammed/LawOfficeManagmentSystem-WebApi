@@ -1,82 +1,75 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LOMs.Application.Common.Interfaces;
-using LOMs.Application.Features.Cases.Commands.CreateCase;
 using LOMs.Application.Features.Contracts.Services;
 using LOMs.Domain.Cases.Contracts;
+using LOMs.Domain.Common.Files;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LOMs.Application.Features.Contracts.Commands.CreateContract;
 
-public class CreateContractCommandHandler(IMapper mapper,
-ILogger<CreateCaseCommandHandler> logger,
-IAppDbContext context,
-IContractFactory contractFactory,
-IFileService fileService
+public class CreateContractCommandHandler(
+    ILogger<CreateContractCommandHandler> logger,
+    IAppDbContext context,
+    IContractFactory contractFactory,
+    IFileService fileService
 ) : ICommandHandler<CreateContractCommand, Result<Guid>>
 {
-    private readonly ILogger<CreateCaseCommandHandler> _logger = logger;
+    private readonly ILogger<CreateContractCommandHandler> _logger = logger;
     private readonly IAppDbContext _context = context;
-    private readonly IMapper _mapper = mapper;
     private readonly IContractFactory _contractFactory = contractFactory;
     private readonly IFileService _fileService = fileService;
 
-    public async Task<Result<Guid>> HandleAsync(CreateContractCommand message, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid>> HandleAsync(CreateContractCommand command, CancellationToken cancellationToken = default)
     {
-        var caseEntity = await _context.Cases.Include(c => c.CourtType)
-            .FirstOrDefaultAsync(c => c.Id == message.CaseId, cancellationToken);
+        var caseEntity = await _context.Cases
+            .Include(c => c.CourtType)
+            .FirstOrDefaultAsync(c => c.Id == command.CaseId, cancellationToken);
 
-        if (caseEntity is null || caseEntity.CourtType is null)
-        {
+        if (caseEntity?.CourtType is null)
             return Error.NotFound("Case does not exist.");
-        }
 
-        if(message.ContractFiles is null || !message.ContractFiles.Any())
-        {
-            return Error.Validation("At least one contract file is required.");
-        }
+        if (command?.ContractFile is null)
+            return Error.Validation("Contract file is required.");
 
-        List<ContractFile> contractFiles = new();
-        List<string> filePaths = new();
-        foreach (var file in message.ContractFiles)
-        {
-            var uploadResult = await _fileService.SaveFileAsync(file.File,file.FileName ?? string.Empty, "contracts");
-            if (uploadResult.IsError)
-            {
-                if(filePaths.Any())
-                {
-                    // Rollback previously uploaded files
-                    foreach(var path in filePaths)
-                    {
-                        await _fileService.DeleteFileAsync(path);
-                    }
-                }
+        var contract = await _contractFactory.CreateAsync(
+            caseEntity.Id,
+            caseEntity.CourtType,
+            command.ContractType,
+            command.IssuedOn,
+            command.ExpiresOn,
+            command.TotalAmount,
+            command.InitialPayment,
+            command.IsAssigned);
 
-                return uploadResult.Errors;
-            }
-
-            filePaths.Add(uploadResult.Value);
-
-
-            var contractFile =  ContractFile.Create(
-                file.FileName ?? string.Empty,
-                uploadResult.Value
-            );
-
-            contractFiles.Add(contractFile);
-        }
-
-
-        var contract = await _contractFactory.CreateAsync(caseId : message.CaseId,caseEntity.CourtType, message.ContractType,message.IssuedOn,message.ExpiresOn,message.TotalAmount, message.InitialPayment,message.IsAssigned,contractFiles);
-
-        if(contract.IsError)
-        {
+        if (contract.IsError)
             return contract.Errors;
-        }
-        _context.Contracts.Add(contract.Value);
+
+        var contractEntity = contract.Value;
+
+        var filepath = await _fileService.SaveFileAsync(
+            command.ContractFile.File,
+            command.ContractFile.FileName,
+            nameof(FileType.Contract));
+
+        if (filepath.IsError)
+            return Error.Failure("Failed to save contract file.");
+
+        var contractFile = ContractFile.Create(
+            contractEntity.Id,
+            command.ContractFile.FileName,
+            filepath.Value,
+            FileType.Contract,
+            command.ContractFile.File.Length,
+            Path.GetExtension(command.ContractFile.FileName),
+            command.ContractFile.ContentType);
+
+        _context.Contracts.Add(contractEntity);
+        _context.ContractFiles.Add(contractFile);
+
         await _context.SaveChangesAsync(cancellationToken);
 
-        return contract.Value.Id;
+        return contractEntity.Id;
     }
 }

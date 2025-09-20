@@ -112,23 +112,17 @@ public class ContractsController(ICommandMediator command, IQueryMediator query)
     [EndpointDescription("Registers a new contract for the given case and uploads associated files.")]
     [EndpointName(nameof(CreateContract))]
     public async Task<IActionResult> CreateContract(
-    Guid caseId,
-    [FromForm] CreateContractRequest request,
-    CancellationToken ct)
+        Guid caseId,
+        [FromForm] CreateContractRequest request,
+        CancellationToken ct)
     {
+        await using var fileStream = request.ContractFile.OpenReadStream();
 
-        var filesCommands = new List<CreateContractFileWithContractCommand>();
-        foreach (var fileRequest in request.ContractFiles)
-        {
-            using var ms = new MemoryStream();
-            await fileRequest.CopyToAsync(ms, ct);
-            ms.Position = 0;
-
-            filesCommands.Add(new CreateContractFileWithContractCommand(
-                FileName: fileRequest.FileName,
-                File: new MemoryStream(ms.ToArray())
-            ));
-        }
+        var fileCommand = new CreateContractFileWithContractCommand(
+            request.ContractFile.FileName, 
+            fileStream,
+            request.ContractFile.ContentType
+        );
 
         var commandRequest = new CreateContractCommand(
             CaseId: caseId,
@@ -138,7 +132,7 @@ public class ContractsController(ICommandMediator command, IQueryMediator query)
             TotalAmount: request.BaseAmount,
             InitialPayment: request.InitialPayment,
             IsAssigned: request.IsAssigned,
-            ContractFiles: filesCommands
+            ContractFile: fileCommand
         );
 
         var result = await _command.SendAsync(commandRequest, ct);
@@ -151,4 +145,5 @@ public class ContractsController(ICommandMediator command, IQueryMediator query)
             Problem
         );
     }
+
 }
