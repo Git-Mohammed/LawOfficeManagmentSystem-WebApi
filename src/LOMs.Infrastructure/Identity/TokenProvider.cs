@@ -60,11 +60,7 @@ public class TokenProvider(
             new("username", user.Username),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
-
-        foreach (var role in user.Roles)
-        {
-            claims.Add(new(ClaimTypes.Role, role));
-        }
+        claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         claims.AddRange(user.Claims);
 
@@ -98,7 +94,8 @@ public class TokenProvider(
         }
 
         var refreshToken = refreshTokenResult.Value;
-
+        if(refreshToken.Token is null)
+            return Error.Failure("RefreshToken_Token_Null", "RefreshToken_Token_Null");
         _context.RefreshTokens.Add(refreshToken);
 
         await _context.SaveChangesAsync(ct);
