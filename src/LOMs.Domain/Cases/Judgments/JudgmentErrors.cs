@@ -27,4 +27,6 @@ public static class JudgmentErrors
 
     public static readonly Error InvalidDateRange =
         Error.Validation("Judgment.InvalidDateRange", "ExpiresOn must be after IssuedOn.");
+    public static readonly Error NotFound =
+        Error.NotFound("Judgment.NotFound", "Judgment not found.");
 }

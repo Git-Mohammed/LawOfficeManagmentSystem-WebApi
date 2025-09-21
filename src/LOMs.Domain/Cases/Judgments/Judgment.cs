@@ -1,4 +1,6 @@
 using LOMs.Domain.Common;
+using LOMs.Domain.Common.Extensions;
+using LOMs.Domain.Common.Files;
 using LOMs.Domain.Common.Results;
 
 namespace LOMs.Domain.Cases.Judgments;
@@ -30,7 +32,7 @@ public class Judgment : AuditableEntity
         SubType = subType;
     }
 
-    public static Result<Judgment> Create(Guid caseId, string number, JudgmentType type, JudgmentSubType subType,
+    public static Result<Judgment> Create(Guid caseId, string number, string type, string subType,
         DateOnly issuedOn, DateOnly expiresOn)
     {
         if (caseId == Guid.Empty)
@@ -39,10 +41,12 @@ public class Judgment : AuditableEntity
         if (string.IsNullOrWhiteSpace(number))
             return JudgmentErrors.NumberRequired;
 
-        if (type == JudgmentType.None)
+        var judgmentType = type.ToEnumOrDefault(JudgmentType.None);
+        
+        if (judgmentType == JudgmentType.None)
             return JudgmentErrors.TypeRequired;
-
-        if (subType == JudgmentSubType.None)
+        var subtype = subType.ToEnumOrDefault(JudgmentSubType.None); 
+        if (subtype == JudgmentSubType.None)
             return JudgmentErrors.SubTypeRequired;
 
         if (issuedOn == default)
@@ -55,7 +59,7 @@ public class Judgment : AuditableEntity
             return JudgmentErrors.InvalidDateRange;
 
         
-        return new Judgment(Guid.NewGuid(), caseId, number, type, subType, issuedOn, expiresOn);
+        return new Judgment(Guid.NewGuid(), caseId, number, judgmentType, subtype, issuedOn, expiresOn);
     }
 }
 

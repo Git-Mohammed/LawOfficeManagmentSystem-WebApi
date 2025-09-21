@@ -118,7 +118,7 @@ public class ContractsController(ICommandMediator command, IQueryMediator query)
     {
         await using var fileStream = request.ContractFile.OpenReadStream();
 
-        var fileCommand = new CreateContractFileWithContractCommand(
+        var fileCommand = new CreateFileCommand(
             request.ContractFile.FileName, 
             fileStream,
             request.ContractFile.ContentType
