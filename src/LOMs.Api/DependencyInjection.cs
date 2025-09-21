@@ -1,11 +1,9 @@
-using System.Reflection;
-using LOMs.Api.Infrastructure;
+﻿using LOMs.Api.Infrastructure;
 using LOMs.Api.Services;
 using LOMs.Application.Common.Interfaces;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.OpenApi.Models;
-using static System.Net.WebRequestMethods;
+using Serilog;
+using System.Reflection;
 
 namespace LOMs.Api;
 
@@ -108,6 +106,20 @@ public static class DependencyInjection
 
         // 2. HTTPS redirection
         app.UseHttpsRedirection();
+
+        /** 
+         * Enables Serilog's built-in middleware for logging HTTP requests.
+         * 
+         * This should be placed early in the middleware pipeline to ensure that:
+         * - All incoming requests are logged before any other processing occurs.
+         * - Useful metadata like request path, method, status code, and duration are captured.
+         * 
+         * Serilog will automatically log structured entries for each request,
+         * which can be enriched with additional context (e.g., user info, trace IDs).
+         * 
+         * ✅ Recommended for diagnostics, performance tracking, and integration with sinks like Seq.
+         */
+        app.UseSerilogRequestLogging();
 
         // 3. Static files
         app.UseStaticFiles();
