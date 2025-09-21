@@ -6,6 +6,7 @@ public enum FileType
     Contract,
     Attachment,
     PowerOfAttorney,
+    Judgment,
     Avatars,
     POA
 }

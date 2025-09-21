@@ -408,6 +408,108 @@ namespace LOMs.Infrastructure.Migrations
                     b.ToTable("POAFiles", "FileManagement");
                 });
 
+            modelBuilder.Entity("LOMs.Domain.Cases.Judgments.Judgment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly>("ExpiresOn")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("IssuedOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SubType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CaseId");
+
+                    b.ToTable("Judgments", "CaseManagement");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.Judgments.JudgmentFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Extension")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Filename")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Filepath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("JudgmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JudgmentId");
+
+                    b.ToTable("JudgmentFiles", "CaseManagement");
+                });
+
             modelBuilder.Entity("LOMs.Domain.Identity.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -929,6 +1031,17 @@ namespace LOMs.Infrastructure.Migrations
                     b.Navigation("Case");
                 });
 
+            modelBuilder.Entity("LOMs.Domain.Cases.Judgments.Judgment", b =>
+                {
+                    b.HasOne("LOMs.Domain.Cases.Case", "Case")
+                        .WithMany("Judgments")
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Case");
+                });
+
             modelBuilder.Entity("LOMs.Domain.Cases.POAs.POAFile", b =>
                 {
                     b.HasOne("LOMs.Domain.POAs.POA", "POA")
@@ -938,6 +1051,17 @@ namespace LOMs.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("POA");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.Judgments.JudgmentFile", b =>
+                {
+                    b.HasOne("LOMs.Domain.Cases.Judgments.Judgment", "Judgment")
+                        .WithMany("Files")
+                        .HasForeignKey("JudgmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Judgment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Identity.RefreshToken", b =>
@@ -1041,6 +1165,8 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Navigation("CourtSessions");
 
+                    b.Navigation("Judgments");
+
                     b.Navigation("POAs");
                 });
 
@@ -1062,6 +1188,11 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.POAs.POA", b =>
                 {
                     b.Navigation("POAFiles");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.Judgments.Judgment", b =>
+                {
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Clients.Client", b =>

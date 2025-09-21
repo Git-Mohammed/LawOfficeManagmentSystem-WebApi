@@ -1,5 +1,4 @@
-﻿using LOMs.Domain.Cases.Contracts;
-using LOMs.Domain.Cases.POAs;
+﻿using LOMs.Domain.Cases.POAs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
