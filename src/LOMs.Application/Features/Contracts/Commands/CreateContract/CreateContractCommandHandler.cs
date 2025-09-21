@@ -64,9 +64,11 @@ public class CreateContractCommandHandler(
             command.ContractFile.File.Length,
             Path.GetExtension(command.ContractFile.FileName),
             command.ContractFile.ContentType);
-
+        if(contractFile.IsError)
+            return contractFile.Errors;
+        
         _context.Contracts.Add(contractEntity);
-        _context.ContractFiles.Add(contractFile);
+        _context.ContractFiles.Add(contractFile.Value);
 
         await _context.SaveChangesAsync(cancellationToken);
 
