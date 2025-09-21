@@ -1,5 +1,10 @@
 
+using LOMs.Application.Features.ClientFiles;
+using LOMs.Application.Utilities;
+using LOMs.Domain.Cases;
+using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.CourtTypes;
+using LOMs.Domain.Cases.Enums;
 using  LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
@@ -17,7 +22,8 @@ public class ApplicationDbContextInitializer(
     ILogger<ApplicationDbContextInitializer> logger,
     AppDbContext context,
     RoleManager<ApplicationRole> roleManager,
-    UserManager<ApplicationUser> userManager
+    UserManager<ApplicationUser> userManager,
+    IClientFileFactory clientFileFactory
 
     )
 {
@@ -25,6 +31,7 @@ public class ApplicationDbContextInitializer(
     private readonly AppDbContext _context = context;
     private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IClientFileFactory _clientFileFactory = clientFileFactory;
 
     public async Task InitialiseAsync()
     {
@@ -239,6 +246,149 @@ public class ApplicationDbContextInitializer(
 
             await _context.SaveChangesAsync();
         }
+
+        // --- Cases Seed Data ---
+        if (!_context.Cases.Any())
+        {
+            _logger.LogInformation("Seeding initial cases...");
+
+            var seededCases = new List<Case>();
+            var seededClientCases = new List<ClientCase>();
+            var seededClientFiles = new List<ClientFile>();
+
+            // Ensure required court type and employee exist
+            var defaultCourtType = await _context.CourtTypes.FirstOrDefaultAsync();
+            var defaultEmployee = await _context.Employees.FirstOrDefaultAsync();
+
+            if (defaultCourtType is null || defaultEmployee is null)
+            {
+                _logger.LogWarning("Cannot seed cases: missing CourtType or Employee.");
+                return;
+            }
+
+            // Example Case Seeds
+            var caseSeeds = new[]
+            {
+        new
+        {
+            Id = Guid.Parse("30000000-cccc-dddd-eeee-000000000003"),
+            CaseNumber = "CASE-001",
+            Subject = "Property Dispute",
+            PartyRole = PartyRole.Plaintiff,
+            Requests = "Recover ownership of disputed land.",
+            ReviewDate = DateOnly.FromDateTime(DateTime.Today.AddDays(30)),
+            Status = CaseStatus.Processing,
+            Opinion = "Strong case with supporting documents.",
+            ClientId = Guid.Parse("aaaa1111-bbbb-4ccc-dddd-111111111111") // seeded client
+        },
+        new
+        {
+            Id = Guid.Parse("40000000-dddd-eeee-ffff-000000000004"),
+            CaseNumber = "CASE-002",
+            Subject = "Contract Breach",
+            PartyRole = PartyRole.Defendant,
+            Requests = "Dismiss breach claims and recover damages.",
+            ReviewDate = DateOnly.FromDateTime(DateTime.Today.AddDays(45)),
+            Status = CaseStatus.Draft,
+            Opinion = "Requires further evidence from client.",
+            ClientId = Guid.Parse("bbbb2222-cccc-4ddd-eeee-222222222222") // seeded client
+        },
+        new
+        {
+            Id = Guid.Parse("50000000-eeee-ffff-aaaa-000000000005"),
+            CaseNumber = "CASE-003",
+            Subject = "Inheritance Dispute",
+            PartyRole = PartyRole.Plaintiff,
+            Requests = "Claim rightful inheritance share.",
+            ReviewDate = DateOnly.FromDateTime(DateTime.Today.AddDays(60)),
+            Status = CaseStatus.Pending,
+            Opinion = "Awaiting notarized documents.",
+            ClientId = Guid.Parse("cccc3333-dddd-4eee-ffff-333333333333") // seeded client
+        }
+    };
+
+            foreach (var seed in caseSeeds)
+            {
+                // Create case entity
+                var caseResult = Case.Create(
+                    id: seed.Id,
+                    courtTypeId: defaultCourtType.Id,
+                    caseNumber: seed.CaseNumber,
+                    caseSubject: seed.Subject,
+                    partyRole: seed.PartyRole,
+                    clientRequests: seed.Requests,
+                    estimatedReviewDate: seed.ReviewDate,
+                    status: seed.Status,
+                    lawyerOpinion: seed.Opinion,
+                    assignedEmployeeId: defaultEmployee.Id
+                );
+
+                if (caseResult.IsError)
+                {
+                    _logger.LogWarning("Failed to seed case {CaseNumber}: {Errors}",
+                        seed.CaseNumber, string.Join(", ", caseResult.Errors));
+                    continue;
+                }
+
+                var caseEntity = caseResult.Value;
+                seededCases.Add(caseEntity);
+
+                // Ensure client exists
+                var client = await _context.Clients
+                    .Include(c => c.ClientFiles)
+                    .FirstOrDefaultAsync(c => c.Id == seed.ClientId);
+
+                if (client is null)
+                {
+                    _logger.LogWarning("Skipping case {CaseNumber}: missing client {ClientId}",
+                        seed.CaseNumber, seed.ClientId);
+                    continue;
+                }
+
+                // Create/Find client file for the case
+                var currentHijriYear = HijriDateConverter.GetFullHijriYear();
+                var clientFile = client.ClientFiles
+                    .FirstOrDefault(cf => cf.CourtTypeCode == defaultCourtType.Code && cf.HijriYear == currentHijriYear);
+
+                if (clientFile is null)
+                {
+                    var clientFileResult = await _clientFileFactory.CreateAsync(client.Id, defaultCourtType, CancellationToken.None);
+                    if (clientFileResult.IsError)
+                    {
+                        _logger.LogWarning("Failed to create client file for client {ClientId}", client.Id);
+                        continue;
+                    }
+                    clientFile = clientFileResult.Value;
+                    //seededClientFiles.Add(clientFile);
+                }
+
+                // Link client to case
+                var clientCase = new ClientCase(caseEntity.Id, client.Id, clientFile.Id);
+                seededClientCases.Add(clientCase);
+                     _context.Cases.Add(caseEntity);
+                     _context.ClientFiles.Add(clientFile);
+                     _context.ClientCases.Add(clientCase);
+                await _context.SaveChangesAsync();
+
+
+                _logger.LogInformation("Seeded case {CaseNumber} with client {ClientId}", seed.CaseNumber, client.Id);
+            }
+
+            //// Save all at once
+            //if (seededCases.Any())
+            //    await _context.Cases.AddRangeAsync(seededCases);
+
+            //if (seededClientFiles.Any())
+            //    await _context.ClientFiles.AddRangeAsync(seededClientFiles);
+
+            //if (seededClientCases.Any())
+            //    await _context.ClientCases.AddRangeAsync(seededClientCases);
+
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Seeding of cases completed successfully.");
+        }
+
+
     }
 }
 

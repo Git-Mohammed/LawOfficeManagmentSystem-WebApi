@@ -19,15 +19,13 @@ public sealed class CreateCaseCommandHandler(
     IMapper mapper,
     ILogger<CreateCaseCommandHandler> logger,
     IAppDbContext context,
-    IClientFileFactory clientFileFactory,
-    IContractFactory contractFactory
+    IClientFileFactory clientFileFactory
 ) : ICommandHandler<CreateCaseCommand, Result<Guid>>
 {
     private readonly ILogger<CreateCaseCommandHandler> _logger = logger;
     private readonly IAppDbContext _context = context;
     private readonly IMapper _mapper = mapper;
     private readonly IClientFileFactory _clientFileFactory = clientFileFactory;
-    private readonly IContractFactory _contractFactory = contractFactory;
 
     public async Task<Result<Guid>> HandleAsync(CreateCaseCommand message, CancellationToken cancellationToken = default)
     {

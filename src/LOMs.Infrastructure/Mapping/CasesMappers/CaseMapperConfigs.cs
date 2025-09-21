@@ -1,5 +1,6 @@
 ﻿using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Application.Features.People.Clients.Dtos;
+using LOMs.Application.Features.POAs.Dtos;
 using LOMs.Domain.Cases;
 using LOMs.Domain.POAs;
 using Mapster;
@@ -53,7 +54,6 @@ public class CaseMapperConfigs : IRegister
         config.NewConfig<POA, POADto>()
             .Map(dest => dest.POAId, src => src.Id)
             .Map(dest => dest.IssueDate, src => src.IssueDate)
-            .Map(dest => dest.AttachmentPath, src => src.AttachmentPath)
             .Map(dest => dest.IssuingAuthority, src => src.IssuingAuthority);
 
     }
