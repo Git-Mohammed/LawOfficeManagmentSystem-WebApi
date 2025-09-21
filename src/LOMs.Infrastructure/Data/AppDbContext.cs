@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using LOMs.Domain.Cases.CourtSessions;
+using LOMs.Domain.Cases.Judgments;
 
 namespace LOMs.Infrastructure.Data;
 
@@ -40,6 +41,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<CourtSession> CourtSessions => Set<CourtSession>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Judgment> Judgments => Set<Judgment>();
+    public DbSet<JudgmentFile> JudgmentFiles => Set<JudgmentFile>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
