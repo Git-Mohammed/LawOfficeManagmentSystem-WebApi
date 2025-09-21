@@ -36,6 +36,6 @@ public class JudgmentFileConfigurations : IEntityTypeConfiguration<JudgmentFile>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(jf => jf.JudgmentId);
-        builder.ToTable("JudgmentFiles", "FileManagement");
+        builder.ToTable("JudgmentFiles", "CaseManagement");
     }
 }
