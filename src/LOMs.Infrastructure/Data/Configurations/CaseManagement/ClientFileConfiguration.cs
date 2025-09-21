@@ -13,6 +13,10 @@ public class ClientFileConfiguration : IEntityTypeConfiguration<ClientFile>
 
         builder.Property(cf => cf.FileNumber)
             .IsRequired();
+
+        builder.HasIndex(cf => cf.FileNumber)
+            .IsUnique();
+
         builder.Property(cf => cf.HijriYear)
                .IsRequired();
 

@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Cases.Judgments;
+using LOMs.Domain.Cases.POAs;
 
 namespace LOMs.Infrastructure.Data;
 
@@ -36,7 +37,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<Employee> Employees => Set<Employee>();
 
     public DbSet<POA> POAs => Set<POA>();
-
+    public DbSet<POAFile> POAFiles => Set<POAFile>();
     public DbSet<CourtType> CourtTypes => Set<CourtType>();
     public DbSet<CourtSession> CourtSessions => Set<CourtSession>();
 

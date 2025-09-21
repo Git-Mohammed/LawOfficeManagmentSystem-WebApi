@@ -30,10 +30,6 @@ public class POAConfiguration : IEntityTypeConfiguration<POA>
             .HasMaxLength(200)
             .HasComment("The authority that issued the POA, such as a court or notary");
 
-        builder.Property(p => p.AttachmentPath)
-            .IsRequired()
-            .HasMaxLength(500)
-            .HasComment("Path or URL to the attached POA document");
 
         builder.ToTable("POAs", DatabaseSchema.Case.ToString());
 

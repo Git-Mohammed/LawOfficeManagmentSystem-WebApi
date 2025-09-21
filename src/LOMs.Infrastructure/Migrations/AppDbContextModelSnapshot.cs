@@ -125,7 +125,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("FileNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<short>("HijriYear")
                         .HasColumnType("smallint");
@@ -144,6 +144,9 @@ namespace LOMs.Infrastructure.Migrations
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("FileNumber")
+                        .IsUnique();
 
                     b.ToTable("ClientFiles", "Case");
                 });
@@ -348,6 +351,63 @@ namespace LOMs.Infrastructure.Migrations
                     b.ToTable("CourtTypes", "Case");
                 });
 
+            modelBuilder.Entity("LOMs.Domain.Cases.POAs.POAFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Extension")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Filename")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Filepath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("POAId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("POAId");
+
+                    b.ToTable("POAFiles", "FileManagement");
+                });
+
             modelBuilder.Entity("LOMs.Domain.Cases.Judgments.Judgment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -497,12 +557,6 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AttachmentPath")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasComment("Path or URL to the attached POA document");
 
                     b.Property<Guid>("CaseId")
                         .HasColumnType("uniqueidentifier");
@@ -988,6 +1042,17 @@ namespace LOMs.Infrastructure.Migrations
                     b.Navigation("Case");
                 });
 
+            modelBuilder.Entity("LOMs.Domain.Cases.POAs.POAFile", b =>
+                {
+                    b.HasOne("LOMs.Domain.POAs.POA", "POA")
+                        .WithMany("POAFiles")
+                        .HasForeignKey("POAId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("POA");
+                });
+
             modelBuilder.Entity("LOMs.Domain.Cases.Judgments.JudgmentFile", b =>
                 {
                     b.HasOne("LOMs.Domain.Cases.Judgments.Judgment", "Judgment")
@@ -1118,6 +1183,11 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.CourtTypes.CourtType", b =>
                 {
                     b.Navigation("Cases");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.POAs.POA", b =>
+                {
+                    b.Navigation("POAFiles");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.Judgments.Judgment", b =>
