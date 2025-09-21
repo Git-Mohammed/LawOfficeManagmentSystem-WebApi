@@ -4,6 +4,7 @@ using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Cases.CourtTypes;
+using LOMs.Domain.Cases.Judgments;
 using LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
@@ -28,6 +29,8 @@ public interface IAppDbContext
 
     public DbSet<Employee> Employees { get; }
     public DbSet<RefreshToken> RefreshTokens { get; }
+    public DbSet<Judgment> Judgments { get; }
+    public DbSet<JudgmentFile> JudgmentFiles { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 };
