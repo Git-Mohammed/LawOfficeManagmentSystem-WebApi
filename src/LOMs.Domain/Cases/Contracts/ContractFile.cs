@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.Common;
 using LOMs.Domain.Common.Files;
+using LOMs.Domain.Common.Results;
 
 namespace LOMs.Domain.Cases.Contracts
 {
@@ -19,15 +20,13 @@ namespace LOMs.Domain.Cases.Contracts
             ContractId = contractId;            
         }
 
-        public static ContractFile Create(Guid contractId, string fileName, string filePath,FileType fileType, 
+        public static Result<ContractFile> Create(Guid contractId, string fileName, string filePath,FileType fileType, 
             long size, string extension, string contentType)
         {
-            if (string.IsNullOrWhiteSpace(fileName))
-                throw new ArgumentException("File name cannot be null or whitespace.", nameof(fileName));
-
-            if (string.IsNullOrWhiteSpace(filePath))
-                throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
-
+            var result = Validator(fileName, filePath, fileType, size, extension, contentType);
+            if (result.IsError)
+                return result.Errors;
+            
             return new ContractFile(
                 Guid.NewGuid(), 
                 contractId, 
