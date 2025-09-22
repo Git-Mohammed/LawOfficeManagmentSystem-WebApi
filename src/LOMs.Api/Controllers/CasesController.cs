@@ -4,9 +4,10 @@ using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Cases.Commands.CreateCase;
 using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Application.Features.Cases.Queries.GetCaseByIdQuery;
-using LOMs.Application.Features.Cases.Queries.GetCasesByCourtTypeAndYear;
+using LOMs.Application.Features.Cases.Queries.GetCaseQuickStatsByCourtTypeAndHijriYear;
 using LOMs.Application.Features.People.Clients.Commands.CreateClient;
 using LOMs.Contract.Requests.Cases;
+using LOMs.Domain.Cases.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -34,38 +35,40 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
 
         return result.Match(Ok, Problem);
     }
-
-    [HttpGet("by-court-type/{courtTypeId:guid}/year/{hijriYear:int}", Name = nameof(GetCasesByCourtTypeAndYearPaginated))]
-    [ProducesResponseType(typeof(PaginatedList<CaseQuickStatsDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [EndpointSummary("Retrieves paginated case statistics by court type and Hijri year.")]
-    [EndpointDescription("Fetches a paginated list of case quick statistics filtered by court type and Hijri year.")]
-    [EndpointName(nameof(GetCasesByCourtTypeAndYearPaginated))]
-    public async Task<IActionResult> GetCasesByCourtTypeAndYearPaginated(
+[HttpGet("by-court-type/{courtTypeId:guid}/year/{hijriYear:int}", Name = nameof(GetCasesByCourtTypeAndYearPaginated))]
+[ProducesResponseType(typeof(PaginatedList<CaseQuickStatsDto>), StatusCodes.Status200OK)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+[EndpointSummary("Retrieves paginated case statistics by court type and Hijri year.")]
+[EndpointDescription("Fetches a paginated list of case quick statistics filtered by court type, Hijri year, and optionally by status.")]
+[EndpointName(nameof(GetCasesByCourtTypeAndYearPaginated))]
+public async Task<IActionResult> GetCasesByCourtTypeAndYearPaginated(
     Guid courtTypeId,
     int hijriYear,
+    [FromQuery] CaseStatus? status,
     [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10,
     CancellationToken ct = default)
-    {
-        if (pageNumber <= 0)
-            return Problem("رقم الصفحة يجب أن يكون أكبر من الصفر.");
+{
+    if (pageNumber <= 0)
+        return Problem("رقم الصفحة يجب أن يكون أكبر من الصفر.");
 
-        if (pageSize <= 0)
-            return Problem("حجم الصفحة يجب أن يكون أكبر من الصفر.");
+    if (pageSize <= 0)
+        return Problem("حجم الصفحة يجب أن يكون أكبر من الصفر.");
 
-        var queryRequest = new GetCasesByCourtTypeAndYearPaginatedQuery(
-            CourtTypeId: courtTypeId,
-            HijriYear: (short)hijriYear,
-            PageNumber: pageNumber,
-            PageSize: pageSize
-        );
+    var queryRequest = new GetCaseQuickStatsByCourtTypeAndHijriYearQuery(
+        CourtTypeId: courtTypeId,
+        HijriYear: (short)hijriYear,
+        PageNumber: pageNumber,
+        PageSize: pageSize,
+        Status: status
+    );
 
-        var result = await _query.QueryAsync(queryRequest, ct);
+    var result = await _query.QueryAsync(queryRequest, ct);
 
-        return result.Match(Ok, Problem);
-    }
+    return result.Match(Ok, Problem);
+}
+
 
     [HttpPost(Name = nameof(CreateCase))]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]

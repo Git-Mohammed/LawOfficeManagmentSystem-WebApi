@@ -1,10 +1,13 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace LOMs.Domain.Cases.Enums
 {
     [JsonConverter(typeof(CaseStatusJsonConverter))]
+    [TypeConverter(typeof(CaseStatusTypeConverter))]
     public enum CaseStatus
     {
         Draft = 0,       // مسودة
@@ -14,6 +17,26 @@ namespace LOMs.Domain.Cases.Enums
         Cancelled = 4    // ملغى
     }
 
+    public class CaseStatusTypeConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+            => sourceType == typeof(string);
+
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+        {
+            var stringValue = value?.ToString()?.Trim();
+
+            return stringValue switch
+            {
+                "مسودة" => CaseStatus.Draft,
+                "معلق" => CaseStatus.Pending,
+                "قيد المعالجة" => CaseStatus.Processing,
+                "مكتمل" => CaseStatus.Complete,
+                "ملغى" => CaseStatus.Cancelled,
+                _ => throw new ArgumentException($"قيمة الحالة غير معروفة: {stringValue}")
+            };
+        }
+    }
     public class CaseStatusJsonConverter : JsonConverter<CaseStatus>
     {
         public override CaseStatus Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

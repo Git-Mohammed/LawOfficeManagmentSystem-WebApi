@@ -1,10 +1,7 @@
 ﻿using LiteBus.Queries.Abstractions;
 using LOMs.Application.Common.Interfaces;
-using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Domain.Cases;
 using LOMs.Domain.Common.Results;
-using LOMs.Domain.People;
-using LOMs.Domain.People.Employees;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
