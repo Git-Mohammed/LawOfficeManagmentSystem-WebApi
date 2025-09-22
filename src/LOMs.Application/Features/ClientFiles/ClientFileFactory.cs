@@ -16,13 +16,13 @@ namespace LOMs.Application.Features.ClientFiles
         {
             var hijriYear = HijriDateConverter.GetFullHijriYear();
 
-            var existingCount = await _context.ClientFiles
-                .CountAsync(x => x.CourtTypeCode == courtType.Code && x.HijriYear == hijriYear, ct);
+            //var existingCount = await _context.ClientFiles
+            //    .CountAsync(x => x.CourtTypeCode == courtType.Code && x.HijriYear == hijriYear, ct);
 
-            var orderNumber = existingCount + 1;
+            //var orderNumber = existingCount + 1;
 
 
-            var result = ClientFile.Create(clientId, courtType,  (short)hijriYear, orderNumber);
+            var result = ClientFile.Create(clientId, courtType,  (short)hijriYear);
 
             if (result.IsError)
                 return result.Errors;

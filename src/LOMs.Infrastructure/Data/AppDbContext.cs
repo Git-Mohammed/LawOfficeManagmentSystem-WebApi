@@ -2,7 +2,10 @@ using LOMs.Application.Common.Interfaces;
 using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
+using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Cases.CourtTypes;
+using LOMs.Domain.Cases.Judgments;
+using LOMs.Domain.Cases.POAs;
 using LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
@@ -10,14 +13,11 @@ using LOMs.Domain.People.Employees;
 using LOMs.Domain.POAs;
 using LOMs.Infrastructure.Enums;
 using LOMs.Infrastructure.Identity;
-
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
-using LOMs.Domain.Cases.CourtSessions;
-using LOMs.Domain.Cases.Judgments;
-using LOMs.Domain.Cases.POAs;
+using System.Reflection.Emit;
 
 namespace LOMs.Infrastructure.Data;
 
@@ -30,6 +30,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<ClientCase> ClientCases => Set<ClientCase>();
 
     public DbSet<ClientFile> ClientFiles => Set<ClientFile>();
+    public DbSet<ClientFileWithFileNumber> ClientFilesWithFileNumber => Set<ClientFileWithFileNumber>();
 
     public DbSet<Contract> Contracts => Set<Contract>();
     public DbSet<ContractFile> ContractFiles => Set<ContractFile>();
@@ -50,6 +51,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     {
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        builder.Entity<ClientFileWithFileNumber>()
+            .ToView("vw_ClientFilesWithFileNumber", "Case")
+            .HasNoKey();
         var identitySchema = DatabaseSchema.Identity.ToString();
         #region Rename Identity Tables Names
         builder.Entity<ApplicationUser>().ToTable("Users", identitySchema);
