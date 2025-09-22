@@ -52,9 +52,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         builder.Entity<ClientFileWithFileNumber>()
-            .ToView("vw_ClientFilesWithFileNumber", "Case")
+            .ToView("vw_ClientFilesWithFileNumber", SchemaNames.Case)
             .HasNoKey();
-        var identitySchema = DatabaseSchema.Identity.ToString();
+        var identitySchema = SchemaNames.Identity;
         #region Rename Identity Tables Names
         builder.Entity<ApplicationUser>().ToTable("Users", identitySchema);
         builder.Entity<ApplicationRole>().ToTable("Roles", identitySchema);
@@ -65,4 +65,3 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
         builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens", identitySchema);
         #endregion
     }
-}

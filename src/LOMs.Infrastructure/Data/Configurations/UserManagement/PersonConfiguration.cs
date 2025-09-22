@@ -36,6 +36,6 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
 
 
         builder.HasIndex(p => p.NationalId);
-        builder.ToTable("People",DatabaseSchema.User.ToString());
+        builder.ToTable("People",SchemaNames.User);
     }
 }

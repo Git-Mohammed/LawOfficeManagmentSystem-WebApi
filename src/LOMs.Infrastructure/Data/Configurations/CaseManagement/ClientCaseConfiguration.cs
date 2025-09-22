@@ -26,7 +26,7 @@ public class ClientCaseConfiguration : IEntityTypeConfiguration<ClientCase>
             .HasForeignKey(cc => cc.ClientFileId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.ToTable("ClientCases", DatabaseSchema.Case.ToString());
+        builder.ToTable("ClientCases", SchemaNames.Case);
 
 
     }

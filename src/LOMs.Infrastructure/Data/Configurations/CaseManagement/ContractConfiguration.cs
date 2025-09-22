@@ -45,7 +45,7 @@ namespace LOMs.Infrastructure.Data.Configurations.CaseManagment
             builder.Property(cf => cf.CourtTypeCode)
                 .IsRequired();
 
-            builder.ToTable("Contracts", DatabaseSchema.Finance.ToString());
+            builder.ToTable("Contracts", SchemaNames.Finance);
 
         }
     }

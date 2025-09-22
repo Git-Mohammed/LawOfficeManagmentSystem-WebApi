@@ -47,7 +47,7 @@ public class GetCasesByCourtTypeAndYearPaginatedHandler
                             CaseId = caseEntity.Id,
                             CaseNumber = caseEntity.CaseNumber,
                             FileNumber = fileView.FileNumber,
-                            ClientName = clientCase.Client.Person.FullName,
+                            ClientName = clientCase.Client!.Person!.FullName,
                             Status = caseEntity.Status
                         };
 

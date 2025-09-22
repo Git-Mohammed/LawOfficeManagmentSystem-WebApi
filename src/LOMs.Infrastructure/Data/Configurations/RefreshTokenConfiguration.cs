@@ -10,7 +10,7 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 {
     public void Configure(EntityTypeBuilder<RefreshToken> builder)
     {
-        builder.ToTable("RefreshTokens",DatabaseSchema.User.ToString());
+        builder.ToTable("RefreshTokens", SchemaNames.User);
 
         builder.HasKey(rt => rt.Id).IsClustered(false);
 

@@ -11,9 +11,11 @@ using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
 using LOMs.Infrastructure.Data;
 using LOMs.Infrastructure.Data.Views;
+using LOMs.Infrastructure.Enums;
 using LOMs.Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -50,26 +52,38 @@ public class ApplicationDbContextInitializer(
             throw;
         }
     }
-    
+
 
     public async Task EnsureViewsCreatedAsync(CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Ensuring SQL views are created or updated...");
 
-        try
+        foreach (var view in SqlViewRegistry.All)
         {
-            await _context.Database.ExecuteSqlRawAsync(
-                ClientFilesViewDefinitions.ClientFilesWithFileNumber,
-                cancellationToken);
+            var schemaName = GetSchemaName(view.Schema);
+            var fullViewName = $"{schemaName}.[{view.ViewName}]";
 
-            _logger.LogInformation("View [Case].[vw_ClientFilesWithFileNumber] created or updated successfully.");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to create or update SQL view [Case].[vw_ClientFilesWithFileNumber].");
-            throw;
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync(view.Sql, cancellationToken);
+                _logger.LogInformation("View {ViewName} created or updated successfully.", fullViewName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create or update SQL view {ViewName}.", fullViewName);
+                throw;
+            }
         }
     }
+    private static string GetSchemaName(DatabaseSchema schema) => schema switch
+    {
+        DatabaseSchema.Identity => SchemaNames.Identity,
+        DatabaseSchema.User => SchemaNames.User,
+        DatabaseSchema.Case => SchemaNames.Case,
+        DatabaseSchema.Finance => SchemaNames.Finance,
+        DatabaseSchema.File => SchemaNames.File,
+        _ => throw new ArgumentOutOfRangeException(nameof(schema), $"Unknown schema: {schema}")
+    };
     public async Task SeedAsync()
     {
         try

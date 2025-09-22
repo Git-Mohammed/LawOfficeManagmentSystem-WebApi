@@ -82,7 +82,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("CourtTypeId");
 
-                    b.ToTable("Cases", "Case");
+                    b.ToTable("Cases", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.ClientCase", b =>
@@ -102,7 +102,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("ClientId");
 
-                    b.ToTable("ClientCases", "Case");
+                    b.ToTable("ClientCases", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.ClientFiles.ClientFile", b =>
@@ -138,7 +138,46 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("ClientId");
 
-                    b.ToTable("ClientFiles", "Case");
+                    b.ToTable("ClientFiles", "CaseManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.ClientFiles.ClientFileWithFileNumber", b =>
+                {
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<short>("CourtTypeCode")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<short>("HijriYear")
+                        .HasColumnType("smallint");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RowNumber")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_ClientFilesWithFileNumber", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.Contracts.Contract", b =>
@@ -203,7 +242,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("Contracts", "Finance");
+                    b.ToTable("Contracts", "FinanceManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.Contracts.ContractFile", b =>
@@ -260,7 +299,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("ContractId");
 
-                    b.ToTable("ContractFiles", "FileManagement");
+                    b.ToTable("ContractFiles", "FileManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.CourtSessions.CourtSession", b =>
@@ -302,7 +341,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("CourtSessions", "Case");
+                    b.ToTable("CourtSessions", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.CourtTypes.CourtType", b =>
@@ -338,7 +377,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.ToTable("CourtTypes", "Case");
+                    b.ToTable("CourtTypes", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.Judgments.Judgment", b =>
@@ -497,7 +536,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("POAId");
 
-                    b.ToTable("POAFiles", "FileManagement");
+                    b.ToTable("POAFiles", "FileManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Identity.RefreshToken", b =>
@@ -539,7 +578,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", "User");
+                    b.ToTable("RefreshTokens", "UserManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.POAs.POA", b =>
@@ -585,7 +624,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("POAs", "Case");
+                    b.ToTable("POAs", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Clients.Client", b =>
@@ -616,7 +655,7 @@ namespace LOMs.Infrastructure.Migrations
                     b.HasIndex("PersonId")
                         .IsUnique();
 
-                    b.ToTable("Clients", "User");
+                    b.ToTable("Clients", "UserManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Employees.Employee", b =>
@@ -665,7 +704,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Employees", "User");
+                    b.ToTable("Employees", "UserManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Person", b =>
@@ -719,7 +758,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("NationalId");
 
-                    b.ToTable("People", "User");
+                    b.ToTable("People", "UserManagment");
                 });
 
             modelBuilder.Entity("LOMs.Infrastructure.Identity.ApplicationRole", b =>

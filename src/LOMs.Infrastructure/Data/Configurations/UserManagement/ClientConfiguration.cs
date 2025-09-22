@@ -17,7 +17,7 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
                .IsRequired()
                .OnDelete(DeleteBehavior.Restrict);
 
-        builder.ToTable("Clients", DatabaseSchema.User.ToString());
+        builder.ToTable("Clients", SchemaNames.User);
 
     }
 }

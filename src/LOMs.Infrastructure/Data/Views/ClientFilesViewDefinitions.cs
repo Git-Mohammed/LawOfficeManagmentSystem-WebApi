@@ -1,4 +1,6 @@
-﻿namespace LOMs.Infrastructure.Data.Views;
+﻿using LOMs.Infrastructure.Enums;
+
+namespace LOMs.Infrastructure.Data.Views;
 
 internal static class ClientFilesViewDefinitions
 {
@@ -9,8 +11,8 @@ internal static class ClientFilesViewDefinitions
     Created: 2025-09-22
     Notes: Used in EF Core via ClientFileWithFileNumber DTO
     */
-    public const string ClientFilesWithFileNumber = @"
-        CREATE OR ALTER VIEW [Case].[vw_ClientFilesWithFileNumber] AS
+    public const string ClientFilesWithFileNumber = @$"
+        CREATE OR ALTER VIEW [{SchemaNames.Case}].[vw_ClientFilesWithFileNumber] AS
         SELECT 
             [Id],
             [ClientId],
@@ -34,6 +36,6 @@ internal static class ClientFilesViewDefinitions
                     ), '0000'
                 )
             ) AS FileNumber
-        FROM [Case].[ClientFiles];
+        FROM [{SchemaNames.Case}].[ClientFiles];
     ";
 }

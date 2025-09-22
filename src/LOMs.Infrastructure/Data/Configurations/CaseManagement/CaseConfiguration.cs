@@ -44,6 +44,6 @@ public class CaseConfiguration : IEntityTypeConfiguration<Case>
             .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.ToTable("Cases", DatabaseSchema.Case.ToString());
+        builder.ToTable("Cases", SchemaNames.Case);
     }
 }
