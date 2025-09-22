@@ -5,12 +5,13 @@ using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Cases.Enums;
-using  LOMs.Domain.Identity;
+using LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
-using LOMs.Infrastructure.Data;
+using LOMs.Infrastructure.Constants;
 using LOMs.Infrastructure.Data.Views;
+using LOMs.Infrastructure.Data.Views.Registry;
 using LOMs.Infrastructure.Enums;
 using LOMs.Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
@@ -60,7 +61,7 @@ public class ApplicationDbContextInitializer(
 
         foreach (var view in SqlViewRegistry.All)
         {
-            var schemaName = GetSchemaName(view.Schema);
+            var schemaName = SchemaNames.GetName(view.Schema);
             var fullViewName = $"{schemaName}.[{view.ViewName}]";
 
             try
@@ -75,15 +76,6 @@ public class ApplicationDbContextInitializer(
             }
         }
     }
-    private static string GetSchemaName(DatabaseSchema schema) => schema switch
-    {
-        DatabaseSchema.Identity => SchemaNames.Identity,
-        DatabaseSchema.User => SchemaNames.User,
-        DatabaseSchema.Case => SchemaNames.Case,
-        DatabaseSchema.Finance => SchemaNames.Finance,
-        DatabaseSchema.File => SchemaNames.File,
-        _ => throw new ArgumentOutOfRangeException(nameof(schema), $"Unknown schema: {schema}")
-    };
     public async Task SeedAsync()
     {
         try

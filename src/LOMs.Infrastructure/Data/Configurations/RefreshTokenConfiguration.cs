@@ -1,5 +1,5 @@
 using LOMs.Domain.Identity;
-using LOMs.Infrastructure.Enums;
+using LOMs.Infrastructure.Constants;
 using LOMs.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

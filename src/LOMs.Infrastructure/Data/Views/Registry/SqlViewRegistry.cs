@@ -1,7 +1,7 @@
-﻿using LOMs.Infrastructure.Enums;
-using LOMs.Infrastructure.Data.Views;
+﻿using LOMs.Infrastructure.Data.Views.ClientFiles;
+using LOMs.Infrastructure.Enums;
 
-namespace LOMs.Infrastructure.Data;
+namespace LOMs.Infrastructure.Data.Views.Registry;
 
 public static class SqlViewRegistry
 {
@@ -9,8 +9,8 @@ public static class SqlViewRegistry
     {
         new SqlViewDefinition(
             DatabaseSchema.Case,
-            "vw_ClientFilesWithFileNumber",
-            ClientFilesViewDefinitions.ClientFilesWithFileNumber
+            ClientFilesWithFileNumberView.Name,
+            ClientFilesWithFileNumberView.Sql
         )
 
         // Add more views here as needed

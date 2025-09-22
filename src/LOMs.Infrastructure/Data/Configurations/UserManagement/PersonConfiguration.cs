@@ -1,5 +1,5 @@
 ﻿using LOMs.Domain.People;
-using LOMs.Infrastructure.Enums;
+using LOMs.Infrastructure.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

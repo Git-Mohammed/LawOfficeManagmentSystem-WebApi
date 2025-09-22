@@ -1,18 +1,13 @@
-﻿using LOMs.Infrastructure.Enums;
+﻿using LOMs.Infrastructure.Constants;
 
-namespace LOMs.Infrastructure.Data.Views;
+namespace LOMs.Infrastructure.Data.Views.ClientFiles;
 
-internal static class ClientFilesViewDefinitions
+internal static class ClientFilesWithFileNumberView
 {
-    /*
-    View: [Case].[vw_ClientFilesWithFileNumber]
-    Purpose: Generate dynamic FileNumber using HijriYear, CourtTypeCode, and RowNumber
-    Author: Mohammed
-    Created: 2025-09-22
-    Notes: Used in EF Core via ClientFileWithFileNumber DTO
-    */
-    public const string ClientFilesWithFileNumber = @$"
-        CREATE OR ALTER VIEW [{SchemaNames.Case}].[vw_ClientFilesWithFileNumber] AS
+    public const string Name = "vw_ClientFilesWithFileNumber";
+
+    public static readonly string Sql = @$"
+        CREATE OR ALTER VIEW [{SchemaNames.Case}].[{Name}] AS
         SELECT 
             [Id],
             [ClientId],

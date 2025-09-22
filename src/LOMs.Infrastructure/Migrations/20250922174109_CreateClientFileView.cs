@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Infrastructure.Data.Views;
+using LOMs.Infrastructure.Data.Views.ClientFiles;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -14,7 +15,7 @@ namespace LOMs.Infrastructure.Migrations
         {
             migrationBuilder.Sql("IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Case') EXEC('CREATE SCHEMA [Case]');");
 
-            migrationBuilder.Sql(ClientFilesViewDefinitions.ClientFilesWithFileNumber);
+            migrationBuilder.Sql(ClientFilesWithFileNumberView.Sql);
         }
 
         /// <inheritdoc />
