@@ -26,8 +26,7 @@ public class ApplicationDbContextInitializer(
     ILogger<ApplicationDbContextInitializer> logger,
     AppDbContext context,
     RoleManager<ApplicationRole> roleManager,
-    UserManager<ApplicationUser> userManager,
-    IClientFileFactory clientFileFactory
+    UserManager<ApplicationUser> userManager
 
     )
 {
@@ -35,7 +34,6 @@ public class ApplicationDbContextInitializer(
     private readonly AppDbContext _context = context;
     private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly IClientFileFactory _clientFileFactory = clientFileFactory;
 
     public async Task InitialiseAsync()
     {
@@ -378,7 +376,7 @@ public class ApplicationDbContextInitializer(
 
                 if (clientFile is null)
                 {
-                    var clientFileResult = await _clientFileFactory.CreateAsync(client.Id, defaultCourtType, CancellationToken.None);
+                    var clientFileResult = ClientFile.Create(client.Id, defaultCourtType, (short)currentHijriYear);
                     if (clientFileResult.IsError)
                     {
                         _logger.LogWarning("Failed to create client file for client {ClientId}", client.Id);
