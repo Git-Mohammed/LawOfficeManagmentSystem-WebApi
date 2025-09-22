@@ -1,5 +1,4 @@
-﻿
-using LOMs.Domain.Cases;
+﻿using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.CourtSessions;
@@ -12,7 +11,6 @@ using LOMs.Domain.People.Employees;
 using LOMs.Domain.POAs;
 using Microsoft.EntityFrameworkCore;
 
-namespace LOMs.Application.Common.Interfaces;
 public interface IAppDbContext
 {
     public DbSet<Person> People { get; }
@@ -25,12 +23,12 @@ public interface IAppDbContext
     public DbSet<POA> POAs { get; }
     public DbSet<CourtType> CourtTypes { get; }
     public DbSet<CourtSession> CourtSessions { get; }
-
-
     public DbSet<Employee> Employees { get; }
     public DbSet<RefreshToken> RefreshTokens { get; }
     public DbSet<Judgment> Judgments { get; }
     public DbSet<JudgmentFile> JudgmentFiles { get; }
 
+    public DbSet<ClientFileWithFileNumber> ClientFilesWithFileNumber { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
-};
+}

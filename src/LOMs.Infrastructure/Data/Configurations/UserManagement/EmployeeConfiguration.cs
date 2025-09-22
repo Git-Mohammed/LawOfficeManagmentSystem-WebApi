@@ -1,5 +1,5 @@
 ﻿using LOMs.Domain.People.Employees;
-using LOMs.Infrastructure.Enums;
+using LOMs.Infrastructure.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,6 +22,6 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         builder.HasIndex(e => e.PersonId);
         builder.HasIndex(e => e.UserId);
         builder.HasIndex(e => e.Email);
-        builder.ToTable("Employees", DatabaseSchema.User.ToString());
+        builder.ToTable("Employees", SchemaNames.User);
     }
 }

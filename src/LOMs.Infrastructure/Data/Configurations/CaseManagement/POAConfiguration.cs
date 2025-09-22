@@ -1,5 +1,5 @@
 ﻿using LOMs.Domain.POAs;
-using LOMs.Infrastructure.Enums;
+using LOMs.Infrastructure.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -31,7 +31,7 @@ public class POAConfiguration : IEntityTypeConfiguration<POA>
             .HasComment("The authority that issued the POA, such as a court or notary");
 
 
-        builder.ToTable("POAs", DatabaseSchema.Case.ToString());
+        builder.ToTable("POAs", SchemaNames.Case);
 
     }
 }

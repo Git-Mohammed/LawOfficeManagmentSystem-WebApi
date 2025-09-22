@@ -1,5 +1,5 @@
 ﻿using LOMs.Domain.Cases.ClientFiles;
-using LOMs.Infrastructure.Enums;
+using LOMs.Infrastructure.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,17 +11,9 @@ public class ClientFileConfiguration : IEntityTypeConfiguration<ClientFile>
     {
         builder.HasKey(cf => cf.Id).IsClustered(false);
 
-        builder.Property(cf => cf.FileNumber)
-            .IsRequired();
-
-        builder.HasIndex(cf => cf.FileNumber)
-            .IsUnique();
 
         builder.Property(cf => cf.HijriYear)
                .IsRequired();
-
-        builder.Property(cf => cf.OrderNumber)
-                .IsRequired();
 
         builder.Property(cf => cf.CourtTypeCode)
                 .IsRequired();
@@ -31,7 +23,7 @@ public class ClientFileConfiguration : IEntityTypeConfiguration<ClientFile>
             .HasForeignKey(cf => cf.ClientId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.ToTable("ClientFiles", DatabaseSchema.Case.ToString());
+        builder.ToTable("ClientFiles", SchemaNames.Case);
 
 
     }

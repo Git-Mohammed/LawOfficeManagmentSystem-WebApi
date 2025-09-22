@@ -5,14 +5,18 @@ using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Cases.Enums;
-using  LOMs.Domain.Identity;
+using LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
-using LOMs.Infrastructure.Data;
+using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Data.Views;
+using LOMs.Infrastructure.Data.Views.Registry;
+using LOMs.Infrastructure.Enums;
 using LOMs.Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -50,6 +54,28 @@ public class ApplicationDbContextInitializer(
         }
     }
 
+
+    public async Task EnsureViewsCreatedAsync(CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Ensuring SQL views are created or updated...");
+
+        foreach (var view in SqlViewRegistry.All)
+        {
+            var schemaName = SchemaNames.GetName(view.Schema);
+            var fullViewName = $"{schemaName}.[{view.ViewName}]";
+
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync(view.Sql, cancellationToken);
+                _logger.LogInformation("View {ViewName} created or updated successfully.", fullViewName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create or update SQL view {ViewName}.", fullViewName);
+                throw;
+            }
+        }
+    }
     public async Task SeedAsync()
     {
         try
@@ -392,7 +418,6 @@ public class ApplicationDbContextInitializer(
     }
 }
 
-
 public static class InitialiserExtensions
 {
     public static async Task InitialiseDatabaseAsync(this WebApplication app)
@@ -402,7 +427,7 @@ public static class InitialiserExtensions
         var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
 
         await initialiser.InitialiseAsync();
-
-        await initialiser.SeedAsync();
+        await initialiser.EnsureViewsCreatedAsync(); // Create views before seeding
+        await initialiser.SeedAsync();               // Seed data that might use views
     }
 }

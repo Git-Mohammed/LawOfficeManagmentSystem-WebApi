@@ -1,5 +1,5 @@
 ﻿using LOMs.Domain.Cases.CourtTypes;
-using LOMs.Infrastructure.Enums;
+using LOMs.Infrastructure.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -7,7 +7,7 @@ public class CourtTypeConfiguration : IEntityTypeConfiguration<CourtType>
 {
     public void Configure(EntityTypeBuilder<CourtType> builder)
     {
-        builder.ToTable("CourtTypes", DatabaseSchema.Case.ToString());
+        builder.ToTable("CourtTypes", SchemaNames.Case);
 
         builder.HasKey(ct => ct.Id).IsClustered(false);
 
