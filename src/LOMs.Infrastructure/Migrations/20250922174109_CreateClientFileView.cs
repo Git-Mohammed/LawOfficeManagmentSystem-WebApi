@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using LOMs.Domain.Cases.ClientFiles;
+using LOMs.Infrastructure.Data.Views;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -12,39 +14,13 @@ namespace LOMs.Infrastructure.Migrations
         {
             migrationBuilder.Sql("IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Case') EXEC('CREATE SCHEMA [Case]');");
 
-            migrationBuilder.Sql(@"
-        CREATE VIEW [Case].[vw_ClientFilesWithFileNumber] AS
-        SELECT 
-            [Id],
-            [ClientId],
-            [HijriYear],
-            [CourtTypeCode],
-            [CreatedAtUtc],
-            [CreatedBy],
-            [LastModifiedUtc],
-            [LastModifiedBy],
-            ROW_NUMBER() OVER (
-                PARTITION BY HijriYear, CourtTypeCode
-                ORDER BY [CreatedAtUtc]
-            ) AS RowNumber,
-            CONCAT(
-                RIGHT(CAST(HijriYear AS VARCHAR), 2), '-', 
-                CourtTypeCode, '-', 
-                FORMAT(
-                    ROW_NUMBER() OVER (
-                        PARTITION BY HijriYear, CourtTypeCode
-                        ORDER BY [CreatedAtUtc]
-                    ), '0000'
-                )
-            ) AS FileNumber
-        FROM [Case].[ClientFiles];
-    ");
+            migrationBuilder.Sql(ClientFilesViewDefinitions.ClientFilesWithFileNumber);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP VIEW [Case].[vw_ClientFilesWithFileNumber];");
+            migrationBuilder.Sql("IF OBJECT_ID('[Case].[vw_ClientFilesWithFileNumber]', 'V') IS NOT NULL DROP VIEW [Case].[vw_ClientFilesWithFileNumber];");
         }
     }
 }
