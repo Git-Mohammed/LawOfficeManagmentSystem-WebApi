@@ -10,6 +10,7 @@ using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
 using LOMs.Infrastructure.Data;
+using LOMs.Infrastructure.Data.Views;
 using LOMs.Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
@@ -49,7 +50,26 @@ public class ApplicationDbContextInitializer(
             throw;
         }
     }
+    
 
+    public async Task EnsureViewsCreatedAsync(CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Ensuring SQL views are created or updated...");
+
+        try
+        {
+            await _context.Database.ExecuteSqlRawAsync(
+                ClientFilesViewDefinitions.ClientFilesWithFileNumber,
+                cancellationToken);
+
+            _logger.LogInformation("View [Case].[vw_ClientFilesWithFileNumber] created or updated successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create or update SQL view [Case].[vw_ClientFilesWithFileNumber].");
+            throw;
+        }
+    }
     public async Task SeedAsync()
     {
         try
@@ -392,7 +412,6 @@ public class ApplicationDbContextInitializer(
     }
 }
 
-
 public static class InitialiserExtensions
 {
     public static async Task InitialiseDatabaseAsync(this WebApplication app)
@@ -402,7 +421,7 @@ public static class InitialiserExtensions
         var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
 
         await initialiser.InitialiseAsync();
-
-        await initialiser.SeedAsync();
+        await initialiser.EnsureViewsCreatedAsync(); // Create views before seeding
+        await initialiser.SeedAsync();               // Seed data that might use views
     }
 }

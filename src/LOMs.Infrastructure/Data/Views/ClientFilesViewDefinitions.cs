@@ -2,6 +2,13 @@
 
 internal static class ClientFilesViewDefinitions
 {
+    /*
+    View: [Case].[vw_ClientFilesWithFileNumber]
+    Purpose: Generate dynamic FileNumber using HijriYear, CourtTypeCode, and RowNumber
+    Author: Mohammed
+    Created: 2025-09-22
+    Notes: Used in EF Core via ClientFileWithFileNumber DTO
+    */
     public const string ClientFilesWithFileNumber = @"
         CREATE OR ALTER VIEW [Case].[vw_ClientFilesWithFileNumber] AS
         SELECT 
