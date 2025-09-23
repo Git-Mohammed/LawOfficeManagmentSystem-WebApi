@@ -8,6 +8,7 @@ using LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
+using LOMs.Domain.People.Phones;
 using LOMs.Domain.POAs;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +21,8 @@ public interface IAppDbContext
     public DbSet<ClientCase> ClientCases { get; }
     public DbSet<Contract> Contracts { get; }
     public DbSet<ContractFile> ContractFiles { get; }
+    public DbSet<Phone> Phones { get; }
+
     public DbSet<POA> POAs { get; }
     public DbSet<CourtType> CourtTypes { get; }
     public DbSet<CourtSession> CourtSessions { get; }

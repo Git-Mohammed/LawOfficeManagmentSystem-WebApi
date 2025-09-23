@@ -8,6 +8,7 @@ using LOMs.Application.Features.Cases.Queries.CaseListRow;
 using LOMs.Application.Features.Cases.Queries.GetCaseByIdQuery;
 using LOMs.Application.Features.Cases.Queries.GetCaseQuickStatsByCourtTypeAndHijriYear;
 using LOMs.Application.Features.People.Clients.Commands.CreateClient;
+using LOMs.Application.Features.People.Commands;
 using LOMs.Contract.Requests.Cases;
 using LOMs.Domain.Cases.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -174,10 +175,12 @@ public async Task<IActionResult> GetCasesByCourtTypeAndYearPaginated(
                         newClient.Client.Person.NationalId,
                         newClient.Client.Person.CountryCode,
                         newClient.Client.Person.BirthDate,
-                        newClient.Client.Person.PhoneNumber,
-                        newClient.Client.Person.Address
+                        newClient.Client.Person.Address,
+                        new CreatePhoneCommand(
+                            newClient.Client.Person.Phone.Number,
+                            newClient.Client.Person.Phone.Code
                     )
-                )
+                ))
             ),
             _ => throw new ValidationException("Each item in the client list must contain either an existing client ID or new client data.")
         }).ToList();

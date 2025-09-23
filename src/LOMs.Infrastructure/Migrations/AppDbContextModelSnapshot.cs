@@ -747,11 +747,6 @@ namespace LOMs.Infrastructure.Migrations
                         .HasMaxLength(11)
                         .HasColumnType("nvarchar(11)");
 
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
@@ -759,6 +754,46 @@ namespace LOMs.Infrastructure.Migrations
                     b.HasIndex("NationalId");
 
                     b.ToTable("People", "UserManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.People.Phones.Phone", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("PersonId");
+
+                    b.ToTable("Phones", "UserManagment");
                 });
 
             modelBuilder.Entity("LOMs.Infrastructure.Identity.ApplicationRole", b =>
@@ -1135,6 +1170,17 @@ namespace LOMs.Infrastructure.Migrations
                     b.Navigation("Person");
                 });
 
+            modelBuilder.Entity("LOMs.Domain.People.Phones.Phone", b =>
+                {
+                    b.HasOne("LOMs.Domain.People.Person", "Person")
+                        .WithMany("Phones")
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Person");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("LOMs.Infrastructure.Identity.ApplicationRole", null)
@@ -1241,6 +1287,8 @@ namespace LOMs.Infrastructure.Migrations
                     b.Navigation("Client");
 
                     b.Navigation("Employee");
+
+                    b.Navigation("Phones");
                 });
 
             modelBuilder.Entity("LOMs.Infrastructure.Identity.ApplicationUser", b =>

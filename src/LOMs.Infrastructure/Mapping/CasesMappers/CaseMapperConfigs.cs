@@ -36,8 +36,12 @@ public class CaseMapperConfigs : IRegister
                     ClientId = cc.ClientId,
                     FullName = cc.Client!.Person!.FullName,
                     NationalId = cc.Client.Person.NationalId,
-                    PhoneNumber = cc.Client.Person.PhoneNumber,
-                    CountryCode = cc.Client.Person.CountryCode.ToString()
+                    PhoneNumber = new PhoneDto
+                    {
+                       
+                        Number = cc.Client!.Person!.Phones.FirstOrDefault().Number ?? string.Empty,
+                        Code = cc.Client.Person!.Phones.FirstOrDefault().Code ?? string.Empty
+                    }
                 }).ToList());
         // Domain Case → CaseQuickStatsDto
         config.NewConfig<Case, CaseQuickStatsDto>()

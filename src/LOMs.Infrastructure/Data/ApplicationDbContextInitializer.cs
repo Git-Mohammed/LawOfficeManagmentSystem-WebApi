@@ -9,6 +9,7 @@ using LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
+using LOMs.Domain.People.Phones;
 using LOMs.Infrastructure.Constants;
 using LOMs.Infrastructure.Data.Views;
 using LOMs.Infrastructure.Data.Views.Registry;
@@ -132,21 +133,19 @@ public class ApplicationDbContextInitializer(
                 }
             }
         }
-
         // --- Employees and Identity Users Seed Data ---
         if (!_context.Employees.Any())
         {
-
             var employeesData = new[]
             {
-                        new
+        new
         {
             PersonId = Guid.Parse("44444444-dd2d-4eee-ffff-444443244443"),
             Name = "arammtech",
             NationalId = "0000000000",
             Nationality = "SA",
             BirthDate = new DateOnly(1988, 7, 15),
-            Phone = "+966504567890",
+            Phone = "0504567890",
             Address = "Abha, Saudi Arabia",
             Email = "arammtech@gmail.com",
             Role = Role.GeneralManager.ToString(),
@@ -159,7 +158,7 @@ public class ApplicationDbContextInitializer(
             NationalId = "4567890123",
             Nationality = "SA",
             BirthDate = new DateOnly(1988, 7, 15),
-            Phone = "+966504567890",
+            Phone = "0504567890",
             Address = "Abha, Saudi Arabia",
             Email = "salem.dosari@example.com",
             Role = Role.Lawyer.ToString(),
@@ -172,7 +171,7 @@ public class ApplicationDbContextInitializer(
             NationalId = "5678901234",
             Nationality = "SA",
             BirthDate = new DateOnly(1991, 3, 22),
-            Phone = "+966505678901",
+            Phone = "0505678901",
             Address = "Tabuk, Saudi Arabia",
             Email = "noura.fahad@example.com",
             Role = Role.Consultant.ToString(),
@@ -182,8 +181,16 @@ public class ApplicationDbContextInitializer(
 
             foreach (var data in employeesData)
             {
-                var person = Person.Create(data.PersonId, data.Name, data.NationalId, data.Nationality, data.BirthDate, data.Phone, data.Address).Value;
-                var employee = Employee.Create(Guid.NewGuid(), data.Email, person, data.Role).Value;
+                var phones = new List<Phone>
+        {
+            Phone.Create(Guid.NewGuid(), data.Phone, "966").Value
+        };
+
+                var personResult = Person.Create(data.PersonId, data.Name, data.NationalId, data.Nationality, data.BirthDate, data.Address, phones);
+                if (personResult.IsError) continue;
+
+                var employeeResult = Employee.Create(Guid.NewGuid(), data.Email, personResult.Value, data.Role);
+                if (employeeResult.IsError) continue;
 
                 var identityUser = new ApplicationUser
                 {
@@ -191,7 +198,7 @@ public class ApplicationDbContextInitializer(
                     Email = data.Email,
                     EmailConfirmed = true
                 };
-                
+
                 var result = await _userManager.CreateAsync(identityUser, data.Password);
                 if (!result.Succeeded)
                 {
@@ -200,76 +207,89 @@ public class ApplicationDbContextInitializer(
                     continue;
                 }
 
-                await userManager.AddToRoleAsync(identityUser, data.Role);
-                employee.AssignUser(identityUser.Id);
+                await _userManager.AddToRoleAsync(identityUser, data.Role);
+                employeeResult.Value.AssignUser(identityUser.Id);
 
-                _context.People.Add(person);
-                _context.Employees.Add(employee);
+                _context.People.Add(personResult.Value);
+                _context.Employees.Add(employeeResult.Value);
             }
 
             await _context.SaveChangesAsync();
         }
-
 
         // --- Clients Seed Data ---
         if (!_context.Clients.Any())
         {
             var clients = new List<Client>();
 
-            // Client 1
-            var person1 = Person.Create(
+            var phone1 = new List<Phone>
+    {
+        Phone.Create(Guid.NewGuid(), "0501234567", "966").Value
+    };
+
+            var person1Result = Person.Create(
                 Guid.Parse("11111111-aaaa-4bbb-cccc-111111111111"),
                 "Ahmed Al-Harbi",
                 "1234567890",
                 "SA",
                 new DateOnly(1990, 5, 12),
-                "+966501234567",
-                "Riyadh, Saudi Arabia"
-            ).Value;
+                "Riyadh, Saudi Arabia",
+                phone1
+            );
+            if (person1Result.IsSuccess)
+            {
+                var client1 = Client.Create(Guid.Parse("aaaa1111-bbbb-4ccc-dddd-111111111111"), person1Result.Value).Value;
+                _context.People.Add(person1Result.Value);
+                _context.Clients.Add(client1);
+            }
 
-            var client1 = Client.Create(
-                Guid.Parse("aaaa1111-bbbb-4ccc-dddd-111111111111"),
-                person1
-            ).Value;
+            var phone2 = new List<Phone>
+    {
+        Phone.Create(Guid.NewGuid(), "0502345678", "966").Value
+    };
 
-            // Client 2
-            var person2 = Person.Create(
+            var person2Result = Person.Create(
                 Guid.Parse("22222222-bbbb-4ccc-dddd-222222222222"),
                 "Fatimah Al-Qahtani",
                 "2345678901",
                 "SA",
                 new DateOnly(1985, 11, 3),
-                "+966502345678",
-                "Jeddah, Saudi Arabia"
-            ).Value;
+                "Jeddah, Saudi Arabia",
+                phone2
+            );
+            if (person2Result.IsSuccess)
+            {
+                var client2 = Client.Create(Guid.Parse("bbbb2222-cccc-4ddd-eeee-222222222222"), person2Result.Value).Value;
+                _context.People.Add(person2Result.Value);
+                _context.Clients.Add(client2);
+            }
 
-            var client2 = Client.Create(
-                Guid.Parse("bbbb2222-cccc-4ddd-eeee-222222222222"),
-                person2
-            ).Value;
+            var phone3 = new List<Phone>
+    {
+        Phone.Create(Guid.NewGuid(), "0503456789", "966").Value,
+        Phone.Create(Guid.NewGuid(), "0503456789", "966").Value
+    };
 
-            // Client 3
-            var person3 = Person.Create(
+            var person3Result = Person.Create(
                 Guid.Parse("33333333-cccc-4ddd-eeee-333333333333"),
                 "Mohammed Al-Shehri",
                 "3456789012",
                 "SA",
                 new DateOnly(1992, 2, 20),
-                "+966503456789",
-                "Dammam, Saudi Arabia"
-            ).Value;
-
-            var client3 = Client.Create(
-                Guid.Parse("cccc3333-dddd-4eee-ffff-333333333333"),
-                person3
-            ).Value;
-
-            // Add to context
-            _context.People.AddRange(person1, person2, person3);
-            _context.Clients.AddRange(client1, client2, client3);
+                "Dammam, Saudi Arabia",
+                phone3
+            );
+            if (person3Result.IsSuccess)
+            {
+                var client3 = Client.Create(Guid.NewGuid(), person3Result.Value).Value;
+                _context.People.Add(person3Result.Value);
+                _context.Clients.Add(client3);
+            }
 
             await _context.SaveChangesAsync();
         }
+
+
 
         // --- Cases Seed Data ---
         if (!_context.Cases.Any())

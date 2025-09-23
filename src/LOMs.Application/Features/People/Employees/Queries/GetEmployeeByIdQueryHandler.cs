@@ -15,7 +15,11 @@ public class GetEmployeeByIdQueryHandler(IAppDbContext context, IMapper mapper)
 
     public async Task<Result<EmployeeDto>> HandleAsync(GetEmployeeByIdQuery query, CancellationToken cancellationToken = new CancellationToken())
     {
-        var  employee = await _context.Employees.Include(e=> e.Person).AsNoTracking().FirstOrDefaultAsync(e=> e.Id == query.Id, cancellationToken);
+        var  employee = await _context.Employees
+            .AsNoTracking()
+            .Include(e=> e.Person)
+                .ThenInclude(x => x.Phones)
+            .FirstOrDefaultAsync(e=> e.Id == query.Id, cancellationToken);
         if (employee == null)
             return Error.NotFound();
         return _mapper.Map<Employee, EmployeeDto>(employee);

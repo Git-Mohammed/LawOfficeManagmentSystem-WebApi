@@ -1,6 +1,7 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LiteBus.Queries.Abstractions;
 using LOMs.Application.Features.People.Clients.Commands.CreateClient;
+using LOMs.Application.Features.People.Commands;
 using LOMs.Application.Features.People.Employees.Commands;
 using LOMs.Application.Features.People.Employees.Dtos;
 using LOMs.Application.Features.People.Employees.Queries;
@@ -67,17 +68,19 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
         [FromBody] CreateEmployeeRequest request,
         CancellationToken ct)
     {
+
+        var person = new CreatePersonCommand(
+            FullName: request.Person.FullName,
+            NationalId: request.Person.NationalId,
+            CountryCode: request.Person.CountryCode,
+            BirthDate: request.Person.BirthDate,
+            Address: request.Person.Address,
+            Phone: new CreatePhoneCommand(request.Person.Phone.Number, request.Person.Phone.Code));
+
         var command = new CreateEmployeeCommand(
             Role: request.Role,
             Email: request.Email,
-            Person: new CreatePersonCommand(
-                FullName: request.Person.FullName,
-                NationalId: request.Person.NationalId,
-                CountryCode: request.Person.CountryCode,
-                BirthDate: request.Person.BirthDate,
-                PhoneNumber: request.Person.PhoneNumber,
-                Address: request.Person.Address
-            )
+            Person: person
         );
 
         var result = await _command.SendAsync(command, ct);

@@ -10,6 +10,7 @@ using LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
+using LOMs.Domain.People.Phones;
 using LOMs.Domain.POAs;
 using LOMs.Infrastructure.Constants;
 using LOMs.Infrastructure.Data.Views.ClientFiles;
@@ -41,6 +42,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ContractFile> ContractFiles => Set<ContractFile>();
     public DbSet<POA> POAs => Set<POA>();
     public DbSet<POAFile> POAFiles => Set<POAFile>();
+    public DbSet<Phone> Phones => Set<Phone>();
+
 
     // Identity
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();

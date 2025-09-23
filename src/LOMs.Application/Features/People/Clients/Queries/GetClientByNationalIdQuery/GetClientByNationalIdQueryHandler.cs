@@ -26,6 +26,7 @@ public sealed class GetClientByNationalIdQueryHandler(
     {
         var clientEntity = await _context.Clients.AsNoTracking()
            .Include(x => x.Person)
+                .ThenInclude(x => x.Phones)
            .FirstOrDefaultAsync(x => x.Person.NationalId == request.NationalId);
 
         if (clientEntity is null)
