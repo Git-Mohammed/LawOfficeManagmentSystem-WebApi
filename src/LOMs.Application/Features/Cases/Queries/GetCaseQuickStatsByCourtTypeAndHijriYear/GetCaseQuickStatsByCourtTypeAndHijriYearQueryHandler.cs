@@ -8,17 +8,17 @@ using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LOMs.Application.Features.Cases.Queries.GetCasesByCourtTypeAndYear;
+namespace LOMs.Application.Features.Cases.Queries.GetCaseQuickStatsByCourtTypeAndHijriYear;
 
-public class GetCasesByCourtTypeAndYearPaginatedHandler
-    : IQueryHandler<GetCasesByCourtTypeAndYearPaginatedQuery, Result<PaginatedList<CaseQuickStatsDto>>>
+public class GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler
+    : IQueryHandler<GetCaseQuickStatsByCourtTypeAndHijriYearQuery, Result<PaginatedList<CaseQuickStatsDto>>>
 {
-    private readonly ILogger<GetCasesByCourtTypeAndYearPaginatedHandler> _logger;
+    private readonly ILogger<GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler> _logger;
     private readonly IAppDbContext _context;
     private readonly IMapper _mapper;
 
-    public GetCasesByCourtTypeAndYearPaginatedHandler(
-        ILogger<GetCasesByCourtTypeAndYearPaginatedHandler> logger,
+    public GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler(
+        ILogger<GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler> logger,
         IAppDbContext context,
         IMapper mapper)
     {
@@ -28,14 +28,13 @@ public class GetCasesByCourtTypeAndYearPaginatedHandler
     }
 
     public async Task<Result<PaginatedList<CaseQuickStatsDto>>> HandleAsync(
-        GetCasesByCourtTypeAndYearPaginatedQuery query,
+        GetCaseQuickStatsByCourtTypeAndHijriYearQuery query,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
             "Fetching cases for CourtTypeId: {CourtTypeId}, HijriYear: {HijriYear}, Page: {PageNumber}, Size: {PageSize}",
             query.CourtTypeId, query.HijriYear, query.PageNumber, query.PageSize);
 
-        // Step 1: Join Cases with ClientFiles view
         var baseQuery = from caseEntity in _context.Cases.AsNoTracking()
                         from clientCase in caseEntity.ClientCases
                         join fileView in _context.ClientFilesWithFileNumber
@@ -50,6 +49,12 @@ public class GetCasesByCourtTypeAndYearPaginatedHandler
                             ClientName = clientCase.Client!.Person!.FullName,
                             Status = caseEntity.Status
                         };
+
+        // Apply status filter if provided
+        if (query.Status is not null)
+        {
+            baseQuery = baseQuery.Where(x => x.Status == query.Status);
+        }
 
         // Step 2: Paginate efficiently
         var totalCount = await baseQuery.CountAsync(cancellationToken);

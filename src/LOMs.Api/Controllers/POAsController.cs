@@ -1,8 +1,10 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LiteBus.Queries.Abstractions;
+using LOMs.Application.Common.Models;
 using LOMs.Application.Features.POAs.Commands.CreatePOA;
 using LOMs.Application.Features.POAs.Dtos;
 using LOMs.Application.Features.POAs.Queries.GetById;
+using LOMs.Application.Features.POAs.Queries.GetListByCaseId;
 using LOMs.Contract.Requests.POAs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +31,25 @@ public class POAsController(ICommandMediator command, IQueryMediator query) : Ap
         return result.Match(Ok, Problem);
     }
 
+    [HttpGet(Name = nameof(GetPOAsByCaseId))]
+    [ProducesResponseType(typeof(PaginatedList<POAListRowDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [EndpointSummary("Get paginated list of POAs by case ID")]
+    [EndpointDescription("Returns a paginated list of POAs associated with the specified case.")]
+    [EndpointName(nameof(GetPOAsByCaseId))]
+    public async Task<IActionResult> GetPOAsByCaseId(
+    Guid caseId,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10,
+    CancellationToken ct = default)
+    {
+        if (pageNumber <= 0 || pageSize <= 0)
+            return Problem("Page number and size must be greater than zero.");
+
+        var result = await _query.QueryAsync(new GetPOAsByCaseIdQuery(caseId, pageNumber, pageSize), ct);
+
+        return result.Match(Ok, Problem);
+    }
 
     [HttpPost(Name = nameof(CreatePOA))]
     [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]

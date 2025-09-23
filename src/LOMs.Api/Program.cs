@@ -1,4 +1,5 @@
 ﻿using LOMs.Api;
+using LOMs.Contract.Commons.Enums;
 using LOMs.Domain.Cases.Enums;
 using LOMs.Infrastructure.BackgroundJobs;
 using LOMs.Infrastructure.BackgroundServicesJob.CourtSessionReminder;
@@ -19,6 +20,11 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new PartyRoleJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new ContractTypeJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new CaseStatusJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new PartyRoleArabicJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new CaseStatusArabicJsonConverter());
+
+
+
     });
 
 builder.Services

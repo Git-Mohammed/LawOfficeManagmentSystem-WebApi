@@ -48,8 +48,17 @@ public sealed class Person : AuditableEntity
             return PersonErrors.InvalidNationalId;
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        if (birthDate > today)
+            return PersonErrors.InvalidBirthDate;
+
         var age = today.Year - birthDate.Year;
-        if (birthDate > today || age < 18)
+
+        // Adjust if birthday hasn't occurred yet this year
+        if (birthDate > today.AddYears(-age))
+            age--;
+
+        if (age < 1)
             return PersonErrors.InvalidBirthDate;
 
         if (string.IsNullOrWhiteSpace(phoneNumber) || !Regex.IsMatch(phoneNumber, @"^\+?\d{7,15}$"))

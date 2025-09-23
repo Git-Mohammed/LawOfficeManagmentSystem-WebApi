@@ -1,0 +1,13 @@
+﻿namespace LOMs.Application.Features.POAs.Dtos;
+
+/// <summary>
+/// Represents a single POA entry in a list view.
+/// </summary>
+public sealed class POAListRowDto
+{
+    public string POANumber { get; init; } = default!;
+    public DateOnly IssueDate { get; init; }
+    public string IssuingAuthority { get; init; } = default!;
+    public string EmployeeCreatedByName { get; init; } = default!;
+    public string CreatedDate { get; init; } = default!;
+}
