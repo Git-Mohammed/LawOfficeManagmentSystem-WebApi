@@ -20,6 +20,7 @@ public class GetEmployeeByIdQueryHandler(IAppDbContext context, IMapper mapper)
             .Include(e=> e.Person)
                 .ThenInclude(x => x.Phones)
             .FirstOrDefaultAsync(e=> e.Id == query.Id, cancellationToken);
+
         if (employee == null)
             return Error.NotFound();
         return _mapper.Map<Employee, EmployeeDto>(employee);
