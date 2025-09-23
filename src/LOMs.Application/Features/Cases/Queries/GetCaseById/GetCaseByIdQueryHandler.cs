@@ -53,6 +53,9 @@ public sealed class GetCaseByIdQueryHandler(
             Status = caseEntity.Status,
             CreatedAt = caseEntity.CreatedAtUtc,
             CreatedBy = createdByEmployee?.FullName ?? string.Empty,
+            ClientRequests = caseEntity.ClientRequests,
+            EstimatedReviewDate = caseEntity.EstimatedReviewDate,
+            LawyerOpinion = caseEntity.LawyerOpinion,
             Clients = caseEntity.ClientCases
                 .Select(cc => new CaseClientDto
                 {

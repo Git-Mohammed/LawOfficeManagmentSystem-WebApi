@@ -14,7 +14,7 @@ namespace LOMs.Domain.Cases.Enums
         Pending = 1,     // معلق
         Processing = 2,  // قيد المعالجة
         Complete = 3,    // مكتمل
-        Cancelled = 4    // ملغى
+        Cancelled = 4    // ملغي
     }
 
     public class CaseStatusTypeConverter : TypeConverter
@@ -32,7 +32,7 @@ namespace LOMs.Domain.Cases.Enums
                 "معلق" => CaseStatus.Pending,
                 "قيد المعالجة" => CaseStatus.Processing,
                 "مكتمل" => CaseStatus.Complete,
-                "ملغى" => CaseStatus.Cancelled,
+                "ملغي" => CaseStatus.Cancelled,
                 _ => throw new ArgumentException($"قيمة الحالة غير معروفة: {stringValue}")
             };
         }
@@ -48,7 +48,7 @@ namespace LOMs.Domain.Cases.Enums
                 "معلق" => CaseStatus.Pending,
                 "قيد المعالجة" => CaseStatus.Processing,
                 "مكتمل" => CaseStatus.Complete,
-                "ملغى" => CaseStatus.Cancelled,
+                "ملغي" => CaseStatus.Cancelled,
                 _ => throw new JsonException($"قيمة غير صالحة: {value}")
             };
         }
@@ -61,7 +61,7 @@ namespace LOMs.Domain.Cases.Enums
                 CaseStatus.Pending => "معلق",
                 CaseStatus.Processing => "قيد المعالجة",
                 CaseStatus.Complete => "مكتمل",
-                CaseStatus.Cancelled => "ملغى",
+                CaseStatus.Cancelled => "ملغي",
                 _ => throw new JsonException($"قيمة غير معروفة: {value}")
             };
 

@@ -4,6 +4,7 @@ using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Cases.Commands.CreateCase;
 using LOMs.Application.Features.Cases.Commands.UpdateStatus;
 using LOMs.Application.Features.Cases.Dtos;
+using LOMs.Application.Features.Cases.Queries.CaseListRow;
 using LOMs.Application.Features.Cases.Queries.GetCaseByIdQuery;
 using LOMs.Application.Features.Cases.Queries.GetCaseQuickStatsByCourtTypeAndHijriYear;
 using LOMs.Application.Features.People.Clients.Commands.CreateClient;
@@ -70,6 +71,28 @@ public async Task<IActionResult> GetCasesByCourtTypeAndYearPaginated(
     return result.Match(Ok, Problem);
 }
 
+    [HttpGet("list", Name = nameof(GetCasesList))]
+    [ProducesResponseType(typeof(PaginatedList<CaseListRowDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [EndpointSummary("Get paginated list of cases")]
+    [EndpointDescription("Returns a paginated list of cases with optional status filtering.")]
+    [EndpointName(nameof(GetCasesList))]
+    public async Task<IActionResult> GetCasesList(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] CaseStatus? status = null,
+    CancellationToken ct = default)
+    {
+        if (pageNumber <= 0)
+            return Problem("Page number must be greater than zero.");
+
+        if (pageSize <= 0)
+            return Problem("Page size must be greater than zero.");
+
+        var result = await _query.QueryAsync(new GetCasesListQuery(pageNumber, pageSize, status), ct);
+
+        return result.Match(Ok, Problem);
+    }
 
     [HttpPost(Name = nameof(CreateCase))]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
