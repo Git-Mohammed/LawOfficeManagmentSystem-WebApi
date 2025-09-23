@@ -2,6 +2,7 @@
 using LiteBus.Queries.Abstractions;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Cases.Commands.CreateCase;
+using LOMs.Application.Features.Cases.Commands.UpdateStatus;
 using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Application.Features.Cases.Queries.GetCaseByIdQuery;
 using LOMs.Application.Features.Cases.Queries.GetCaseQuickStatsByCourtTypeAndHijriYear;
@@ -50,13 +51,13 @@ public async Task<IActionResult> GetCasesByCourtTypeAndYearPaginated(
     [FromQuery] int pageSize = 10,
     CancellationToken ct = default)
 {
-    if (pageNumber <= 0)
-        return Problem("رقم الصفحة يجب أن يكون أكبر من الصفر.");
+        if (pageNumber <= 0)
+            return Problem("Page number must be greater than zero.");
 
-    if (pageSize <= 0)
-        return Problem("حجم الصفحة يجب أن يكون أكبر من الصفر.");
+        if (pageSize <= 0)
+            return Problem("Page size must be greater than zero.");
 
-    var queryRequest = new GetCaseQuickStatsByCourtTypeAndHijriYearQuery(
+        var queryRequest = new GetCaseQuickStatsByCourtTypeAndHijriYearQuery(
         CourtTypeId: courtTypeId,
         HijriYear: (short)hijriYear,
         PageNumber: pageNumber,
@@ -80,10 +81,10 @@ public async Task<IActionResult> GetCasesByCourtTypeAndYearPaginated(
     public async Task<IActionResult> CreateCase([FromBody] CreateCaseRequest request, CancellationToken ct)
     {
         if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.PartyRole), request.PartyRole))
-            return Problem("دور العميل في القضية غير صالح.");
+            return Problem("The client's role in the case is invalid.");
 
         if (request.Clients is null || request.Clients.Count == 0)
-            return Problem("يجب ان يكون هناك عملاء");
+            return Problem("At least one client must be provided.");
 
         var clientModels = MapClients(request.Clients);
 
@@ -111,6 +112,30 @@ public async Task<IActionResult> GetCasesByCourtTypeAndYearPaginated(
             Problem);
     }
 
+
+    [HttpPut("{caseId:guid}/status", Name = nameof(UpdateCaseStatus))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [EndpointSummary("Update case status")]
+    [EndpointDescription("Used to update the status of an existing case using its ID and the new status.")]
+    [EndpointName(nameof(UpdateCaseStatus))]
+    public async Task<IActionResult> UpdateCaseStatus(
+        Guid caseId,
+        [FromBody] UpdateCaseStatusRequest request,
+        CancellationToken ct = default)
+    {
+        if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.CaseStatus), request.Status))
+            return Problem("The provided status value is invalid.");
+
+        var result = await _command.SendAsync(
+            new UpdateCaseStatusCommand(caseId, (LOMs.Domain.Cases.Enums.CaseStatus)request.Status),
+            ct);
+
+        return result.Match(_ => NoContent(), Problem);
+    }
+
+
     #region Helpers
     private static List<CaseClientModel> MapClients(List<CaseClientRequest> clients) =>
         clients.Select<CaseClientRequest, CaseClientModel>(c => c switch
@@ -131,7 +156,7 @@ public async Task<IActionResult> GetCasesByCourtTypeAndYearPaginated(
                     )
                 )
             ),
-            _ => throw new ValidationException("كل عنصر في قائمة العملاء يجب أن يحتوي إما على معرف موجود أو بيانات عميل جديدة.")
+            _ => throw new ValidationException("Each item in the client list must contain either an existing client ID or new client data.")
         }).ToList();
 
     #endregion

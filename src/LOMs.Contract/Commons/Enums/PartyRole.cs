@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace LOMs.Contract.Commons.Enums;
 
-[TypeConverter(typeof(cPartyRoleJsonConverter))]
+[TypeConverter(typeof(PartyRoleArabicJsonConverter))]
 [JsonConverter(typeof(PartyRoleArabicConverter))]
 public enum PartyRole
 {
@@ -18,7 +18,7 @@ public enum PartyRole
     Defendant = 2
 }
 
-public class cPartyRoleJsonConverter : JsonConverter<PartyRole>
+public class PartyRoleArabicJsonConverter : JsonConverter<PartyRole>
 {
 
     // JsonConverter for JSON binding

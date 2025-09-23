@@ -107,6 +107,22 @@ namespace LOMs.Domain.Cases
             ); ;
         }
 
+        /// <summary>
+        /// Updates the status of the case with validation.
+        /// </summary>
+        public Result<Updated> UpdateStatus(CaseStatus newStatus)
+        {
+            if (!Enum.IsDefined(typeof(CaseStatus), newStatus))
+                return CaseErrors.InvalidStatus;
+
+            if (Status == newStatus)
+                return Result.Updated; // No change needed
+
+            Status = newStatus;
+
+            return Result.Updated;
+        }
+
 
         public override string ToString()
         {

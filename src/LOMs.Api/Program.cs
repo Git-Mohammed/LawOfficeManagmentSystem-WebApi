@@ -20,7 +20,9 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new PartyRoleJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new ContractTypeJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new CaseStatusJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new cPartyRoleJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new PartyRoleArabicJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new CaseStatusArabicJsonConverter());
+
 
 
     });
