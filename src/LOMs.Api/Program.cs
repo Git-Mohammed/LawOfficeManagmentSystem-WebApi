@@ -22,9 +22,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new CaseStatusJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new PartyRoleArabicJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new CaseStatusArabicJsonConverter());
-
-
-
+        options.JsonSerializerOptions.Converters.Add(new cContractTypeJsonConverter());
     });
 
 builder.Services

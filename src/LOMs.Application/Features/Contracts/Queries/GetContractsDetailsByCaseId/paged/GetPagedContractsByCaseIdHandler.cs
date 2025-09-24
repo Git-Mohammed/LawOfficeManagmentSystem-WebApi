@@ -51,14 +51,18 @@ public sealed class GetPagedContractsByCaseIdHandler(
             .OrderBy(cs => cs.CreatedAtUtc)
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)
-            .Select(cs => new ContractDetailsDto
-            {
-                ContractId = cs.Id,
-                ContractNumber = cs.ContractNumber,
-                InitialPayment = cs.InitialPayment,
-                IsAssigned = cs.IsAssigned,
-                TotalAmount = cs.TotalAmount
-            })
+             .Select(c => new ContractDetailsDto
+             {
+                 ContractId = c.Id,
+                 ContractNumber = c.ContractNumber,
+                 ContractType = c.Type,
+                 TotalAmount = c.TotalAmount,
+                 InitialPayment = c.InitialPayment,
+                 IsAssigned = c.IsAssigned,
+                 CreatedDate = c.CreatedAtUtc
+
+
+             })
             .ToListAsync(ct);
 
         var paginated = new PaginatedList<ContractDetailsDto>(
