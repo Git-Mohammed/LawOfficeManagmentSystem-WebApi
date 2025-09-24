@@ -94,4 +94,17 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
             Problem
         );
     }
+    
+    [HttpGet("stats", Name = nameof(GetEmployeeStats))]
+    [ProducesResponseType(typeof(EmployeeStatsDto), StatusCodes.Status200OK)]
+    [EndpointSummary("Retrieves employee statistics.")]
+    [EndpointDescription("Returns the total number of employees, and counts of active and inactive employees.")]
+    [EndpointName(nameof(GetEmployeeStats))]
+    public async Task<IActionResult> GetEmployeeStats(CancellationToken ct)
+    {
+        var result = await _query.QueryAsync(new GetEmployeeStatsQuery(), ct);
+        return result.Match(response => Ok(response), Problem);
+    }
+
+    
 }
