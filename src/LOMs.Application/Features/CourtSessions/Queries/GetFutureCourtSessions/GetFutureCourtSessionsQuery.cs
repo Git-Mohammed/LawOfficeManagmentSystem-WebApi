@@ -5,7 +5,7 @@ using LOMs.Domain.Common.Results;
 
 namespace LOMs.Application.Features.CourtSessions.Queries.GetFutureCourtSessions;
 
-public sealed class GetFutureCourtSessionsQuery : IQuery<Result<IReadOnlyList<CourtSessionDto>>>
+public sealed class GetFutureCourtSessionsQuery : IQuery<Result<IReadOnlyList<GetFutureCourtSessionDto>>>
 {
     public DateTimeOffset ReferenceTime { get; }
 
