@@ -14,13 +14,13 @@ public enum CaseStatus
     [Display(Name = "مسودة")]
     Draft = 0,
 
-    [Display(Name = "معلق")]
+    [Display(Name = "قيد نظر")]
     Pending = 1,
 
-    [Display(Name = "قيد المعالجة")]
+    [Display(Name = "قيد تنفيذ")]
     Processing = 2,
 
-    [Display(Name = "مكتمل")]
+    [Display(Name = "قيد منتهي")]
     Done = 3,
 
     [Display(Name = "ملغي")]
@@ -34,9 +34,9 @@ public class CaseStatusArabicJsonConverter : JsonConverter<CaseStatus>
         return reader.GetString() switch
         {
             "مسودة" => CaseStatus.Draft,
-            "معلق" => CaseStatus.Pending,
-            "قيد المعالجة" => CaseStatus.Processing,
-            "مكتمل" => CaseStatus.Done,
+            "قيد نظر" => CaseStatus.Pending,
+            "قيد تنفيذ" => CaseStatus.Processing,
+            "قيد منتهي" => CaseStatus.Done,
             "ملغي" => CaseStatus.Cancelled,
             _ => throw new JsonException($"قيمة غير صالحة: {reader.GetString()}")
         };
@@ -47,9 +47,9 @@ public class CaseStatusArabicJsonConverter : JsonConverter<CaseStatus>
         var stringValue = value switch
         {
             CaseStatus.Draft => "مسودة",
-            CaseStatus.Pending => "معلق",
-            CaseStatus.Processing => "قيد المعالجة",
-            CaseStatus.Done => "مكتمل",
+            CaseStatus.Pending => "قيد نظر",
+            CaseStatus.Processing => "قيد تنفيذ",
+            CaseStatus.Done => "قيد منتهي",
             CaseStatus.Cancelled => "ملغي",
             _ => throw new JsonException($"قيمة غير معروفة: {value}")
         };
@@ -67,9 +67,9 @@ public class CaseStatusArabicTypeConverter : TypeConverter
         return value?.ToString()?.Trim() switch
         {
             "مسودة" => CaseStatus.Draft,
-            "معلق" => CaseStatus.Pending,
-            "قيد المعالجة" => CaseStatus.Processing,
-            "مكتمل" => CaseStatus.Done,
+            "قيد نظر" => CaseStatus.Pending,
+            "قيد تنفيذ" => CaseStatus.Processing,
+            "قيد منتهي" => CaseStatus.Done,
             "ملغي" => CaseStatus.Cancelled,
             _ => throw new ArgumentException($"قيمة الحالة غير معروفة: {value}")
         };

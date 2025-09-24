@@ -22,10 +22,6 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(p => p.BirthDate)
                .IsRequired();
 
-        builder.Property(p => p.PhoneNumber)
-               .IsRequired()
-               .HasMaxLength(20);
-
         builder.Property(p => p.Address)
                .IsRequired()
                .HasMaxLength(250);
@@ -33,7 +29,6 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(p => p.CountryCode)
             .HasConversion<string>()
                .IsRequired();
-
 
         builder.HasIndex(p => p.NationalId);
         builder.ToTable("People",SchemaNames.User);

@@ -23,7 +23,7 @@ public sealed class GetCaseByIdQueryHandler(
             .AsNoTracking()
             .Include(x => x.CourtType)
             .Include(x => x.Employee).ThenInclude(e => e.Person)
-            .Include(x => x.ClientCases).ThenInclude(cc => cc.Client).ThenInclude(c => c.Person)
+            .Include(x => x.ClientCases).ThenInclude(cc => cc.Client).ThenInclude(c => c.Person).ThenInclude(x => x.Phones)
             .FirstOrDefaultAsync(x => x.Id == request.CaseId, cancellationToken);
 
         if (caseEntity is null)
@@ -62,7 +62,8 @@ public sealed class GetCaseByIdQueryHandler(
                     ClientId = cc.Client!.Id,
                     FullName = cc.Client.Person?.FullName ?? string.Empty,
                     NationalId = cc.Client.Person?.NationalId ?? string.Empty,
-                    PhoneNumber = cc.Client.Person?.PhoneNumber ?? string.Empty,
+                    PhoneNumber = new PhoneDto { PhoneId = cc.Client.Person!.Phones.FirstOrDefault()!.Id, Number = cc.Client.Person?.Phones.FirstOrDefault()?.Number ?? string.Empty,
+                    Code = cc.Client.Person?.Phones.FirstOrDefault()?.Code ?? string.Empty},
                     CountryCode = cc.Client.Person?.CountryCode.ToString() ?? string.Empty,
                     Address = cc.Client.Person?.Address ?? string.Empty,
                     Birthdate = cc.Client.Person!.BirthDate

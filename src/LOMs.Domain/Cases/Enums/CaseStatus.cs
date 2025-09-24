@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -10,11 +11,20 @@ namespace LOMs.Domain.Cases.Enums
     [TypeConverter(typeof(CaseStatusTypeConverter))]
     public enum CaseStatus
     {
-        Draft = 0,       // مسودة
-        Pending = 1,     // معلق
-        Processing = 2,  // قيد المعالجة
-        Complete = 3,    // مكتمل
-        Cancelled = 4    // ملغي
+        [Display(Name = "مسودة")]
+        Draft = 0,
+
+        [Display(Name = "قيد نظر")]
+        Pending = 1,
+
+        [Display(Name = "قيد تنفيذ")]
+        Processing = 2,
+
+        [Display(Name = "قيد منتهي")]
+        Done = 3,
+
+        [Display(Name = "ملغي")]
+        Cancelled = 4
     }
 
     public class CaseStatusTypeConverter : TypeConverter
@@ -29,9 +39,9 @@ namespace LOMs.Domain.Cases.Enums
             return stringValue switch
             {
                 "مسودة" => CaseStatus.Draft,
-                "معلق" => CaseStatus.Pending,
-                "قيد المعالجة" => CaseStatus.Processing,
-                "مكتمل" => CaseStatus.Complete,
+                "قيد نظر" => CaseStatus.Pending,
+                "قيد تنفيذ" => CaseStatus.Processing,
+                "قيد منتهي" => CaseStatus.Done,
                 "ملغي" => CaseStatus.Cancelled,
                 _ => throw new ArgumentException($"قيمة الحالة غير معروفة: {stringValue}")
             };
@@ -45,9 +55,9 @@ namespace LOMs.Domain.Cases.Enums
             return value switch
             {
                 "مسودة" => CaseStatus.Draft,
-                "معلق" => CaseStatus.Pending,
-                "قيد المعالجة" => CaseStatus.Processing,
-                "مكتمل" => CaseStatus.Complete,
+                "قيد نظر" => CaseStatus.Pending,
+                "قيد تنفيذ" => CaseStatus.Processing,
+                "قيد منتهي" => CaseStatus.Done,
                 "ملغي" => CaseStatus.Cancelled,
                 _ => throw new JsonException($"قيمة غير صالحة: {value}")
             };
@@ -58,9 +68,9 @@ namespace LOMs.Domain.Cases.Enums
             string stringValue = value switch
             {
                 CaseStatus.Draft => "مسودة",
-                CaseStatus.Pending => "معلق",
-                CaseStatus.Processing => "قيد المعالجة",
-                CaseStatus.Complete => "مكتمل",
+                CaseStatus.Pending => "قيد نظر",
+                CaseStatus.Processing => "قيد تنفيذ",
+                CaseStatus.Done => "قيد منتهي",
                 CaseStatus.Cancelled => "ملغي",
                 _ => throw new JsonException($"قيمة غير معروفة: {value}")
             };

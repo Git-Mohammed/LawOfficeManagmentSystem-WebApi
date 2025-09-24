@@ -10,6 +10,7 @@ using LOMs.Domain.Cases.Enums;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
+using LOMs.Domain.People.Phones;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -116,6 +117,34 @@ public sealed class CreateCaseCommandHandler(
                 return CaseErrors.DuplicateNationalIds(duplicates);
             }
         }
+
+        // --- Phone Number Validation ---
+        var phoneTuples = message.Clients
+            .OfType<NewCaseClientModel>()
+            .Select(x => new
+            {
+                Number = x.Client.Person.Phone.Number?.Trim(),
+                Code = x.Client.Person.Phone.Code?.Trim()
+            })
+            .Where(p => !string.IsNullOrWhiteSpace(p.Number) && !string.IsNullOrWhiteSpace(p.Code))
+            .ToList();
+
+        var dbPhones = await _context.Phones
+            .Select(p => new { p.Number, p.Code })
+            .ToListAsync(cancellationToken);
+
+        var duplicatesPhones = dbPhones
+            .Where(db => phoneTuples.Any(input =>
+                db.Number == input.Number && db.Code == input.Code))
+            .Select(p => $"{p.Code}-{p.Number}")
+            .ToHashSet();
+
+        if (duplicatesPhones.Any())
+        {
+            _logger.LogWarning("Duplicate phone numbers detected: {Phones}", string.Join(", ", duplicatesPhones));
+            return CaseErrors.DuplicatePhoneNumbers(duplicatesPhones);
+        }
+
 
         _logger.LogInformation("Starting case creation for CaseNumber: {CaseNumber}", message.CaseNumber);
 
@@ -273,15 +302,20 @@ public sealed class CreateCaseCommandHandler(
         CourtType courtType,
         CancellationToken ct)
     {
+
+        var phoneResult = Phone.Create(Guid.NewGuid(), request.Client.Person.Phone.Number, request.Client.Person.Phone.Code);
+
         var personResult = Person.Create(
             Guid.NewGuid(),
             request.Client.Person.FullName,
             request.Client.Person.NationalId,
             request.Client.Person.CountryCode,
             request.Client.Person.BirthDate,
-            request.Client.Person.PhoneNumber,
-            request.Client.Person.Address
-        );
+            request.Client.Person.Address,
+            new List<Phone> { phoneResult.Value });
+
+        if (personResult.IsError)
+            return personResult.Errors;
 
         if (personResult.IsError)
         {

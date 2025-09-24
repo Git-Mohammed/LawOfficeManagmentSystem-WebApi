@@ -5,7 +5,7 @@ namespace LOMs.Contract.Requests.Employees;
 
 public class CreateEmployeeRequest
 {
-    [Required] public PersonRequest Person { get; set; } = null!;
+    [Required] public CreatePersonRequest Person { get; set; } = null!;
     [Required(ErrorMessage = "Role is required")]
     public string Role { get; set; } = null!;
     [Required(ErrorMessage = "Email is required.")]
