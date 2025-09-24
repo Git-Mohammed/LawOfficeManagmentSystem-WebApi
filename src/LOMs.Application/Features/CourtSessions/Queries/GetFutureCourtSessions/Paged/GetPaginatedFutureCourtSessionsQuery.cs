@@ -7,4 +7,4 @@ namespace LOMs.Application.Features.CourtSessions.Queries.GetFutureCourtSessions
 public sealed record GetPaginatedFutureCourtSessionsQuery(
     int PageNumber = 1,
     int PageSize = 20
-) : IQuery<Result<PaginatedList<CourtSessionDto>>>;
+) : IQuery<Result<PaginatedList<GetFutureCourtSessionDto>>>;

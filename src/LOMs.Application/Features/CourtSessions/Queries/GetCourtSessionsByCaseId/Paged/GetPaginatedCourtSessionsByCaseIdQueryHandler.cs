@@ -54,12 +54,10 @@ public sealed class GetPaginatedCourtSessionsByCaseIdQueryHandler(
             .Select(cs => new CourtSessionDto
             {
                 CourtSessionId = cs.Id,
-                CaseId = cs.CaseId,
                 ScheduledAt = cs.ScheduledAt,
                 AssignedTasks = cs.AssignedTasks,
                 AssignedEmployeeId = cs.AssignedEmployeeId,
-                AssignedEmployeeName = cs.AssignedEmployee!.Person.FullName ?? string.Empty,
-                IsSessionDateExpired = cs.IsSessionDateExpired
+                AssignedEmployeeName = cs.AssignedEmployee!.Person.FullName ?? string.Empty
             })
             .ToListAsync(ct);
 

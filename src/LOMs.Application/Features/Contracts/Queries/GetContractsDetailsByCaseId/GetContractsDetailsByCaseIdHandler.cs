@@ -45,9 +45,12 @@ public class GetContractsDetailsByCaseIdHandler
             {
                 ContractId = c.Id,
                 ContractNumber = c.ContractNumber,
-                TotalAmount = c.BaseAmount + c.TaxAmount,
+                ContractType = c.Type,
+                TotalAmount =c.TotalAmount,
                 InitialPayment = c.InitialPayment,
                 IsAssigned = c.IsAssigned,
+                CreatedDate = c.CreatedAtUtc
+
 
             })
             .ToListAsync(ct);

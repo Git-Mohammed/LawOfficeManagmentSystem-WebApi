@@ -36,13 +36,29 @@ public sealed class GetPagedContractListQueryHandler(
             .OrderByDescending(c => c.CreatedAtUtc)
             .Skip((query.PageIndex - 1) * query.PageSize)
             .Take(query.PageSize)
-            .Select(c => new ContractListItemDto
+            .Select(c => new
             {
-                ContractId = c.Id,
-                ContractNumber = c.ContractNumber,
-                ContractType = c.Type
+                Contract = c,
+                EmployeeName = context.Employees
+                    .Where(e => e.UserId == c.CreatedBy)
+                    .Select(e => e.Person.FullName)
+                    .FirstOrDefault()
+            })
+            .Select(x => new ContractListItemDto
+            {
+                ContractId = x.Contract.Id,
+                ContractNumber = x.Contract.ContractNumber,
+                ContractType = x.Contract.Type,
+                IssueDate = x.Contract.IssuedOn,
+                ExpiryDate = x.Contract.ExpiresOn,
+                TotalAmount = x.Contract.TotalAmount,
+                InitialPayment = x.Contract.InitialPayment,
+                IsAssigned = x.Contract.IsAssigned,
+                EmployeeCreatedBy = x.EmployeeName ?? string.Empty,
+                CreatedDate = x.Contract.CreatedAtUtc,
             })
             .ToListAsync(ct);
+
 
         var paginated = new PaginatedList<ContractListItemDto>(
             items: contracts,
