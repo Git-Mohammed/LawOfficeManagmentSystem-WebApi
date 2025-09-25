@@ -192,10 +192,6 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<Guid>("CaseId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ContractNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<short>("CourtTypeCode")
                         .HasColumnType("smallint");
 
@@ -226,15 +222,12 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("LastModifiedUtc")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("OrderNumber")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("TaxAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Type")
                         .HasColumnType("int")
-                        .HasComment("نوع العقد: 1 = محدد، 2 = غير محدد");
+                        .HasComment("Contract type: 1 = Fixed Term, 2 = Open Term");
 
                     b.HasKey("Id");
 
@@ -300,6 +293,66 @@ namespace LOMs.Infrastructure.Migrations
                     b.HasIndex("ContractId");
 
                     b.ToTable("ContractFiles", "FileManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.Contracts.ContractsWithContractNumber", b =>
+                {
+                    b.Property<decimal>("BaseAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("CaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContractNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<short>("CourtTypeCode")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly?>("ExpiresOn")
+                        .HasColumnType("date");
+
+                    b.Property<short>("HijriYear")
+                        .HasColumnType("smallint");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("InitialPayment")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsAssigned")
+                        .HasColumnType("bit");
+
+                    b.Property<DateOnly?>("IssuedOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RowNumber")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_ContractsWithContractNumber", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.CourtSessions.CourtSession", b =>

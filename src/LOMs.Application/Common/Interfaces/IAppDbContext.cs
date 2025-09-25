@@ -34,6 +34,8 @@ public interface IAppDbContext
     public DbSet<JudgmentFile> JudgmentFiles { get; }
 
     public DbSet<ClientFileWithFileNumber> ClientFilesWithFileNumber { get; }
+    public DbSet<ContractsWithContractNumber> ContractsWithContractNumber { get; }
+
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
