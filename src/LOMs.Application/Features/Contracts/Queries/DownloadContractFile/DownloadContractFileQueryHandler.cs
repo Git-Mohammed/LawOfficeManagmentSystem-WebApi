@@ -1,15 +1,12 @@
 ﻿using LiteBus.Queries.Abstractions;
 using LOMs.Application.Common.Interfaces;
-using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Contracts.Dtos;
-using LOMs.Application.Features.Contracts.Queries;
-using LOMs.Application.Features.Contracts.Queries.DownloadContractFile;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LOMs.Application.Features.Contracts.Handlers;
+namespace LOMs.Application.Features.Contracts.Queries.DownloadContractFile;
 
 public class DownloadContractFileQueryHandler(
     ILogger<DownloadContractFileQueryHandler> logger,
@@ -41,7 +38,7 @@ public class DownloadContractFileQueryHandler(
                 cancellationToken);
         if (contract is null)
         {
-            _logger.LogWarning("Contract not found or does not belong to CaseId: {CaseId}", query.CaseId);
+            _logger.LogWarning("Contract with ID {ContractId} not found for CaseId {CaseId}, or no file matches the provided path: {Path}", query.ContractId, query.CaseId, query.RelativePath);
             return ContractErrors.InvalidId;
         }
 

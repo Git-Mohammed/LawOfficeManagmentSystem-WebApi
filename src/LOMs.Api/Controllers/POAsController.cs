@@ -3,6 +3,7 @@ using LiteBus.Queries.Abstractions;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.POAs.Commands.CreatePOA;
 using LOMs.Application.Features.POAs.Dtos;
+using LOMs.Application.Features.POAs.Queries.DownloadPoaFile;
 using LOMs.Application.Features.POAs.Queries.GetById;
 using LOMs.Application.Features.POAs.Queries.GetListByCaseId;
 using LOMs.Contract.Requests.POAs;
@@ -50,6 +51,28 @@ public class POAsController(ICommandMediator command, IQueryMediator query) : Ap
 
         return result.Match(Ok, Problem);
     }
+
+    [HttpGet("{poaId:guid}/files/download", Name = nameof(DownloadPoaFile))]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [EndpointSummary("Downloads a specific file related to a POA.")]
+    [EndpointDescription("Downloads a file by relative path under a specific POA and case.")]
+    [EndpointName(nameof(DownloadPoaFile))]
+    public async Task<IActionResult> DownloadPoaFile(
+    Guid caseId,
+    Guid poaId,
+    [FromQuery] string relativePath,
+    CancellationToken ct)
+    {
+        var result = await _query.QueryAsync(new DownloadPoaFileQuery(caseId, poaId, relativePath), ct);
+
+        return result.Match(
+            file => File(file.FileStream, file.ContentType, file.FileName),
+            Problem
+        );
+    }
+
 
     [HttpPost(Name = nameof(CreatePOA))]
     [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
