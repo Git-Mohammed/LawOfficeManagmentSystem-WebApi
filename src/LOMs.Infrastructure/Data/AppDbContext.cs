@@ -14,6 +14,7 @@ using LOMs.Domain.People.Phones;
 using LOMs.Domain.POAs;
 using LOMs.Infrastructure.Constants;
 using LOMs.Infrastructure.Data.Views.ClientFiles;
+using LOMs.Infrastructure.Data.Views.Contracts;
 using LOMs.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -40,6 +41,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<CourtSession> CourtSessions => Set<CourtSession>();
     public DbSet<Contract> Contracts => Set<Contract>();
     public DbSet<ContractFile> ContractFiles => Set<ContractFile>();
+    public DbSet<ContractsWithContractNumber> ContractsWithContractNumber => Set<ContractsWithContractNumber>();
+
     public DbSet<POA> POAs => Set<POA>();
     public DbSet<POAFile> POAFiles => Set<POAFile>();
     public DbSet<Phone> Phones => Set<Phone>();
@@ -60,10 +63,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     private static void ConfigureViews(ModelBuilder builder)
     {
+        // Map the ClientFiles view (read-only, no primary key)
         builder.Entity<ClientFileWithFileNumber>()
-            .ToView(ClientFilesWithFileNumberView.Name, SchemaNames.Case)
+            .ToView(ClientFilesWithFileNumberView.Name, ClientFilesWithFileNumberView.Schema)
+            .HasNoKey();
+
+        // Map the Contracts view (read-only, no primary key)
+        builder.Entity<ContractsWithContractNumber>()
+            .ToView(ContractsWithContractNumberView.Name, ContractsWithContractNumberView.Schema)
             .HasNoKey();
     }
+
 
     private static void ConfigureIdentityTables(ModelBuilder builder)
     {

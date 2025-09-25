@@ -3,6 +3,7 @@ using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.Contracts.Dtos;
 using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.Contracts;
+using LOMs.Domain.Cases.Enums;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -38,20 +39,18 @@ public class GetContractsDetailsByCaseIdHandler
             return CaseErrors.CaseNotFound;
         }
 
-        var contracts = await _context.Contracts
+        var contracts = await _context.ContractsWithContractNumber
             .AsNoTracking()
             .Where(c => c.CaseId == query.CaseId)
             .Select(c => new ContractDetailsDto
             {
                 ContractId = c.Id,
                 ContractNumber = c.ContractNumber,
-                ContractType = c.Type,
-                TotalAmount =c.TotalAmount,
+                ContractType = (ContractType)c.Type,
+                TotalAmount =c.BaseAmount + c.TaxAmount,
                 InitialPayment = c.InitialPayment,
                 IsAssigned = c.IsAssigned,
                 CreatedDate = c.CreatedAtUtc
-
-
             })
             .ToListAsync(ct);
 

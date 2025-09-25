@@ -4,14 +4,14 @@ namespace LOMs.Application.Common.Models;
 
 public class PaginatedList<T>(
     IReadOnlyCollection<T>? items,
-    int pageIndex,
+    int pageNumber,
     int pageSize,
     int totalItemsCount)
 {
     /// <summary>
     /// Gets the current page index (1-based).
     /// </summary>
-    public int PageIndex { get; init; } = pageIndex;
+    public int PageIndex { get; init; } = pageNumber;
 
     /// <summary>
     /// Gets the number of items per page.

@@ -69,7 +69,7 @@ public sealed class GetPaginatedFutureCourtSessionsQueryHandler(
 
         var paginated = new PaginatedList<GetFutureCourtSessionDto>(
             items: sessions,
-            pageIndex: query.PageNumber,
+            pageNumber: query.PageNumber,
             pageSize: query.PageSize,
             totalItemsCount: totalCount
         );
