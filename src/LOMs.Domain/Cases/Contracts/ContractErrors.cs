@@ -6,50 +6,50 @@ public static class ContractErrors
 {
     // 🔹 General Validation Errors
     public static readonly Error InvalidId =
-        Error.Validation("Contract.InvalidId", "معرّف العقد لا يمكن أن يكون فارغًا.");
+        Error.Validation("Contract.InvalidId", "Contract ID cannot be empty.");
 
     public static readonly Error InvalidCaseId =
-        Error.Validation("Contract.InvalidCaseId", "معرّف القضية لا يمكن أن يكون فارغًا.");
+        Error.Validation("Contract.InvalidCaseId", "Case ID cannot be empty.");
 
     public static readonly Error MissingContractNumber =
-        Error.Validation("Contract.MissingContractNumber", "رقم العقد مطلوب.");
+        Error.Validation("Contract.MissingContractNumber", "Contract number is required.");
 
     public static readonly Error InvalidContractType =
-        Error.Validation("Contract.InvalidContractType", "نوع العقد غير صالح أو غير معروف.");
+        Error.Validation("Contract.InvalidContractType", "Contract type is invalid or unknown.");
 
     public static readonly Error InvalidCourtType =
-        Error.Validation("Contract.InvalidCourtType", "نوع المحكمة غير صالح أو غير معروف.");
+        Error.Validation("Contract.InvalidCourtType", "Court type is invalid or unknown.");
 
     public static readonly Error MissingFilePath =
-        Error.Validation("Contract.MissingFilePath", "مرفق العقد مطلوب.");
+        Error.Validation("Contract.MissingFilePath", "Contract attachment is required.");
 
     public static readonly Error InvalidBaseAmount =
-        Error.Validation("Contract.InvalidBaseAmount", "قيمة العقد يجب أن تكون أكبر من أو تساوي صفر.");
+        Error.Validation("Contract.InvalidBaseAmount", "Contract amount must be greater than or equal to zero.");
 
     public static readonly Error InvalidInitialPayment =
-        Error.Validation("Contract.InvalidInitialPayment", "مقدم العقد يجب أن يكون أكبر من أو يساوي صفر.");
+        Error.Validation("Contract.InvalidInitialPayment", "Initial payment must be greater than or equal to zero.");
 
-    // 🔹 FixedTerm Contract-Specific Errors
+    // 🔹 Fixed-Term Contract-Specific Errors
     public static readonly Error MissingIssueDate =
-        Error.Validation("Contract.MissingIssueDate", "تاريخ إصدار العقد مطلوب لعقود المدة المحددة.");
+        Error.Validation("Contract.MissingIssueDate", "Issue date is required for fixed-term contracts.");
 
     public static readonly Error InvalidIssueDate =
-        Error.Validation("Contract.InvalidIssueDate", "تاريخ الإصدار غير صالح.");
+        Error.Validation("Contract.InvalidIssueDate", "Issue date is invalid.");
 
     public static readonly Error MissingExpiryDate =
-        Error.Validation("Contract.MissingExpiryDate", "تاريخ انتهاء العقد مطلوب لعقود المدة المحددة.");
+        Error.Validation("Contract.MissingExpiryDate", "Expiry date is required for fixed-term contracts.");
 
     public static readonly Error InvalidDateRange =
-        Error.Validation("Contract.InvalidDateRange", "تاريخ الإصدار يجب أن يكون قبل تاريخ الانتهاء.");
+        Error.Validation("Contract.InvalidDateRange", "Issue date must be earlier than expiry date.");
 
     // 🔹 Retrieval Errors
     public static readonly Error ContractsNotFoundByCaseId =
-        Error.NotFound("Contract.ContractsNotFoundByCaseId", "لم يتم العثور على أي عقود مرتبطة بمعرّف القضية المحدد.");
+        Error.NotFound("Contract.ContractsNotFoundByCaseId", "No contracts found for the specified case ID.");
 
     // 🔹 CreateContract-Specific Errors
     public static Error DuplicateContractNumber(string contractNumber) =>
-        Error.Validation("CreateContract.DuplicateContractNumber", $"رقم العقد {contractNumber} موجود بالفعل.");
+        Error.Validation("CreateContract.DuplicateContractNumber", $"Contract number {contractNumber} already exists.");
 
     public static readonly Error UnexpectedFailure =
-        Error.Unexpected("CreateContract.Failure", "حدث خطأ غير متوقع أثناء إنشاء العقد.");
+        Error.Unexpected("CreateContract.Failure", "An unexpected error occurred while creating the contract.");
 }

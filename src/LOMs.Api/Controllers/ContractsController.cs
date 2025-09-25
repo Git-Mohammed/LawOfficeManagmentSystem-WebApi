@@ -4,6 +4,7 @@ using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Contracts.Commands.CreateContract;
 using LOMs.Application.Features.Contracts.Dtos;
 using LOMs.Application.Features.Contracts.Queries;
+using LOMs.Application.Features.Contracts.Queries.DownloadContractFile;
 using LOMs.Application.Features.Contracts.Queries.GetContractById;
 using LOMs.Application.Features.Contracts.Queries.GetContractList;
 using LOMs.Application.Features.Contracts.Queries.GetContractList.Paged;
@@ -103,6 +104,40 @@ public class ContractsController(ICommandMediator command, IQueryMediator query)
         var result = await _query.QueryAsync(new GetContractListQuery(), ct);
         return result.Match(Ok, Problem);
     }
+
+    [HttpGet("{contractId:guid}/files/download", Name = nameof(DownloadContractFile))]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [EndpointSummary("Downloads a specific file related to a contract.")]
+    [EndpointDescription("Downloads a file by relative path under a specific contract and case.")]
+    [EndpointName(nameof(DownloadContractFile))]
+    public async Task<IActionResult> DownloadContractFile(
+    Guid caseId,
+    Guid contractId,
+    [FromQuery] string relativePath,
+    CancellationToken ct)
+    {
+        var result = await _query.QueryAsync(new DownloadContractFileQuery(caseId, contractId, relativePath), ct);
+
+        return result.Match(
+            file => File(file.FileStream, file.ContentType, file.FileName),
+            Problem
+        );
+    }
+
+    //[HttpGet("{contractId:guid}/files", Name = nameof(GetContractFilePaths))]
+    //[ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]
+    //[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    //[EndpointSummary("Retrieves all file paths linked to a contract.")]
+    //[EndpointDescription("Returns relative paths of all files associated with the given contract.")]
+    //[EndpointName(nameof(GetContractFilePaths))]
+    //public async Task<IActionResult> GetContractFilePaths(Guid caseId, Guid contractId, CancellationToken ct)
+    //{
+    //    var result = await _query.QueryAsync(new GetContractFilePathsQuery(caseId, contractId), ct);
+    //    return result.Match(Ok, Problem);
+    //}
+
 
     [HttpPost(Name = nameof(CreateContract))]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
