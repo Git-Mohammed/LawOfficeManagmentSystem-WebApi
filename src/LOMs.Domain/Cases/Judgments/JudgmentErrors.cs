@@ -4,6 +4,19 @@ namespace LOMs.Domain.Cases.Judgments;
 
 public static class JudgmentErrors
 {
+
+    public static readonly Error InvalidId =
+        Error.NotFound("Judgment.InvalidId", "Judgment not found or does not belong to the specified case.");
+
+    public static readonly Error MissingFilePath =
+        Error.Conflict("Judgment.MissingFilePath", "File path is required to download the judgment file.");
+
+    public static readonly Error FileNotFound =
+        Error.NotFound("Judgment.FileNotFound", "The requested judgment file could not be found.");
+
+    public static readonly Error FileDownloadFailed =
+        Error.Failure("Judgment.FileDownloadFailed", "An unexpected error occurred while downloading the judgment file.");
+
     public static readonly Error CaseIdRequired =
         Error.Validation("Judgment.CaseIdRequired", "CaseId is required.");
 
