@@ -18,7 +18,7 @@ public class CourtSessionReminderService(
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
     private readonly ILogger<CourtSessionReminderService> _logger = logger;
     private readonly TimeProvider _time = timeProvider;
-    private readonly int _daysAhead = 1;
+    private readonly int _daysAhead = settings.Value.CourtSessionReminder.DaysAhead;
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Sending initial court session reminders at {Now}", _time.GetUtcNow());
