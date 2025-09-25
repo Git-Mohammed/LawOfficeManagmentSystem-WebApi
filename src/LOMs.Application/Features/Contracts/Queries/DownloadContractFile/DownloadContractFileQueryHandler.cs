@@ -18,40 +18,53 @@ public class DownloadContractFileQueryHandler(
     private readonly IAppDbContext _context = context;
     private readonly IFileService _fileService = fileService;
 
-    public async Task<Result<FileDownloadResult>> HandleAsync(DownloadContractFileQuery query, CancellationToken cancellationToken = default)
+    public async Task<Result<FileDownloadResult>> HandleAsync(
+        DownloadContractFileQuery query,
+        CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting file download for ContractId: {ContractId}, CaseId: {CaseId}", query.ContractId, query.CaseId);
+        _logger.LogInformation(
+            "Starting file download. ContractId={ContractId}, CaseId={CaseId}, Path={Path}",
+            query.ContractId, query.CaseId, query.RelativePath);
 
         if (string.IsNullOrWhiteSpace(query.RelativePath))
         {
-            _logger.LogWarning("Relative path is missing for ContractId: {ContractId}", query.ContractId);
+            _logger.LogWarning("Relative path is missing. ContractId={ContractId}", query.ContractId);
             return ContractErrors.MissingFilePath;
         }
 
-        var contract = await _context.Contracts
+        var fileExists = await _context.ContractFiles
             .AsNoTracking()
-            .Include(c => c.ContractFiles)
-            .FirstOrDefaultAsync(c =>
-                c.Id == query.ContractId &&
-                c.CaseId == query.CaseId &&
-                c.ContractFiles.Any(x => x.Filepath == query.RelativePath),
+            .AnyAsync(f =>
+                f.ContractId == query.ContractId &&
+                f.Contract.CaseId == query.CaseId &&
+                f.Filepath == query.RelativePath,
                 cancellationToken);
-        if (contract is null)
-        {
-            _logger.LogWarning("Contract with ID {ContractId} not found for CaseId {CaseId}, or no file matches the provided path: {Path}", query.ContractId, query.CaseId, query.RelativePath);
-            return ContractErrors.InvalidId;
-        }
 
+        if (!fileExists)
+        {
+            _logger.LogWarning(
+                "File not found. ContractId={ContractId}, CaseId={CaseId}, Path={Path}",
+                query.ContractId, query.CaseId, query.RelativePath);
+
+            return ContractErrors.FileNotFound;
+        }
 
         var fileResult = await _fileService.DownloadFileAsync(query.RelativePath);
 
         if (fileResult.IsError)
         {
-            _logger.LogError("File download failed for path {Path}: {Errors}", query.RelativePath, string.Join(", ", fileResult.Errors.Select(e => e.Description)));
+            _logger.LogError(
+                "File download failed. Path={Path}, Errors={Errors}",
+                query.RelativePath,
+                string.Join(", ", fileResult.Errors.Select(e => e.Description)));
+
             return fileResult.Errors;
         }
 
-        _logger.LogInformation("File download succeeded for ContractId: {ContractId}", query.ContractId);
+        _logger.LogInformation(
+            "File download succeeded. ContractId={ContractId}, CaseId={CaseId}",
+            query.ContractId, query.CaseId);
+
         return fileResult.Value;
     }
 }

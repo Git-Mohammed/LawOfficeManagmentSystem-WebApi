@@ -19,40 +19,53 @@ public class DownloadJudgmentFileQueryHandler(
     private readonly IAppDbContext _context = context;
     private readonly IFileService _fileService = fileService;
 
-    public async Task<Result<FileDownloadResult>> HandleAsync(DownloadJudgmentFileQuery query, CancellationToken cancellationToken = default)
+    public async Task<Result<FileDownloadResult>> HandleAsync(
+        DownloadJudgmentFileQuery query,
+        CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting file download for JudgmentId: {JudgmentId}, CaseId: {CaseId}", query.JudgmentId, query.CaseId);
+        _logger.LogInformation(
+            "Starting file download. JudgmentId={JudgmentId}, CaseId={CaseId}, Path={Path}",
+            query.JudgmentId, query.CaseId, query.RelativePath);
 
         if (string.IsNullOrWhiteSpace(query.RelativePath))
         {
-            _logger.LogWarning("Relative path is missing for JudgmentId: {JudgmentId}", query.JudgmentId);
+            _logger.LogWarning("Relative path is missing. JudgmentId={JudgmentId}", query.JudgmentId);
             return JudgmentErrors.MissingFilePath;
         }
 
-        var judgment = await _context.Judgments
+        var fileExists = await _context.JudgmentFiles
             .AsNoTracking()
-            .Include(j => j.Files)
-            .FirstOrDefaultAsync(j =>
-                j.Id == query.JudgmentId &&
-                j.CaseId == query.CaseId &&
-                j.Files.Any(x => x.Filepath == query.RelativePath),
+            .AnyAsync(f =>
+                f.JudgmentId == query.JudgmentId &&
+                f.Judgment.CaseId == query.CaseId &&
+                f.Filepath == query.RelativePath,
                 cancellationToken);
 
-        if (judgment is null)
+        if (!fileExists)
         {
-            _logger.LogWarning("Judgment with ID {JudgmentId} not found for CaseId {CaseId}, or no file matches the provided path: {Path}", query.JudgmentId, query.CaseId, query.RelativePath);
-            return JudgmentErrors.NotFound;
+            _logger.LogWarning(
+                "File not found. JudgmentId={JudgmentId}, CaseId={CaseId}, Path={Path}",
+                query.JudgmentId, query.CaseId, query.RelativePath);
+
+            return JudgmentErrors.FileNotFound;
         }
 
         var fileResult = await _fileService.DownloadFileAsync(query.RelativePath);
 
         if (fileResult.IsError)
         {
-            _logger.LogError("File download failed for path {Path}: {Errors}", query.RelativePath, string.Join(", ", fileResult.Errors.Select(e => e.Description)));
+            _logger.LogError(
+                "File download failed. Path={Path}, Errors={Errors}",
+                query.RelativePath,
+                string.Join(", ", fileResult.Errors.Select(e => e.Description)));
+
             return fileResult.Errors;
         }
 
-        _logger.LogInformation("File download succeeded for JudgmentId: {JudgmentId}", query.JudgmentId);
+        _logger.LogInformation(
+            "File download succeeded. JudgmentId={JudgmentId}, CaseId={CaseId}",
+            query.JudgmentId, query.CaseId);
+
         return fileResult.Value;
     }
 }

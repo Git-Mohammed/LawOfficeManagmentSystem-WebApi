@@ -4,6 +4,7 @@ using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Cases.Judgments;
+using LOMs.Domain.Cases.POAs;
 using LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
@@ -24,6 +25,7 @@ public interface IAppDbContext
     public DbSet<Phone> Phones { get; }
 
     public DbSet<POA> POAs { get; }
+    public DbSet<POAFile> POAFiles { get; }
     public DbSet<CourtType> CourtTypes { get; }
     public DbSet<CourtSession> CourtSessions { get; }
     public DbSet<Employee> Employees { get; }

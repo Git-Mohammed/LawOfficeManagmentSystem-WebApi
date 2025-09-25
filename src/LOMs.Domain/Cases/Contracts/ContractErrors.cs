@@ -46,6 +46,15 @@ public static class ContractErrors
     public static readonly Error ContractsNotFoundByCaseId =
         Error.NotFound("Contract.ContractsNotFoundByCaseId", "No contracts found for the specified case ID.");
 
+    public static readonly Error ContractNotFound =
+        Error.NotFound("Contract.NotFound", "The specified contract could not be found for the given case.");
+
+    public static readonly Error FileNotFound =
+        Error.NotFound("Contract.FileNotFound", "The specified file could not be found for the given contract.");
+
+    public static readonly Error CaseNotFound =
+        Error.NotFound("Contract.CaseNotFound", "The specified case could not be found.");
+
     // 🔹 CreateContract-Specific Errors
     public static Error DuplicateContractNumber(string contractNumber) =>
         Error.Validation("CreateContract.DuplicateContractNumber", $"Contract number {contractNumber} already exists.");

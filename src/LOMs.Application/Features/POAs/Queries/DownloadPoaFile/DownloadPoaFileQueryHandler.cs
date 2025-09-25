@@ -20,40 +20,53 @@ public class DownloadPoaFileQueryHandler(
     private readonly IAppDbContext _context = context;
     private readonly IFileService _fileService = fileService;
 
-    public async Task<Result<FileDownloadResult>> HandleAsync(DownloadPoaFileQuery query, CancellationToken cancellationToken = default)
+    public async Task<Result<FileDownloadResult>> HandleAsync(
+        DownloadPoaFileQuery query,
+        CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting file download for PoaId: {PoaId}, CaseId: {CaseId}", query.POAId, query.CaseId);
+        _logger.LogInformation(
+            "Starting file download. PoaId={PoaId}, CaseId={CaseId}, Path={Path}",
+            query.POAId, query.CaseId, query.RelativePath);
 
         if (string.IsNullOrWhiteSpace(query.RelativePath))
         {
-            _logger.LogWarning("Relative path is missing for PoaId: {PoaId}", query.POAId);
+            _logger.LogWarning("Relative path is missing. PoaId={PoaId}", query.POAId);
             return POAErrors.MissingFilePath;
         }
 
-        var poa = await _context.POAs
+        var fileExists = await _context.POAFiles
             .AsNoTracking()
-            .Include(p => p.POAFiles)
-            .FirstOrDefaultAsync(p =>
-                p.Id == query.POAId &&
-                p.CaseId == query.CaseId &&
-                p.POAFiles.Any(x => x.Filepath == query.RelativePath),
+            .AnyAsync(f =>
+                f.POAId == query.POAId &&
+                f.POA.CaseId == query.CaseId &&
+                f.Filepath == query.RelativePath,
                 cancellationToken);
 
-        if (poa is null)
+        if (!fileExists)
         {
-            _logger.LogWarning("POA with ID {PoaId} not found for CaseId {CaseId}, or no file matches the provided path: {Path}", query.POAId, query.CaseId, query.RelativePath);
-            return POAErrors.InvalidId;
+            _logger.LogWarning(
+                "File not found. PoaId={PoaId}, CaseId={CaseId}, Path={Path}",
+                query.POAId, query.CaseId, query.RelativePath);
+
+            return POAErrors.FileNotFound;
         }
 
         var fileResult = await _fileService.DownloadFileAsync(query.RelativePath);
 
         if (fileResult.IsError)
         {
-            _logger.LogError("File download failed for path {Path}: {Errors}", query.RelativePath, string.Join(", ", fileResult.Errors.Select(e => e.Description)));
+            _logger.LogError(
+                "File download failed. Path={Path}, Errors={Errors}",
+                query.RelativePath,
+                string.Join(", ", fileResult.Errors.Select(e => e.Description)));
+
             return fileResult.Errors;
         }
 
-        _logger.LogInformation("File download succeeded for PoaId: {PoaId}", query.POAId);
+        _logger.LogInformation(
+            "File download succeeded. PoaId={PoaId}, CaseId={CaseId}",
+            query.POAId, query.CaseId);
+
         return fileResult.Value;
     }
 }
