@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LOMs.Domain.Cases.ClientFiles
+﻿namespace LOMs.Domain.Cases.ClientFiles
 {
     public sealed class ClientFileWithFileNumber
     {

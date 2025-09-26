@@ -1,9 +1,12 @@
-﻿using LOMs.Api.Infrastructure;
+﻿using LOMs.Api.Extensions;
+using LOMs.Api.Infrastructure;
 using LOMs.Api.Services;
 using LOMs.Application.Common.Interfaces;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Reflection;
+using System.Threading.RateLimiting;
 
 namespace LOMs.Api;
 
@@ -15,7 +18,8 @@ public static class DependencyInjection
             .AddIdentityInfrastructure()
             .AddExceptionHandlingInfrastructure()
             .AddSwaggerInfrastructure()
-            .AddCorsInfrastructure(configuration);
+            .AddCorsInfrastructure(configuration)
+            .AddAppRateLimiting(configuration);
 
         return services;
     }
@@ -128,10 +132,13 @@ public static class DependencyInjection
         var policyName = configuration["AppSettings:CorsPolicyName"] ?? "AllowAll";
         app.UseCors(policyName);
 
-        // 5. Authentication
+        // 5. Rate limiting (before authentication to protect auth endpoints)
+        app.UseRateLimiter();
+
+        // 6. Authentication
         app.UseAuthentication();
 
-        // 6. Authorization
+        // 7. Authorization
         app.UseAuthorization();
 
         return app;

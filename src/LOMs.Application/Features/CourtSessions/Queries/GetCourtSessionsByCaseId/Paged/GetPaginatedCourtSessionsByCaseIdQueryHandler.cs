@@ -63,7 +63,7 @@ public sealed class GetPaginatedCourtSessionsByCaseIdQueryHandler(
 
         var paginated = new PaginatedList<CourtSessionDto>(
             items: sessions,
-            pageIndex: query.PageNumber,
+            pageNumber: query.PageNumber,
             pageSize: query.PageSize,
             totalItemsCount: totalCount
         );

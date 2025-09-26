@@ -1,13 +1,16 @@
 ﻿using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 
 namespace LOMs.Infrastructure.Data.Views.ClientFiles;
 
 internal static class ClientFilesWithFileNumberView
 {
     public const string Name = "vw_ClientFilesWithFileNumber";
+    public static DatabaseSchema DatabaseSchema => DatabaseSchema.Finance;
+    public static string Schema => SchemaNames.Case;
 
     public static readonly string Sql = @$"
-        CREATE OR ALTER VIEW [{SchemaNames.Case}].[{Name}] AS
+        CREATE OR ALTER VIEW [{Schema}].[{Name}] AS
         SELECT 
             [Id],
             [ClientId],
@@ -31,6 +34,6 @@ internal static class ClientFilesWithFileNumberView
                     ), '0000'
                 )
             ) AS FileNumber
-        FROM [{SchemaNames.Case}].[ClientFiles];
+        FROM [{Schema}].[ClientFiles];
     ";
 }

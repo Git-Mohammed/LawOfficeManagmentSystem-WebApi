@@ -3,6 +3,7 @@ using LiteBus.Queries.Abstractions;
 using LOMs.Application.Features.Contracts.Commands.CreateContract;
 using LOMs.Application.Features.Judgments.Commands;
 using LOMs.Application.Features.Judgments.Queries;
+using LOMs.Application.Features.Judgments.Queries.DownloadJudgmentFile;
 using LOMs.Contract.Requests.Judgments;
 using Microsoft.AspNetCore.Mvc;
 
@@ -57,6 +58,28 @@ public class JudgmentsController(ICommandMediator command, IQueryMediator query)
             Problem
         );
     }
+
+    [HttpGet("{judgmentId:guid}/files/download", Name = nameof(DownloadJudgmentFile))]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [EndpointSummary("Downloads a specific file related to a judgment.")]
+    [EndpointDescription("Downloads a file by relative path under a specific judgment and case.")]
+    [EndpointName(nameof(DownloadJudgmentFile))]
+    public async Task<IActionResult> DownloadJudgmentFile(
+    Guid caseId,
+    Guid judgmentId,
+    [FromQuery] string relativePath,
+    CancellationToken ct)
+    {
+        var result = await _query.QueryAsync(new DownloadJudgmentFileQuery(caseId, judgmentId, relativePath), ct);
+
+        return result.Match(
+            file => File(file.FileStream, file.ContentType, file.FileName),
+            Problem
+        );
+    }
+
 
     // GET by id (to support CreatedAtRoute)
     [HttpGet("{judgmentId:guid}", Name = nameof(GetJudgmentById))]

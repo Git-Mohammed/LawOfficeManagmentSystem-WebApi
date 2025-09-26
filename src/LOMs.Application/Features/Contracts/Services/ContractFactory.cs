@@ -28,12 +28,6 @@ namespace LOMs.Application.Features.Contracts.Services
 
             var hijriYear = HijriDateConverter.GetFullHijriYear();
 
-            var existingCount = await _context.Contracts
-                .CountAsync(c => c.CourtTypeCode == courtType.Code && c.HijriYear == hijriYear,
-                    ct);
-
-            var orderNumber = existingCount + 1;
-
             var result = Contract.Create(
                 caseId,
                 courtType,
@@ -43,8 +37,7 @@ namespace LOMs.Application.Features.Contracts.Services
                 totalAmount,
                 initialPayment,
                 isAssigned,
-                (short)hijriYear,
-                orderNumber
+                (short)hijriYear
             );
 
             if (result.IsError)
