@@ -1,4 +1,5 @@
 ﻿using LOMs.Domain.Cases;
+using LOMs.Domain.Cases.Attachments;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.CourtSessions;
@@ -30,6 +31,7 @@ public interface IAppDbContext
     public DbSet<RefreshToken> RefreshTokens { get; }
     public DbSet<Judgment> Judgments { get; }
     public DbSet<JudgmentFile> JudgmentFiles { get; }
+    public DbSet<Attachment> Attachments { get; }
 
     public DbSet<ClientFileWithFileNumber> ClientFilesWithFileNumber { get; }
 

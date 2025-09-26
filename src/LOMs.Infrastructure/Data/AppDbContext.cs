@@ -1,5 +1,6 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Domain.Cases;
+using LOMs.Domain.Cases.Attachments;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.CourtSessions;
@@ -47,6 +48,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     // Identity
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<Attachment> Attachments => Set<Attachment>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
