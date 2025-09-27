@@ -12,6 +12,7 @@ using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
 using LOMs.Domain.People.Phones;
 using LOMs.Domain.POAs;
+using LOMs.Domain.Templates;
 using Microsoft.EntityFrameworkCore;
 
 public interface IAppDbContext
@@ -34,6 +35,7 @@ public interface IAppDbContext
     public DbSet<Judgment> Judgments { get; }
     public DbSet<JudgmentFile> JudgmentFiles { get; }
     public DbSet<Attachment> Attachments { get; }
+    public DbSet<Template> Templates { get; }
 
     public DbSet<ClientFileWithFileNumber> ClientFilesWithFileNumber { get; }
     public DbSet<ContractsWithContractNumber> ContractsWithContractNumber { get; }

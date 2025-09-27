@@ -409,7 +409,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.ToTable((string)null);
 
-                    b.ToView("vw_ContractsWithContractNumber", "CaseManagment");
+                    b.ToView("vw_ContractsWithContractNumber", "FinanceManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.CourtSessions.CourtSession", b =>
@@ -904,6 +904,58 @@ namespace LOMs.Infrastructure.Migrations
                     b.HasIndex("PersonId");
 
                     b.ToTable("Phones", "UserManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Templates.Template", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Extension")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("FileType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Filename")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Filepath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TemplateName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.ToTable("Templates", "Templates");
                 });
 
             modelBuilder.Entity("LOMs.Infrastructure.Identity.ApplicationRole", b =>

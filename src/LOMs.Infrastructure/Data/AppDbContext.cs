@@ -13,6 +13,7 @@ using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
 using LOMs.Domain.People.Phones;
 using LOMs.Domain.POAs;
+using LOMs.Domain.Templates;
 using LOMs.Infrastructure.Constants;
 using LOMs.Infrastructure.Data.Views.ClientFiles;
 using LOMs.Infrastructure.Data.Views.Contracts;
@@ -54,6 +55,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public DbSet<Attachment> Attachments => Set<Attachment>();
+
+    public DbSet<Template> Templates => Set<Template> ();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
