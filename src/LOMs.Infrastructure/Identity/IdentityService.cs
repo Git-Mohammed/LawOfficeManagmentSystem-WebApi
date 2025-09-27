@@ -214,14 +214,33 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
             return UserErrors.UserNotFound;
         }
 
-        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
-        if (!result.Succeeded)
+        if (!await _userManager.CheckPasswordAsync(user, currentPassword))
+        {
+            _logger.LogWarning("Password change failed: invalid current password. Username: {Username}", username);
+            return UserErrors.InvalidCredentials;
+        }
+
+        // Validate new password against all configured validators
+        foreach (var validator in _userManager.PasswordValidators)
+        {
+            var validation = await validator.ValidateAsync(_userManager, user, newPassword);
+            if (!validation.Succeeded)
+            {
+                _logger.LogWarning("Password change failed: invalid new password. Username: {Username}. Errors: {Errors}",
+                    username, string.Join(", ", validation.Errors.Select(e => e.Description)));
+                return UserErrors.InvalidNewPassword;
+            }
+        }
+
+        var changeResult = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        if (!changeResult.Succeeded)
         {
             _logger.LogWarning("Password change failed for user: {Username}. Errors: {Errors}", username,
-                string.Join(", ", result.Errors.Select(e => $"{e.Code}: {e.Description}")));
+                string.Join(", ", changeResult.Errors.Select(e => $"{e.Code}: {e.Description}")));
             return UserErrors.PasswordChangeFailed;
         }
 
+        // Mark that the user is no longer using a temporary password
         user.IsUsingTempPassword = false;
         var updateResult = await _userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)

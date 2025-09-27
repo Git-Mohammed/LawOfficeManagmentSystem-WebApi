@@ -5,35 +5,38 @@ namespace LOMs.Domain.Identity;
 public static class UserErrors
 {
     public static Error UserNotFound =>
-        Error.NotFound("Auth.UserNotFound", "User not found.");
+        Error.NotFound("Identity.UserNotFound", "User not found.");
 
     public static Error InvalidCredentials =>
-        Error.Validation("Auth.InvalidCredentials", "Username or password is incorrect.");
+        Error.Validation("Identity.InvalidCredentials", "Username or password is incorrect.");
 
     public static Error EmailNotConfirmed =>
-        Error.Validation("Auth.EmailNotConfirmed", "Email not confirmed.");
+        Error.Validation("Identity.EmailNotConfirmed", "Email address is not confirmed.");
 
     public static Error TokenGenerationFailed =>
-        Error.Failure("Auth.TokenGenerationFailed", "Failed to generate token.");
+        Error.Failure("Identity.TokenGenerationFailed", "Failed to generate authentication token.");
 
     public static Error InvalidRefreshToken =>
-        Error.Validation("Auth.InvalidRefreshToken", "Invalid or expired refresh token.");
+        Error.Validation("Identity.InvalidRefreshToken", "The refresh token is invalid or expired.");
 
     public static Error RefreshTokenUpdateFailed =>
-        Error.Failure("Auth.RefreshTokenUpdateFailed", "Failed to update refresh token.");
+        Error.Failure("Identity.RefreshTokenUpdateFailed", "Failed to update refresh token.");
 
     public static Error RefreshTokenRemoveFailed =>
-        Error.Failure("Auth.RefreshTokenRemoveFailed", "Failed to remove refresh token.");
+        Error.Failure("Identity.RefreshTokenRemoveFailed", "Failed to remove refresh token.");
 
     public static Error PasswordResetFailed =>
-        Error.Failure("Auth.ResetFailed", "Password reset failed.");
+        Error.Failure("Identity.PasswordResetFailed", "Password reset failed.");
 
     public static Error PasswordChangeFailed =>
-        Error.Failure("Auth.ChangeFailed", "Password change failed.");
+        Error.Failure("Identity.PasswordChangeFailed", "Password change failed.");
+
+    public static Error InvalidNewPassword =>
+        Error.Validation("Identity.InvalidNewPassword", "The new password does not meet security requirements.");
 
     public static Error UnauthorizedPasswordChange =>
-        Error.Validation("Auth.UnauthorizedChange", "You are not authorized to change another user's password.");
+        Error.Validation("Identity.UnauthorizedPasswordChange", "You are not authorized to change this password.");
 
     public static Error UserCreationFailed =>
-        Error.Failure("Identity_User_not_created", "User could not be created.");
+        Error.Failure("Identity.UserCreationFailed", "User could not be created.");
 }

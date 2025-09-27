@@ -60,12 +60,12 @@ public static class DependencyInjection
     {
         services.AddIdentityCore<ApplicationUser>(options =>
         {
-            options.Password.RequiredLength = 6;
-            options.Password.RequireDigit = false;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequireLowercase = false;
-            options.Password.RequiredUniqueChars = 1;
+            options.Password.RequiredLength = 8;
+            options.Password.RequireDigit = true;
+            options.Password.RequireNonAlphanumeric = true;
+            options.Password.RequireUppercase = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequiredUniqueChars = 5;
             options.SignIn.RequireConfirmedAccount = false;
         })
         .AddRoles<ApplicationRole>()
