@@ -29,8 +29,7 @@ namespace LOMs.Application.Features.Auth.Commands.ResetPassword
                 _logger.LogWarning("Password reset failed: user not found. Username: {Username}", command.Username);
                 return userResult.Errors;
             }
-
-
+            
             var result = await _identityService.ChangePasswordAsync(command.Username, command.CurrentPassword, command.NewPassword);
             if (!result.IsSuccess)
             {

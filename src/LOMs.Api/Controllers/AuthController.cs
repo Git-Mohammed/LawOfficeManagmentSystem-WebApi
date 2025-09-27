@@ -1,16 +1,17 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LiteBus.Queries.Abstractions;
+using LOMs.Api.Extensions;
 using LOMs.Application.Features.Auth.Commands.ResetPassword;
 using LOMs.Application.Features.Auth.Dtos;
 using LOMs.Application.Features.Auth.Queries.GenerateTokens;
 using LOMs.Application.Features.Auth.Queries.GetUserInfo;
 using LOMs.Application.Features.Auth.Queries.RefreshTokens;
+using LOMs.Contract.Commons.Constants;
 using LOMs.Contract.Requests.Auth;
+using LOMs.Domain.Common.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using LOMs.Api.Extensions;
-using LOMs.Contract.Commons.Constants;
 
 namespace LOMs.Api.Controllers;
 
@@ -38,7 +39,7 @@ public class AuthController(ICommandMediator command, IQueryMediator query) : Ap
             HttpContext.SetInsideCookie(CookieConstants.RefreshTokenKey, result.Value.TokenResponse.RefreshToken);
         }
         return result.Match(
-             response => Ok(new { user = response.User, refreshTokenExpiration = response.TokenResponse.ExpiresOn }),
+             response => Ok(new { username = response.User.Username, role = response.User.Roles.FirstOrDefault(), accessTokenExpiration = response.TokenResponse.AccessTokenExpiresOn ,refreshTokenExpiration = response.TokenResponse.RefreshTokenExpiresOn }),
              Problem
          );
     }
@@ -62,7 +63,7 @@ public class AuthController(ICommandMediator command, IQueryMediator query) : Ap
             HttpContext.SetInsideCookie(CookieConstants.RefreshTokenKey, result.Value.RefreshToken);
         }
         return result.Match(
-                _ => Ok(new { refreshTokenExpiration = result.Value.ExpiresOn }),
+                _ => Ok(new { refreshTokenExpiration = result.Value.RefreshTokenExpiresOn }),
                 Problem);
     }
     
