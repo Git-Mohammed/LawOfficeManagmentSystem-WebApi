@@ -4,15 +4,12 @@ using LOMs.Application.Features.Attachments.Commands;
 using LOMs.Application.Features.Attachments.DTOs;
 using LOMs.Application.Features.Attachments.Queries;
 using LOMs.Application.Features.Contracts.Commands.CreateContract;
-using LOMs.Application.Features.Judgments.Queries;
 using LOMs.Contract.Requests.Attachments;
-
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Controllers;
 
-    [Route("api/cases/attachments")]
+    [Route("api/cases/{caseId:guid}/attachments")]
     public class AttachmentsController(ICommandMediator command, IQueryMediator query) : ApiController
     {
         private readonly ICommandMediator _command = command;
@@ -49,7 +46,7 @@ namespace LOMs.Api.Controllers;
             Problem
          );
         }
-        [HttpGet("{caseId:guid}",Name = nameof(GetAttachmentsByCaseId))]
+        [HttpGet(Name = nameof(GetAttachmentsByCaseId))]
         [ProducesResponseType(typeof(List<AttachmentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]

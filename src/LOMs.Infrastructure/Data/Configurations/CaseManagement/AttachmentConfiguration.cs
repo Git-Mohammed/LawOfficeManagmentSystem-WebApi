@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.Cases.Attachments;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -29,7 +30,7 @@ namespace LOMs.Infrastructure.Data.Configurations.CaseManagement
                 .OnDelete(DeleteBehavior.Cascade);
             // Table name and schema
 
-            builder.ToTable("Attachments", SchemaNames.Case);
+            builder.ToTable("Attachments", SchemaNames.GetName(DatabaseSchema.Case));
         }
     }
 }
