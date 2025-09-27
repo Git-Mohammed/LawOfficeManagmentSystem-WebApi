@@ -6,7 +6,7 @@ namespace LOMs.Infrastructure.Data.Views.Contracts;
 internal static class ContractsWithContractNumberView
 {
     public static DatabaseSchema DatabaseSchema => DatabaseSchema.Finance;
-    public static string Schema => SchemaNames.Finance;
+    public static string Schema => SchemaNames.GetName(DatabaseSchema);
     public const string Name = "vw_ContractsWithContractNumber";
 
     public static readonly string Sql = @$"

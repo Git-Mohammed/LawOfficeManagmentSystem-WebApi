@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -23,8 +24,7 @@ public class ClientFileConfiguration : IEntityTypeConfiguration<ClientFile>
             .HasForeignKey(cf => cf.ClientId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.ToTable("ClientFiles", SchemaNames.Case);
-
+        builder.ToTable("ClientFiles", SchemaNames.GetName(DatabaseSchema.Case));
 
     }
 }

@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.Cases.POAs;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -38,7 +39,7 @@ namespace LOMs.Infrastructure.Data.Configurations.CaseManagment
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasIndex(cf => cf.POAId);
-            builder.ToTable("POAFiles", SchemaNames.File);
+            builder.ToTable("POAFiles", SchemaNames.GetName(DatabaseSchema.File));
         }
     }
 }

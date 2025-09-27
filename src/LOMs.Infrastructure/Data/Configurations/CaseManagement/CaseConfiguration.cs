@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.Cases;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -44,6 +45,6 @@ public class CaseConfiguration : IEntityTypeConfiguration<Case>
             .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.ToTable("Cases", SchemaNames.Case);
+        builder.ToTable("Cases", SchemaNames.GetName(DatabaseSchema.Case));
     }
 }

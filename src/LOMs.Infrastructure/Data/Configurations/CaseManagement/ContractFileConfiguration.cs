@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.Cases.Contracts;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -38,7 +39,7 @@ namespace LOMs.Infrastructure.Data.Configurations.CaseManagment
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasIndex(cf => cf.ContractId);
-            builder.ToTable("ContractFiles", SchemaNames.File);
+            builder.ToTable("ContractFiles", SchemaNames.GetName(DatabaseSchema.File));
         }
     }
 }
