@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.People;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -31,6 +32,6 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
                .IsRequired();
 
         builder.HasIndex(p => p.NationalId);
-        builder.ToTable("People",SchemaNames.User);
+        builder.ToTable("People",SchemaNames.GetName(DatabaseSchema.User));
     }
 }

@@ -16,6 +16,7 @@ using LOMs.Domain.POAs;
 using LOMs.Infrastructure.Constants;
 using LOMs.Infrastructure.Data.Views.ClientFiles;
 using LOMs.Infrastructure.Data.Views.Contracts;
+using LOMs.Infrastructure.Enums;
 using LOMs.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -80,7 +81,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     private static void ConfigureIdentityTables(ModelBuilder builder)
     {
-        var schema = SchemaNames.Identity;
+        var schema = SchemaNames.GetName(DatabaseSchema.Identity);
 
         builder.Entity<ApplicationUser>().ToTable("Users", schema);
         builder.Entity<ApplicationRole>().ToTable("Roles", schema);

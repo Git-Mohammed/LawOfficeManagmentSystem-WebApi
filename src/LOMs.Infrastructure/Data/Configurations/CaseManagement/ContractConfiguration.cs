@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.Cases.Contracts;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -51,7 +52,7 @@ namespace LOMs.Infrastructure.Data.Configurations.CaseManagment
                 .IsRequired();
 
             // Map to Contracts table in Finance schema
-            builder.ToTable("Contracts", SchemaNames.Finance);
+            builder.ToTable("Contracts", SchemaNames.GetName(DatabaseSchema.Finance));
         }
     }
 }

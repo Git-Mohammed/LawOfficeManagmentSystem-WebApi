@@ -6,8 +6,8 @@ namespace LOMs.Infrastructure.Data.Views.ClientFiles;
 internal static class ClientFilesWithFileNumberView
 {
     public const string Name = "vw_ClientFilesWithFileNumber";
-    public static DatabaseSchema DatabaseSchema => DatabaseSchema.Finance;
-    public static string Schema => SchemaNames.Case;
+    public static DatabaseSchema DatabaseSchema => DatabaseSchema.Case;
+    public static string Schema => SchemaNames.GetName(DatabaseSchema);
 
     public static readonly string Sql = @$"
         CREATE OR ALTER VIEW [{Schema}].[{Name}] AS
