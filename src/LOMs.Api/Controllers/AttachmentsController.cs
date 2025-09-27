@@ -3,8 +3,8 @@ using LiteBus.Queries.Abstractions;
 using LOMs.Application.Features.Attachments.Commands;
 using LOMs.Application.Features.Attachments.DTOs;
 using LOMs.Application.Features.Attachments.Queries;
+using LOMs.Application.Features.Attachments.Queries.DownloadAttachmentFile;
 using LOMs.Application.Features.Contracts.Commands.CreateContract;
-using LOMs.Application.Features.Judgments.Queries;
 using LOMs.Contract.Requests.Attachments;
 
 using Microsoft.AspNetCore.Http;
@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Controllers;
 
-    [Route("api/cases/attachments")]
+    [Route("api/cases/{caseId:guid}/attachments")]
     public class AttachmentsController(ICommandMediator command, IQueryMediator query) : ApiController
     {
         private readonly ICommandMediator _command = command;
@@ -49,7 +49,7 @@ namespace LOMs.Api.Controllers;
             Problem
          );
         }
-        [HttpGet("{caseId:guid}",Name = nameof(GetAttachmentsByCaseId))]
+        [HttpGet(Name = nameof(GetAttachmentsByCaseId))]
         [ProducesResponseType(typeof(List<AttachmentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -66,5 +66,25 @@ namespace LOMs.Api.Controllers;
                 Problem);
         }
 
+    [HttpGet("files/download", Name = nameof(DownloadAttachmentFile))]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [EndpointSummary("Downloads a specific file related to a Case.")]
+    [EndpointDescription("Downloads a file by relative path under a specific case.")]
+    [EndpointName(nameof(DownloadAttachmentFile))]
+    public async Task<IActionResult> DownloadAttachmentFile(
+   Guid caseId,
+   [FromQuery] string filePath,
+   CancellationToken ct)
+    {
+        var result = await _query.QueryAsync(new DownloadAttachmentFileQuery(caseId, filePath), ct);
+
+        return result.Match(
+            file => File(file.FileStream, file.ContentType, file.FileName),
+            Problem
+        );
     }
+
+}
 

@@ -10,7 +10,7 @@ public interface IFileService
     Task DeleteFileAsync(string relativePath);
     Task<string> ReplaceFileAsync(Stream fileStream, string fileName, string oldRelativePath, string folder);
     
-        Task<Result<FileDownloadResult>> DownloadFileAsync(string relativePath);
+    Task<Result<FileDownloadResult>> DownloadFileAsync(string relativePath);
     
 
     public bool ValidateFile(string fileName, string contentType, long fileSize);

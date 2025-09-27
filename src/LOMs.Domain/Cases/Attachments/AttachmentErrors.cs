@@ -16,5 +16,10 @@ namespace LOMs.Domain.Cases.Attachments
             Error.Validation("Attachment.AttachmentNameRequired", "AttachmentName is Required.");
         public static readonly Error NotFound =
         Error.NotFound("Attachment.NotFound", "Attachment not found.");
+        public static readonly Error MissingFilePath =
+       Error.Conflict("Attachment.MissingFilePath", "File path is required to download the Attachment file.");
+        public static readonly Error FileNotFound =
+            Error.NotFound("Attachment.FileNotFound", "File does not Exist ");
+
     }
 }
