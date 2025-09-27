@@ -14,9 +14,6 @@ namespace LOMs.Contract.Requests.Attachments
         [StringLength(50, ErrorMessage = "Attachment Name cannot exceed 50 characters.")]
         public string AttachmentName { get; set; } = null!;
 
-        [Required(ErrorMessage = "Attachment type is required.")]
-        [StringLength(30, ErrorMessage = "Attachment type cannot exceed 30 characters.")]
-        public string Type { get; set; } = null!;
 
         [Required(ErrorMessage = "File is required.")]
         public IFormFile File { get; set; } = null!;
