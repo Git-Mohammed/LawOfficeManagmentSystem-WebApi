@@ -63,18 +63,3 @@ public class Judgment : AuditableEntity
     }
 }
 
-public enum JudgmentSubType
-{
-    None,
-    Vip,
-    Normal
-}
-
-public enum JudgmentType
-{
-    None,
-    JudgmentOne,
-    JudgmentTwo,
-    JudgmentThree,
-    JudgmentFour,
-}

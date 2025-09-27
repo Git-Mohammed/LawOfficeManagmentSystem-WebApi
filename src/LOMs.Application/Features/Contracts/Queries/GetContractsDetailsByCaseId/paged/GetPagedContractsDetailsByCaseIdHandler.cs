@@ -10,22 +10,22 @@ using Microsoft.Extensions.Logging;
 
 namespace LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.Paged;
 
-public sealed class GetPagedContractsByCaseIdHandler
-    : IQueryHandler<GetPagedContractsByCaseIdQuery, Result<PaginatedList<ContractDetailsDto>>>
+public sealed class GetPagedContractsDetailsByCaseIdHandler
+    : IQueryHandler<GetPagedContractsDetailsByCaseIdQuery, Result<PaginatedList<ContractDetailsDto>>>
 {
     private readonly IAppDbContext _context;
-    private readonly ILogger<GetPagedContractsByCaseIdHandler> _logger;
+    private readonly ILogger<GetPagedContractsDetailsByCaseIdHandler> _logger;
 
-    public GetPagedContractsByCaseIdHandler(
+    public GetPagedContractsDetailsByCaseIdHandler(
         IAppDbContext context,
-        ILogger<GetPagedContractsByCaseIdHandler> logger)
+        ILogger<GetPagedContractsDetailsByCaseIdHandler> logger)
     {
         _context = context;
         _logger = logger;
     }
 
     public async Task<Result<PaginatedList<ContractDetailsDto>>> HandleAsync(
-        GetPagedContractsByCaseIdQuery query,
+        GetPagedContractsDetailsByCaseIdQuery query,
         CancellationToken ct)
     {
         if (query.PageNumber < 1)
@@ -61,20 +61,27 @@ public sealed class GetPagedContractsByCaseIdHandler
             join employee in _context.Employees.AsNoTracking()
                 on contract.CreatedBy equals employee.UserId into empGroup
             from emp in empGroup.DefaultIfEmpty()
+            join file in _context.ContractFiles.AsNoTracking()
+                on contract.Id equals file.ContractId into fileGroup
             orderby contract.CreatedAtUtc descending
             select new ContractDetailsDto
             {
                 ContractId = contract.Id,
-                ContractNumber = contract.ContractNumber,
-                ContractType = (ContractType)contract.Type,
-                TotalAmount = contract.BaseAmount + contract.TaxAmount,
-                InitialPayment = contract.InitialPayment,
-                IsAssigned = contract.IsAssigned,
-                CreatedDate = contract.CreatedAtUtc
-            })
-            .Skip((query.PageNumber - 1) * query.PageSize)
-            .Take(query.PageSize)
-            .ToListAsync(ct);
+                CaseId = contract.CaseId,
+           ContractNumber = contract.ContractNumber,
+           ContractType = (ContractType)contract.Type,
+           IssueDate = contract.IssuedOn,
+           ExpiryDate = contract.ExpiresOn,
+           TotalAmount = contract.BaseAmount + contract.TaxAmount,
+           FilePath = fileGroup.Select(f => f.Filepath).FirstOrDefault() ?? string.Empty,
+           EmployeeIdCreatedBy = emp.Id,
+           EmployeeNameCreatedBy = emp.Person.FullName ?? "Unknown",
+           CreatedDate = contract.CreatedAtUtc
+       })
+       .Skip((query.PageNumber - 1) * query.PageSize)
+       .Take(query.PageSize)
+       .ToListAsync(ct);
+
 
         var paginated = new PaginatedList<ContractDetailsDto>(
             items: contracts,

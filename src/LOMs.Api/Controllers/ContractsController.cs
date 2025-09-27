@@ -69,7 +69,7 @@ public class ContractsController(ICommandMediator command, IQueryMediator query)
     CancellationToken ct = default)
     {
         var result = await _query.QueryAsync(
-            new GetPagedContractsByCaseIdQuery(caseId, pageNumber, pageSize),
+            new GetPagedContractsDetailsByCaseIdQuery(caseId, pageNumber, pageSize),
             ct);
 
         return result.Match(Ok, Problem);
@@ -128,19 +128,6 @@ public class ContractsController(ICommandMediator command, IQueryMediator query)
             Problem
         );
     }
-
-    //[HttpGet("{contractId:guid}/files", Name = nameof(GetContractFilePaths))]
-    //[ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]
-    //[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    //[EndpointSummary("Retrieves all file paths linked to a contract.")]
-    //[EndpointDescription("Returns relative paths of all files associated with the given contract.")]
-    //[EndpointName(nameof(GetContractFilePaths))]
-    //public async Task<IActionResult> GetContractFilePaths(Guid caseId, Guid contractId, CancellationToken ct)
-    //{
-    //    var result = await _query.QueryAsync(new GetContractFilePathsQuery(caseId, contractId), ct);
-    //    return result.Match(Ok, Problem);
-    //}
-
 
     [HttpPost(Name = nameof(CreateContract))]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
