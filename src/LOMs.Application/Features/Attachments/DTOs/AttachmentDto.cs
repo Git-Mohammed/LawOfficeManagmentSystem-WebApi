@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LOMs.Application.Features.Attachments.DTOs
+﻿namespace LOMs.Application.Features.Attachments.DTOs
 {
     public class AttachmentDto
     {
-        public string AttachmentName { get; set; }
+        public Guid AttachmentId { get; set ; }
+        public string AttachmentName { get; set; } = string.Empty;
         public DateTimeOffset CreatedDate { get; set; }
-        public string CreatedByEmployeeName { get; set; }
+        public string CreatedByEmployeeName { get; set; } = string.Empty;
+        public string FilePath { get; set; } = string.Empty;
     }
 }
