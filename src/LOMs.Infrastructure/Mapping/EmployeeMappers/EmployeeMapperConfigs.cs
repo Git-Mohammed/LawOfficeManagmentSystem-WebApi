@@ -51,6 +51,21 @@ public class EmployeeMapperConfigs: IRegister
         config.NewConfig<Employee, EmployeeNameDto>()
             .Map(dest => dest.EmployeeId, src => src.Id)
             .Map(dest => dest.FullName, src => src.Person.FullName);
+        
+        // Employee -> GetAllEmployees
+        config.NewConfig<Employee, GetAllEmployeesDto>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.Name, src => src.Person.FullName)
+            .Map(dest => dest.PhoneNumber, 
+                src => src.Person.Phones
+                    .Select(p => p.Code + " " + p.Number)
+                    .FirstOrDefault())
+            .Map(dest => dest.BirthDate, src => src.Person.BirthDate)
+            .Map(dest => dest.CountryCode, src => src.Person.CountryCode)
+            .Map(dest => dest.NatId, src => src.Person.NationalId)
+            .Map(dest => dest.Email, src => src.Email)
+            .Map(dest => dest.Role, src => src.Role)
+            .Map(dest => dest.IsActive, src => src.IsActive);
 
     }
 }
