@@ -14,6 +14,7 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .HasConversion<string>().HasMaxLength(50).IsRequired();
         builder.Property(e => e.UserId).IsRequired();
         builder.Property(e => e.Email).IsRequired().HasMaxLength(100);
+        builder.Property(e=> e.IsActive).IsRequired();
         
         builder.HasOne(e=>e.Person)
             .WithOne(p=> p.Employee)

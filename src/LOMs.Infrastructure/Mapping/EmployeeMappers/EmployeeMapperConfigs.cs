@@ -44,7 +44,8 @@ public class EmployeeMapperConfigs: IRegister
                 }
                 : new PhoneDto { Number = string.Empty, Code = string.Empty })
 
-            .Map(dest => dest.Email, src => src.Email);
+            .Map(dest => dest.Email, src => src.Email)
+            .Map(dest => dest.IsActive, src => src.IsActive);
 
         // Employee -> EmployeeDto
         config.NewConfig<Employee, EmployeeNameDto>()
