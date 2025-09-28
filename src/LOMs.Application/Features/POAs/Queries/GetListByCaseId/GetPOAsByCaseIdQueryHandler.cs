@@ -45,7 +45,7 @@ public sealed class GetPOAsByCaseIdQueryHandler
                 IssueDate = poa.IssueDate,
                 IssuingAuthority = poa.IssuingAuthority,
                 EmployeeNameCreatedBy = employee != null ? employee.Person!.FullName : "N/A",
-                CreatedDate = poa.CreatedAtUtc.ToString("yyyy-MM-dd"),
+                CreatedDate = poa.CreatedAtUtc,
                 FilePath = poa.POAFiles
                     .OrderByDescending(f => f.CreatedAtUtc)
                     .Select(f => f.Filepath)
