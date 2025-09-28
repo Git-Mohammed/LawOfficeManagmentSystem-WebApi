@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Controllers
 {
-    [Route("api/Templates")]
+    [Route("api/templates")]
     
     public class TemplatesController(ICommandMediator command , IQueryMediator query) :ApiController
     {
