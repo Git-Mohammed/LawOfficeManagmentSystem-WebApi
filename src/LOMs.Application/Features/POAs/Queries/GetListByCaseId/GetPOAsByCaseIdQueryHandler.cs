@@ -44,8 +44,13 @@ public sealed class GetPOAsByCaseIdQueryHandler
                 POANumber = poa.POANumber,
                 IssueDate = poa.IssueDate,
                 IssuingAuthority = poa.IssuingAuthority,
-                EmployeeCreatedByName = employee != null ? employee.Person!.FullName : "N/A",
-                CreatedDate = poa.CreatedAtUtc.ToString("yyyy-MM-dd")
+                EmployeeNameCreatedBy = employee != null ? employee.Person!.FullName : "N/A",
+                CreatedDate = poa.CreatedAtUtc,
+                FilePath = poa.POAFiles
+                    .OrderByDescending(f => f.CreatedAtUtc)
+                    .Select(f => f.Filepath)
+                    .FirstOrDefault() ?? string.Empty,
+                EmployeeIdCreatedBy = employee != null ? employee.Id : Guid.Empty
             };
 
         var totalCount = await baseQuery.CountAsync(cancellationToken);
