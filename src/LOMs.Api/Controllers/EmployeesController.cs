@@ -45,6 +45,7 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
         return result.Match(Ok, Problem);
     }
 
+    [AllowAnonymous]
     [HttpGet("{id:guid}", Name = nameof(GetEmployeeById))]
     [ProducesResponseType(typeof(EmployeeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

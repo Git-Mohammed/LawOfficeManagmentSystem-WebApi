@@ -6,8 +6,11 @@ namespace LOMs.Application.Features.People.Employees.Dtos;
 public sealed class EmployeeDto
 {
     public Guid Id { get; init; }
-    public string Role { get; init; }
-    public string Email { get; init; }
-    public bool IsActive { get; init; }
-    public PersonDto Person { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public DateOnly BirthDate { get; init; }
+    public string PhoneNumber { get; init; } = string.Empty;
+    public string NatId { get; init; } = string.Empty;
+    public string CountryCode { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
+    public string Role { get; init; } = string.Empty;
 }
