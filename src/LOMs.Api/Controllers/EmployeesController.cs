@@ -45,6 +45,7 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
         return result.Match(Ok, Problem);
     }
 
+    [AllowAnonymous]
     [HttpGet("{id:guid}", Name = nameof(GetEmployeeById))]
     [ProducesResponseType(typeof(EmployeeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -94,4 +95,31 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
             Problem
         );
     }
+    
+    [HttpGet("stats", Name = nameof(GetEmployeeStats))]
+    [ProducesResponseType(typeof(EmployeeStatsDto), StatusCodes.Status200OK)]
+    [EndpointSummary("Retrieves employee statistics.")]
+    [EndpointDescription("Returns the total number of employees, and counts of active and inactive employees.")]
+    [EndpointName(nameof(GetEmployeeStats))]
+    public async Task<IActionResult> GetEmployeeStats(CancellationToken ct)
+    {
+        var result = await _query.QueryAsync(new GetEmployeeStatsQuery(), ct);
+        return result.Match(response => Ok(response), Problem);
+    }
+
+    [AllowAnonymous]
+    [HttpGet(Name = nameof(GetAllEmployees))]
+    [ProducesResponseType(typeof(IReadOnlyList<EmployeeDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Retrieves all employees.")]
+    [EndpointDescription("Returns a complete list of all employees in the system.")]
+    [EndpointName(nameof(GetAllEmployees))]
+    public async Task<IActionResult> GetAllEmployees(CancellationToken ct)
+    {
+        var result = await _query.QueryAsync(new GetAllEmployeesQuery(), ct);
+        return result.Match(Ok, Problem);
+    }
+
+    
 }
