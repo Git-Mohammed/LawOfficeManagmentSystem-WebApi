@@ -79,7 +79,7 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
             Phone: new CreatePhoneCommand(request.Person.Phone.Number, request.Person.Phone.Code));
 
         var command = new CreateEmployeeCommand(
-            Role: request.Role,
+            Role:(LOMs.Domain.Identity.Role)request.Role,
             Email: request.Email,
             Person: person
         );
