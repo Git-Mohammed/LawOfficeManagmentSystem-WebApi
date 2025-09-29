@@ -14,16 +14,16 @@ namespace LOMs.Domain.Cases.Judgments
         [Display(Name = "غير محدد")]
         None = 0,
 
-        [Display(Name = "صك نوع أول")]
+        [Display(Name = "درجة اولى")]
         JudgmentOne = 1,
 
-        [Display(Name = "صك نوع ثاني")]
+        [Display(Name = "درجة ثانية")]
         JudgmentTwo = 2,
 
-        [Display(Name = "صك نوع ثالث")]
+        [Display(Name = "درجة ثالثة")]
         JudgmentThree = 3,
 
-        [Display(Name = "صك نوع رابع")]
+        [Display(Name = "درجة رابعة")]
         JudgmentFour = 4
     }
 
@@ -39,10 +39,10 @@ namespace LOMs.Domain.Cases.Judgments
             return stringValue switch
             {
                 "غير محدد" => JudgmentType.None,
-                "صك نوع أول" => JudgmentType.JudgmentOne,
-                "صك نوع ثاني" => JudgmentType.JudgmentTwo,
-                "صك نوع ثالث" => JudgmentType.JudgmentThree,
-                "صك نوع رابع" => JudgmentType.JudgmentFour,
+                "درجة اولى" => JudgmentType.JudgmentOne,
+                "درجة ثانية" => JudgmentType.JudgmentTwo,
+                "درجة ثالثة" => JudgmentType.JudgmentThree,
+                "درجة رابعة" => JudgmentType.JudgmentFour,
                 _ => throw new ArgumentException($"نوع الصك غير معروف: {stringValue}")
             };
         }
@@ -56,10 +56,10 @@ namespace LOMs.Domain.Cases.Judgments
             return value switch
             {
                 "غير محدد" => JudgmentType.None,
-                "صك نوع أول" => JudgmentType.JudgmentOne,
-                "صك نوع ثاني" => JudgmentType.JudgmentTwo,
-                "صك نوع ثالث" => JudgmentType.JudgmentThree,
-                "صك نوع رابع" => JudgmentType.JudgmentFour,
+                "درجة اولى" => JudgmentType.JudgmentOne,
+                "درجة ثانية" => JudgmentType.JudgmentTwo,
+                "درجة ثالثة" => JudgmentType.JudgmentThree,
+                "درجة رابعة" => JudgmentType.JudgmentFour,
                 _ => throw new JsonException($"قيمة غير صالحة: {value}")
             };
         }
