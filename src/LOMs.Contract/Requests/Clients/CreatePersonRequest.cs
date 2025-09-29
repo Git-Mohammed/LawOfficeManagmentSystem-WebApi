@@ -4,21 +4,21 @@ namespace LOMs.Contract.Requests.Clients;
 
 public class CreatePersonRequest
 {
-    [Required(ErrorMessage = "الاسم الكامل مطلوب.")]
-    [MinLength(3, ErrorMessage = "الاسم الكامل يجب أن لا يقل عن 3 أحرف.")]
+    [Required(ErrorMessage = "Full name is required.")]
+    [MinLength(3, ErrorMessage = "Full name must be at least 3 characters.")]
     public string FullName { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "رقم الهوية الوطنية مطلوب.")]
-    [RegularExpression(@"^\d{10}$", ErrorMessage = "رقم الهوية الوطنية يجب أن يتكون من 10 أرقام.")]
+    [Required(ErrorMessage = "National ID is required.")]
+    [RegularExpression(@"^\d{10}$", ErrorMessage = "National ID must consist of 10 digits.")]
     public string NationalId { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "تاريخ الميلاد مطلوب.")]
+    [Required(ErrorMessage = "Birth date is required.")]
     public DateOnly BirthDate { get; set; }
 
-    [Required(ErrorMessage = "رقم الهاتف مطلوب.")]
+    [Required(ErrorMessage = "Phone number is required.")]
     public CreatePhoneRequest Phone { get; set; } = new CreatePhoneRequest();
 
-    [MinLength(10, ErrorMessage = "العنوان يجب أن يحتوي على تفاصيل كافية ولا يقل عن 10 أحرف.")]
+    [MinLength(10, ErrorMessage = "Address must contain sufficient details and be at least 10 characters.")]
     public string Address { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "CountryCode is required")]

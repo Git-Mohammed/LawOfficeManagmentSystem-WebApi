@@ -4,12 +4,12 @@ namespace LOMs.Contract.Requests.Clients
 {
     public sealed class CreatePhoneRequest : IValidatableObject
     {
-        [Required(ErrorMessage = "رقم الهاتف مطلوب")]
-        [RegularExpression(@"^\+?\d{7,15}$", ErrorMessage = "رقم الهاتف يجب أن يتكون من 7 إلى 15 رقمًا وقد يبدأ بـ '+'")]
+        [Required(ErrorMessage = "Phone number is required")]
+        [RegularExpression(@"^\+?\d{7,15}$", ErrorMessage = "Phone number must consist of 7 to 15 digits and may start with '+'")]
         public string Number { get; set; } = null!;
 
-        [Required(ErrorMessage = "رمز الهاتف مطلوب")]
-        [StringLength(10, MinimumLength = 1, ErrorMessage = "رمز الهاتف يجب أن يكون بين 1 و 10 أحرف")]
+        [Required(ErrorMessage = "Phone code is required")]
+        [StringLength(10, MinimumLength = 1, ErrorMessage = "Phone code must be between 1 and 10 characters")]
         public string Code { get; set; } = null!;
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -17,7 +17,7 @@ namespace LOMs.Contract.Requests.Clients
             if (Number != null && Code != null && Number.StartsWith(Code))
             {
                 yield return new ValidationResult(
-                    "رقم الهاتف يجب ألا يبدأ برمز الهاتف.",
+                    "Phone number must not start with the phone code.",
                     new[] { nameof(Number), nameof(Code) });
             }
         }
