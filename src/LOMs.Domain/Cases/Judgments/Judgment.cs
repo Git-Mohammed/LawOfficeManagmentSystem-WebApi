@@ -12,7 +12,6 @@ public class Judgment : AuditableEntity
     public JudgmentType Type { get; private set; }
     public JudgmentSubType SubType { get; private set; }
     public DateOnly IssuedOn { get; private set; }
-    public DateOnly ExpiresOn { get; private set; }
 
     #region Navigation Properties
     public Case Case { get; private set; }
@@ -21,19 +20,17 @@ public class Judgment : AuditableEntity
     
     private Judgment(){}
 
-    private Judgment(Guid id ,Guid caseId, string number, JudgmentType type, JudgmentSubType subType, DateOnly issuedOn,
-        DateOnly expiresOn): base(id)
+    private Judgment(Guid id ,Guid caseId, string number, JudgmentType type, JudgmentSubType subType, DateOnly issuedOn): base(id)
     {
         Number = number;
         Type = type;
         IssuedOn = issuedOn;
-        ExpiresOn = expiresOn;
         CaseId = caseId;
         SubType = subType;
     }
 
     public static Result<Judgment> Create(Guid caseId, string number, JudgmentType type, JudgmentSubType subType,
-        DateOnly issuedOn, DateOnly expiresOn)
+        DateOnly issuedOn)
     {
         if (caseId == Guid.Empty)
             return JudgmentErrors.CaseIdRequired;
@@ -50,14 +47,8 @@ public class Judgment : AuditableEntity
         if (issuedOn == default)
             return JudgmentErrors.IssuedOnRequired;
 
-        if (expiresOn == default)
-            return JudgmentErrors.ExpiresOnRequired;
-
-        if (expiresOn <= issuedOn)
-            return JudgmentErrors.InvalidDateRange;
-
         
-        return new Judgment(Guid.NewGuid(), caseId, number, type, subType, issuedOn, expiresOn);
+        return new Judgment(Guid.NewGuid(), caseId, number, type, subType, issuedOn);
     }
 }
 

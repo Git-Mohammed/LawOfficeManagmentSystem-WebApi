@@ -26,9 +26,6 @@ public class JudgmentConfiguration : IEntityTypeConfiguration<Judgment>
         builder.Property(j => j.IssuedOn)
             .IsRequired();
 
-        builder.Property(j => j.ExpiresOn)
-            .IsRequired();
-
         // Relationships
         builder.HasOne(j => j.Case)
             .WithMany(c => c.Judgments)
