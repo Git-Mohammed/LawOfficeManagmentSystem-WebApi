@@ -28,6 +28,10 @@ builder.Services.AddControllers()
         // 🔹 Judgment converters
         options.JsonSerializerOptions.Converters.Add(new JudgmentTypeJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new JudgmentSubTypeJsonConverter());
+
+        options.JsonSerializerOptions.Converters.Add(new cJudgmentTypeJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new cJudgmentSubTypeJsonConverter());
+
     });
 
 builder.Services
