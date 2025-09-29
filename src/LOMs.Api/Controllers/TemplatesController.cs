@@ -86,27 +86,13 @@ namespace LOMs.Api.Controllers
         public async Task<IActionResult> DownloadTemplateFile(
        Guid templateId,
        [FromQuery] string filePath,
-         [FromQuery] bool inline ,
        CancellationToken ct)
         {
-
             var result = await _query.QueryAsync(new DownloadTemplateFileQuery(templateId, filePath), ct);
             return result.Match(
-       file =>
-       {
-           if (inline)
-           {
-               // 👇 عرض الملف مباشرة (مثلاً صورة أو PDF)
-               return File(file.FileStream, file.ContentType);
-           }
-           else
-           {
-               // 👇 تنزيل الملف (download)
-               return File(file.FileStream, file.ContentType, file.FileName);
-           }
-       },
-       Problem
-   );
+                file => File(file.FileStream, file.ContentType, file.FileName),
+                Problem
+            );
         }
     }
 }
