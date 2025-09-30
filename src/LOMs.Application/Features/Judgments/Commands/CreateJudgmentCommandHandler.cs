@@ -37,8 +37,7 @@ public class CreateJudgmentCommandHandler(IAppDbContext context, IMapper mapper,
             number: command.Number,
             type: command.Type,
             subType: command.SubType,
-            issuedOn: command.IssuedOn,
-            expiresOn: command.ExpiresOn
+            issuedOn: command.IssuedOn
         );
         
         if (judgment.IsError)

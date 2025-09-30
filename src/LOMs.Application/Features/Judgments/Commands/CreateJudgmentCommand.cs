@@ -11,6 +11,5 @@ public sealed record CreateJudgmentCommand(
     JudgmentType Type,
     JudgmentSubType SubType,
     DateOnly IssuedOn,
-    DateOnly ExpiresOn,
     CreateFileCommand FileCommand
     ):ICommand<Result<Guid>>;
