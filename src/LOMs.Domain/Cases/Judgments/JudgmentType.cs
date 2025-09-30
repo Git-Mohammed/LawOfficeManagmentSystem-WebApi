@@ -69,10 +69,10 @@ namespace LOMs.Domain.Cases.Judgments
             string stringValue = value switch
             {
                 JudgmentType.None => "غير محدد",
-                JudgmentType.JudgmentOne => "صك نوع أول",
-                JudgmentType.JudgmentTwo => "صك نوع ثاني",
-                JudgmentType.JudgmentThree => "صك نوع ثالث",
-                JudgmentType.JudgmentFour => "صك نوع رابع",
+                JudgmentType.JudgmentOne => "درجة اولى",
+                JudgmentType.JudgmentTwo => "درجة ثانية",
+                JudgmentType.JudgmentThree => "درجة ثالثة",
+                JudgmentType.JudgmentFour => "درجة رابعة",
                 _ => throw new JsonException($"قيمة غير معروفة: {value}")
             };
 

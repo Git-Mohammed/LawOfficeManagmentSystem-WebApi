@@ -2,6 +2,7 @@
 using LOMs.Contract.Commons.Enums;
 using LOMs.Domain.Cases.Enums;
 using LOMs.Domain.Cases.Judgments;
+using LOMs.Domain.Identity;
 using LOMs.Infrastructure.BackgroundJobs;
 using LOMs.Infrastructure.BackgroundServicesJob.CourtSessionReminder;
 using LOMs.Infrastructure.Data;
@@ -28,6 +29,15 @@ builder.Services.AddControllers()
         // 🔹 Judgment converters
         options.JsonSerializerOptions.Converters.Add(new JudgmentTypeJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new JudgmentSubTypeJsonConverter());
+
+        options.JsonSerializerOptions.Converters.Add(new cJudgmentTypeJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new cJudgmentSubTypeJsonConverter());
+
+        options.JsonSerializerOptions.Converters.Add(new cRoleJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new RoleJsonConverter());
+
+
+
     });
 
 builder.Services

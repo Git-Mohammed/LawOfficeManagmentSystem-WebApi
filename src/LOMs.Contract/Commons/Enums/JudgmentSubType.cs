@@ -7,8 +7,8 @@ using System.Text.Json.Serialization;
 
 namespace LOMs.Contract.Commons.Enums
 {
-    [JsonConverter(typeof(SJudgmentSubTypeJsonConverter))]
-    [TypeConverter(typeof(SJudgmentSubTypeTypeConverter))]
+    [JsonConverter(typeof(cJudgmentSubTypeJsonConverter))]
+    [TypeConverter(typeof(cJudgmentSubTypeTypeConverter))]
     public enum JudgmentSubType
     {
         [Display(Name = "غير محدد")]
@@ -21,7 +21,7 @@ namespace LOMs.Contract.Commons.Enums
         Normal = 2
     }
 
-    public class SJudgmentSubTypeTypeConverter : TypeConverter
+    public class cJudgmentSubTypeTypeConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
             => sourceType == typeof(string);
@@ -40,7 +40,7 @@ namespace LOMs.Contract.Commons.Enums
         }
     }
 
-    public class SJudgmentSubTypeJsonConverter : JsonConverter<JudgmentSubType>
+    public class cJudgmentSubTypeJsonConverter : JsonConverter<JudgmentSubType>
     {
         public override JudgmentSubType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

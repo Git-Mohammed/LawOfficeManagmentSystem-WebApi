@@ -63,7 +63,7 @@ public class AuthController(ICommandMediator command, IQueryMediator query) : Ap
             HttpContext.SetInsideCookie(CookieConstants.RefreshTokenKey, result.Value.RefreshToken);
         }
         return result.Match(
-                _ => Ok(new { refreshTokenExpiration = result.Value.RefreshTokenExpiresOn }),
+                _ => Ok(new { refreshTokenExpiration = result.Value.RefreshTokenExpiresOn, accessTokenExpiration = result.Value.AccessTokenExpiresOn }),
                 Problem);
     }
     
