@@ -505,9 +505,6 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateOnly>("ExpiresOn")
-                        .HasColumnType("date");
-
                     b.Property<DateOnly>("IssuedOn")
                         .HasColumnType("date");
 

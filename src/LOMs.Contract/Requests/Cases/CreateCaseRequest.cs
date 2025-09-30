@@ -5,34 +5,34 @@ namespace LOMs.Contract.Requests.Cases;
 
 public class CreateCaseRequest
 {
-    [StringLength(50, ErrorMessage = "رقم القضية يجب ألا يتجاوز 50 حرف.")]
+    [StringLength(50, ErrorMessage = "Case number must not exceed 50 characters.")]
     public string? CaseNumber { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "نوع المحكمة مطلوب.")]
+    [Required(ErrorMessage = "Court type is required.")]
     public Guid CourtTypeId { get; set; }
 
-    [StringLength(250, ErrorMessage = "موضوع القضية يجب ألا يتجاوز 250 حرف.")]
+    [StringLength(250, ErrorMessage = "Case subject must not exceed 250 characters.")]
     public string? CaseSubject { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "دور الطرف مطلوب.")]
-    [EnumDataType(typeof(PartyRole), ErrorMessage = "دور الطرف غير صالح.")]
+    [Required(ErrorMessage = "Party role is required.")]
+    [EnumDataType(typeof(PartyRole), ErrorMessage = "Party role is invalid.")]
     public PartyRole PartyRole { get; set; }
 
-    [StringLength(1000, ErrorMessage = "تفاصيل طلب العميل يجب ألا تتجاوز 1000 حرف.")]
+    [StringLength(1000, ErrorMessage = "Client request details must not exceed 1000 characters.")]
     public string? ClientRequestDetails { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "تاريخ المراجعة التقديري مطلوب.")]
+    [Required(ErrorMessage = "Estimated review date is required.")]
     public DateOnly EstimatedReviewDate { get; set; }
 
     public bool IsDraft { get; set; }
 
-    [StringLength(1000, ErrorMessage = "رأي المحامي يجب ألا يتجاوز 1000 حرف.")]
+    [StringLength(1000, ErrorMessage = "Lawyer opinion must not exceed 1000 characters.")]
     public string? LawyerOpinion { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "الموظف المسؤول مطلوب.")]
+    [Required(ErrorMessage = "Assigned employee is required.")]
     public Guid AssignedEmployeeId { get; set; }
 
-    [MinLength(1, ErrorMessage = "يجب إضافة عميل واحد على الأقل.")]
-    [Required(ErrorMessage = "قائمة العملاء مطلوبة.")]
+    [MinLength(1, ErrorMessage = "At least one client must be added.")]
+    [Required(ErrorMessage = "Clients list is required.")]
     public List<CaseClientRequest> Clients { get; set; } = new();
 }

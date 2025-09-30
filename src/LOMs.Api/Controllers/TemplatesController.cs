@@ -1,11 +1,16 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LiteBus.Queries.Abstractions;
+using LOMs.Api.Common;
+using LOMs.Application.Features.Attachments.Queries.DownloadAttachmentFile;
 using LOMs.Application.Features.Contracts.Commands.CreateContract;
 using LOMs.Application.Features.Tamplates.DTOs;
 using LOMs.Application.Features.Templates.Commands;
 using LOMs.Application.Features.Templates.Queries;
+using LOMs.Application.Features.Templates.Queries.DownloadTemplateFile;
 using LOMs.Contract.Requests.Templates;
+using LOMs.Domain.Templates;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LOMs.Api.Controllers
 {
@@ -24,7 +29,7 @@ namespace LOMs.Api.Controllers
         [EndpointDescription("Registers a new general template .")]
         [EndpointName(nameof(CreateTemplate))]
         public async Task<IActionResult> CreateTemplate(
-       [FromForm] CreateTemplateRequest request,
+        [FromForm] CreateTemplateRequest request,
        CancellationToken ct)
         {
 
@@ -42,7 +47,6 @@ namespace LOMs.Api.Controllers
                 TemplateName : request.TemplateName,
                 FileCommand: fileCommand
             );
-
 
 
             var result = await _command.SendAsync(commandRequest, ct);
@@ -67,6 +71,26 @@ namespace LOMs.Api.Controllers
             
             return result.Match<IActionResult>(
                 templates => Ok(templates),
+                Problem
+            );
+        }
+
+        [EnableRateLimiting(RateLimitPolicies.FileConcurrency)]
+        [HttpGet("{templateId:guid}/files/download", Name = nameof(DownloadTemplateFile))]
+        [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [EndpointSummary("Downloads a specific file related to a templateId.")]
+        [EndpointDescription("Downloads a file by relative path under a specific template.")]
+        [EndpointName(nameof(DownloadTemplateFile))]
+        public async Task<IActionResult> DownloadTemplateFile(
+       Guid templateId,
+       [FromQuery] string filePath,
+       CancellationToken ct)
+        {
+            var result = await _query.QueryAsync(new DownloadTemplateFileQuery(templateId, filePath), ct);
+            return result.Match(
+                file => File(file.FileStream, file.ContentType, file.FileName),
                 Problem
             );
         }
