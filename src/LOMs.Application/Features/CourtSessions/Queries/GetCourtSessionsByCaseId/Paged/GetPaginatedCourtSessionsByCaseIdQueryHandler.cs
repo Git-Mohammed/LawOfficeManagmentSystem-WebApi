@@ -45,9 +45,11 @@ public sealed class GetPaginatedCourtSessionsByCaseIdQueryHandler(
             .Where(cs => cs.CaseId == query.CaseId)
             .CountAsync(ct);
 
+        var referenceDate = DateTimeOffset.UtcNow.AddDays(1);
+
         var sessions = await context.CourtSessions
             .AsNoTracking()
-            .Where(cs => cs.CaseId == query.CaseId)
+            .Where(cs => cs.CaseId == query.CaseId && cs.ScheduledAt < referenceDate)
             .OrderBy(cs => cs.ScheduledAt)
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)
@@ -57,7 +59,12 @@ public sealed class GetPaginatedCourtSessionsByCaseIdQueryHandler(
                 ScheduledAt = cs.ScheduledAt,
                 AssignedTasks = cs.AssignedTasks,
                 AssignedEmployeeId = cs.AssignedEmployeeId,
-                AssignedEmployeeName = cs.AssignedEmployee!.Person.FullName ?? string.Empty
+                AssignedEmployeeName = cs.AssignedEmployee!.Person.FullName ?? string.Empty,
+                CreatedAt = cs.CreatedAtUtc,
+                EmployeeCreateItName = context.Employees
+            .Where(e => e.UserId == cs.CreatedBy)
+            .Select(e => e.Person.FullName)
+            .FirstOrDefault() ?? "Unknown"
             })
             .ToListAsync(ct);
 

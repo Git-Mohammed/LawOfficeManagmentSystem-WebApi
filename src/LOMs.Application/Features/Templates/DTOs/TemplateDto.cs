@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LOMs.Application.Features.Templates.DTOs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,8 @@ namespace LOMs.Application.Features.Tamplates.DTOs
 {
     public class TemplateDto
     {
+        public Guid TemplateId { get; set; }
         public string TemplateName { get; set; }
-        public string FilePath { get; set; }
+        public FileDto File { get; set; }
     }
 }

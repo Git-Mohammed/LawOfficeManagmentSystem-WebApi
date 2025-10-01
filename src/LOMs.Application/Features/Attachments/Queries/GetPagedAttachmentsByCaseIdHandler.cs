@@ -2,6 +2,7 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Attachments.DTOs;
+using LOMs.Application.Features.Templates.DTOs;
 using LOMs.Domain.Cases;
 using LOMs.Domain.Cases.Attachments;
 using LOMs.Domain.Common.Results;
@@ -71,7 +72,12 @@ public sealed class GetPagedAttachmentsByCaseIdHandler
                 AttachmentName = attachment.AttachmentName,
                 CreatedDate = attachment.CreatedAtUtc,
                 CreatedByEmployeeName = emp.Person.FullName ,
-                FilePath = attachment.Filepath
+                File = new FileDto
+                {
+                    FilePath = attachment.Filepath,
+                    FileName = attachment.Filename,
+                    FileType = attachment.ContentType,
+                }
             })
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)
