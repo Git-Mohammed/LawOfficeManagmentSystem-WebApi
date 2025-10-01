@@ -38,5 +38,7 @@ public static class UserErrors
         Error.Validation("Identity.UnauthorizedPasswordChange", "You are not authorized to change this password.");
 
     public static Error UserCreationFailed =>
-        Error.Failure("Identity.UserCreationFailed", "User could not be created.");
+      Error.Failure("Identity.UserCreationFailed", "User could not be created.");
+    public static Error UserUpdateFailed =>
+        Error.Failure("Identity_User_not_updated", "User could not be updated.");
 }

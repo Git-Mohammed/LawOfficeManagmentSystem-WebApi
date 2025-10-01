@@ -44,8 +44,8 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
         var result = await _query.QueryAsync(new GetAvailableEmployeesByDateQuery(date), ct);
         return result.Match(Ok, Problem);
     }
-
-    [AllowAnonymous]
+    
+    
     [HttpGet("{id:guid}", Name = nameof(GetEmployeeById))]
     [ProducesResponseType(typeof(EmployeeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -107,7 +107,7 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
         return result.Match(response => Ok(response), Problem);
     }
 
-    [AllowAnonymous]
+
     [HttpGet(Name = nameof(GetAllEmployees))]
     [ProducesResponseType(typeof(IReadOnlyList<EmployeeDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -120,6 +120,34 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
         var result = await _query.QueryAsync(new GetAllEmployeesQuery(), ct);
         return result.Match(Ok, Problem);
     }
-
     
+    
+    
+    [HttpPut(Name = nameof(UpdateEmployee))]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Updates an existing employee.")]
+    [EndpointDescription("Updates employee information based on the provided request.")]
+    [EndpointName(nameof(UpdateEmployee))]
+    public async Task<IActionResult> UpdateEmployee([FromBody] UpdateEmployeeRequest request, CancellationToken ct)
+    {
+        var command = new UpdateEmployeeCommand(
+            request.Id,
+            request.FullName,
+            request.NationalId,
+            request.BirthDate,
+            request.Phone.Number,
+            request.Phone.Code,
+            request.Address,
+            request.CountryCode,
+            request.Role,
+            request.Email,
+            request.IsActive
+        );
+
+        var result = await _command.SendAsync(command, ct);
+        return result.Match(_=>NoContent(), Problem);
+    }
 }

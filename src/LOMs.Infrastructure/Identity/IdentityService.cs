@@ -357,4 +357,114 @@ public class IdentityService(UserManager<ApplicationUser> userManager,RoleManage
         _logger.LogInformation("Deleting user: {UserId}", userId);
         throw new NotImplementedException();
     }
+    
+    public async Task<Result<bool>> UpdateUserAsync(string userId, string userName, string email, string roles)
+{
+    _logger.LogInformation("Updating user {UserId}", userId);
+
+    var user = await _userManager.FindByIdAsync(userId);
+    if (user is null)
+    {
+        _logger.LogWarning("Update failed: user not found {UserId}", userId);
+        return UserErrors.UserNotFound;
+    }
+
+    // تحديث البيانات الأساسية
+    user.UserName = userName;
+    user.Email = email;
+
+    var updateResult = await _userManager.UpdateAsync(user);
+    if (!updateResult.Succeeded)
+    {
+        _logger.LogError("Failed to update basic info for user {UserId}", userId);
+        return UserErrors.UserUpdateFailed;
+    }
+
+    // تحديث الأدوار
+    if (!string.IsNullOrWhiteSpace(roles))
+    {
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        var removeRolesResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+        if (!removeRolesResult.Succeeded)
+        {
+            _logger.LogError("Failed to remove old roles for user {UserId}", userId);
+            return UserErrors.UserUpdateFailed;
+        }
+
+        var roleList = roles.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var role in roleList)
+        {
+            if (!await _roleManager.RoleExistsAsync(role))
+            {
+                _logger.LogWarning("Role {Role} does not exist, skipping", role);
+                continue;
+            }
+
+            var addRoleResult = await _userManager.AddToRoleAsync(user, role);
+            if (!addRoleResult.Succeeded)
+            {
+                _logger.LogError("Failed to assign role {Role} for user {UserId}", role, userId);
+                return UserErrors.UserUpdateFailed;
+            }
+        }
+    }
+
+    _logger.LogInformation("User {UserId} updated successfully", userId);
+    return true;
+}
+
+    public async Task<Result<Success>> BlockUserAsync(string userId)
+    {
+        _logger.LogInformation("Blocking user: {UserId}", userId);
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            _logger.LogWarning("Block failed: user not found {UserId}", userId);
+            return UserErrors.UserNotFound;
+        }
+
+        if (!user.LockoutEnabled)
+        {
+            user.LockoutEnabled = true;
+        }
+
+        // نحدد نهاية القفل لفترة طويلة جدًا (مثلاً سنة) أو للأبد
+        user.LockoutEnd = DateTimeOffset.MaxValue;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            _logger.LogError("Failed to block user {UserId}", userId);
+            return UserErrors.UserUpdateFailed;
+        }
+
+        _logger.LogInformation("User {UserId} has been blocked successfully", userId);
+        return Result.Success;
+    }
+
+    public async Task<Result<Success>> UnblockUserAsync(string userId)
+    {
+        _logger.LogInformation("Unblocking user: {UserId}", userId);
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            _logger.LogWarning("Unblock failed: user not found {UserId}", userId);
+            return UserErrors.UserNotFound;
+        }
+
+        user.LockoutEnd = null; // فك الحظر
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            _logger.LogError("Failed to unblock user {UserId}", userId);
+            return UserErrors.UserUpdateFailed;
+        }
+
+        _logger.LogInformation("User {UserId} has been unblocked successfully", userId);
+        return Result.Success;
+    }
+
 }
