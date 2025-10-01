@@ -1,4 +1,6 @@
-﻿using LOMs.Domain.Cases.Enums;
+﻿using LOMs.Application.Features.Templates.DTOs;
+using LOMs.Domain.Cases.Enums;
+using System.Collections.Generic;
 
 namespace LOMs.Application.Features.Contracts.Dtos;
 
@@ -13,7 +15,7 @@ public sealed class ContractDetailsDto
     public DateOnly? ExpiryDate { get; set; }
     public decimal TotalAmount { get; set; }
 
-    public string FilePath { get; set; } = string.Empty;
+    public  List<FileDto> Files { get; set; } 
     public Guid EmployeeIdCreatedBy { get; set; } 
     public string EmployeeNameCreatedBy { get; set; } = string.Empty;
     public DateTimeOffset CreatedDate { get; set; }

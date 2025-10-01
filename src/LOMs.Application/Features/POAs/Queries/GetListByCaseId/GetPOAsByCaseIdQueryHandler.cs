@@ -2,6 +2,7 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.POAs.Dtos;
+using LOMs.Application.Features.Templates.DTOs;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -41,15 +42,20 @@ public sealed class GetPOAsByCaseIdQueryHandler
             from employee in empGroup.DefaultIfEmpty()
             select new POAListRowDto
             {
+                POAID = poa.Id,
                 POANumber = poa.POANumber,
                 IssueDate = poa.IssueDate,
                 IssuingAuthority = poa.IssuingAuthority,
                 EmployeeNameCreatedBy = employee != null ? employee.Person!.FullName : "N/A",
                 CreatedDate = poa.CreatedAtUtc,
-                FilePath = poa.POAFiles
-                    .OrderByDescending(f => f.CreatedAtUtc)
-                    .Select(f => f.Filepath)
-                    .FirstOrDefault() ?? string.Empty,
+                Files = poa.POAFiles
+            .OrderByDescending(f => f.CreatedAtUtc)
+            .Select(f => new FileDto
+            {
+                FilePath = f.Filepath,
+                FileName = f.Filename,
+                FileType = f.ContentType
+            }).ToList(),
                 EmployeeIdCreatedBy = employee != null ? employee.Id : Guid.Empty
             };
 

@@ -1,5 +1,6 @@
 ﻿using LiteBus.Queries.Abstractions;
 using LOMs.Application.Features.Tamplates.DTOs;
+using LOMs.Application.Features.Templates.DTOs;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.Templates;
 using Microsoft.EntityFrameworkCore;
@@ -23,9 +24,15 @@ namespace LOMs.Application.Features.Templates.Queries
         .AsNoTracking()
           .Select(a => new TemplateDto
           {
+              TemplateId = a.Id,
               TemplateName = a.TemplateName,
-              FilePath = a.Filepath
-            
+              File = new FileDto
+              {
+                  FilePath = a.Filepath,      
+                  FileName = a.Filename,      
+                  FileType = a.ContentType,    
+              }
+
           })
           .ToListAsync(ct);
 
