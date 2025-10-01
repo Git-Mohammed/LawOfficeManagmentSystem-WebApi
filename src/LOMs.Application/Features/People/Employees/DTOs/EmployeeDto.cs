@@ -1,5 +1,6 @@
 ﻿using LOMs.Application.Features.People.Clients.Commands.CreateClient;
 using LOMs.Application.Features.People.Clients.Dtos;
+using LOMs.Domain.Identity;
 
 namespace LOMs.Application.Features.People.Employees.Dtos;
 
@@ -12,6 +13,6 @@ public sealed class EmployeeDto
     public string NatId { get; init; } = string.Empty;
     public string CountryCode { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
-    public string Role { get; init; } = string.Empty;
+    public Role Role { get; init; } 
     public string Address {get; init; } = string.Empty;
 }
