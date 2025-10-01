@@ -36,4 +36,7 @@ public static class UserErrors
 
     public static Error UserCreationFailed =>
         Error.Failure("Identity_User_not_created", "User could not be created.");
+    public static Error UserUpdateFailed =>
+        Error.Failure("Identity_User_not_updated", "User could not be updated.");
+
 }

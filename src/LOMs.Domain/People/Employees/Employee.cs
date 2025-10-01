@@ -10,10 +10,10 @@ public sealed class Employee : AuditableEntity
 {
     public Guid PersonId { get; }
     public Person Person { get; } = null!;
-    public Role Role { get; }
-    public string Email { get; }
+    public Role Role { get; private set; }
+    public string Email { get; private set; }
     public string UserId { get; private set; }
-    public bool IsActive { get;}
+    public bool IsActive { get; private set; }
 
     public ICollection<Case> Cases { get; set; } = [];
     private Employee()
@@ -60,5 +60,33 @@ public sealed class Employee : AuditableEntity
         UserId = id;
         return true;
     }
+
+    public Result<Updated> Update(string email, string role)
+    {
+        Role roleEnum;
+        try
+        {
+            roleEnum = role.Trim().ToEnum<Role>(ignoreCase: true);
+        }
+        catch (Exception e)
+        {
+            return EmployeeErrors.RoleInvalid;
+        }
+
+        if (!Enum.IsDefined(roleEnum))
+            return EmployeeErrors.RoleInvalid;
+        if (string.IsNullOrWhiteSpace(email))
+            return EmployeeErrors.EmailRequired;
+        Email = email;
+        Role = roleEnum;
+        
+        return Result.Updated;
+    }
+
+    public void ActivateOrDeactivate(bool isActive)
+    {
+        IsActive = isActive;
+    }
+    
 }
 
