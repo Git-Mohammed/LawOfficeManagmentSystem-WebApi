@@ -43,6 +43,7 @@ public class EmployeeMapperConfigs: IRegister
             .Map(dest => dest.CountryCode, src => src.Person.CountryCode)
             .Map(dest => dest.NatId, src => src.Person.NationalId)
             .Map(dest => dest.Email, src => src.Email)
+            .Map(dest => dest.Address, src => src.Person.Address)
             .Map(dest => dest.Role, src => src.Role);
 
         // Employee -> EmployeeDto
@@ -63,6 +64,7 @@ public class EmployeeMapperConfigs: IRegister
             .Map(dest => dest.NatId, src => src.Person.NationalId)
             .Map(dest => dest.Email, src => src.Email)
             .Map(dest => dest.Role, src => src.Role)
+            .Map(dest => dest.Address, src => src.Person.Address)
             .Map(dest => dest.IsActive, src => src.IsActive);
 
     }
