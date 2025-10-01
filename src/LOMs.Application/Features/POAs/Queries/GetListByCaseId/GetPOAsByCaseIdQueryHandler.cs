@@ -41,6 +41,8 @@ public sealed class GetPOAsByCaseIdQueryHandler
             from employee in empGroup.DefaultIfEmpty()
             select new POAListRowDto
             {
+                POAId = poa.Id,
+                CaseId = poa.CaseId,
                 POANumber = poa.POANumber,
                 IssueDate = poa.IssueDate,
                 IssuingAuthority = poa.IssuingAuthority,

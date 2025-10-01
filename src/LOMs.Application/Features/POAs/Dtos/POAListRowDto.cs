@@ -5,6 +5,8 @@
 /// </summary>
 public sealed class POAListRowDto
 {
+    public Guid POAId { get; init; } = default!;
+    public Guid CaseId { get; init; } = default!;
     public string POANumber { get; init; } = default!;
     public DateOnly IssueDate { get; init; }
     public string IssuingAuthority { get; init; } = default!;

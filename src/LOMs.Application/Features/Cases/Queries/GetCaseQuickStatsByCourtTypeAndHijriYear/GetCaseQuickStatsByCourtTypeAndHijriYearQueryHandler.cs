@@ -3,6 +3,7 @@ using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Cases.Dtos;
 using LOMs.Domain.Cases.CourtTypes;
+using LOMs.Domain.Cases.Enums;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -72,6 +73,9 @@ public sealed class GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler
         if (query.Status is not null)
         {
             baseQuery = baseQuery.Where(x => x.Status == query.Status);
+        } else
+        {
+            baseQuery = baseQuery.Where(x => x.Status != CaseStatus.Draft);
         }
 
         // 4. Pagination

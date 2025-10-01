@@ -7,6 +7,7 @@ using LOMs.Application.Features.Auth.Queries.GenerateTokens;
 using LOMs.Application.Features.Auth.Queries.GetUserInfo;
 using LOMs.Application.Features.Auth.Queries.RefreshTokens;
 using LOMs.Contract.Commons.Constants;
+using LOMs.Contract.Commons.Enums;
 using LOMs.Contract.Requests.Auth;
 using LOMs.Domain.Common.Results;
 using Microsoft.AspNetCore.Authorization;
@@ -39,7 +40,8 @@ public class AuthController(ICommandMediator command, IQueryMediator query) : Ap
             HttpContext.SetInsideCookie(CookieConstants.RefreshTokenKey, result.Value.TokenResponse.RefreshToken);
         }
         return result.Match(
-             response => Ok(new { username = response.User.Username, role = response.User.Roles.FirstOrDefault(), accessTokenExpiration = response.TokenResponse.AccessTokenExpiresOn ,refreshTokenExpiration = response.TokenResponse.RefreshTokenExpiresOn }),
+
+             response => Ok(new { username = response.User.Username, role = Enum.TryParse<Role>(response.User.Roles.FirstOrDefault(), out var parsedRole) ? parsedRole : default, accessTokenExpiration = response.TokenResponse.AccessTokenExpiresOn ,refreshTokenExpiration = response.TokenResponse.RefreshTokenExpiresOn }),
              Problem
          );
     }

@@ -10,16 +10,16 @@ namespace LOMs.Contract.Commons.Enums
     [TypeConverter(typeof(cRoleTypeConverter))]
     public enum Role
     {
-        [Display(Name = "المدير العام")]
+        [Display(Name = "مدير عام")]
         GeneralManager = 1,
 
-        [Display(Name = "المدير التنفيذي")]
+        [Display(Name = "مدير تنفيذي")]
         ExecutiveManager = 2,
 
-        [Display(Name = "المستشار")]
+        [Display(Name = "مستشار")]
         Consultant = 3,
 
-        [Display(Name = "المحامي")]
+        [Display(Name = "محامي")]
         Lawyer = 4
     }
 
@@ -34,10 +34,10 @@ namespace LOMs.Contract.Commons.Enums
 
             return stringValue switch
             {
-                "المدير العام" => Role.GeneralManager,
-                "المدير التنفيذي" => Role.ExecutiveManager,
-                "المستشار" => Role.Consultant,
-                "المحامي" => Role.Lawyer,
+                "مدير عام" => Role.GeneralManager,
+                "مدير تنفيذي" => Role.ExecutiveManager,
+                "مستشار" => Role.Consultant,
+                "محامي" => Role.Lawyer,
                 _ => throw new ArgumentException($"الدور غير معروف: {stringValue}")
             };
         }
@@ -50,10 +50,10 @@ namespace LOMs.Contract.Commons.Enums
             string? value = reader.GetString();
             return value switch
             {
-                "المدير العام" => Role.GeneralManager,
-                "المدير التنفيذي" => Role.ExecutiveManager,
-                "المستشار" => Role.Consultant,
-                "المحامي" => Role.Lawyer,
+                "مدير عام" => Role.GeneralManager,
+                "مدير تنفيذي" => Role.ExecutiveManager,
+                "مستشار" => Role.Consultant,
+                "محامي" => Role.Lawyer,
                 _ => throw new JsonException($"قيمة غير صالحة: {value}")
             };
         }
@@ -62,10 +62,10 @@ namespace LOMs.Contract.Commons.Enums
         {
             string stringValue = value switch
             {
-                Role.GeneralManager => "المدير العام",
-                Role.ExecutiveManager => "المدير التنفيذي",
-                Role.Consultant => "المستشار",
-                Role.Lawyer => "المحامي",
+                Role.GeneralManager => "مدير عام",
+                Role.ExecutiveManager => "مدير تنفيذي",
+                Role.Consultant => "مستشار",
+                Role.Lawyer => "محامي",
                 _ => throw new JsonException($"قيمة غير معروفة: {value}")
             };
 
