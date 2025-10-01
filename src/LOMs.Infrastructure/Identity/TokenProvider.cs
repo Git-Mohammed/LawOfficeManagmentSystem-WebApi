@@ -103,7 +103,8 @@ public class TokenProvider(
         return new TokenResponse(
             AccessToken: tokenHandler.WriteToken(securityToken),
             RefreshToken: refreshToken.Token,
-            ExpiresOn: expires
+            AccessTokenExpiresOn: expires,
+            RefreshTokenExpiresOn: refreshToken.ExpiresOnUtc
         );
     }
 

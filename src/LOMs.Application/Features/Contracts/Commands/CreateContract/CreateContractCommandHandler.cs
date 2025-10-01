@@ -23,15 +23,29 @@ public class CreateContractCommandHandler(
 
     public async Task<Result<Guid>> HandleAsync(CreateContractCommand command, CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Starting contract creation for CaseId: {CaseId}", command.CaseId);
+
+        if (command?.ContractFile is null)
+        {
+            _logger.LogWarning("Contract file is missing in the command for CaseId: {CaseId}", command?.CaseId);
+            return ContractErrors.MissingFilePath;
+        }
         var caseEntity = await _context.Cases
             .Include(c => c.CourtType)
             .FirstOrDefaultAsync(c => c.Id == command.CaseId, cancellationToken);
 
-        if (caseEntity?.CourtType is null)
-            return Error.NotFound("Case does not exist.");
+        if (caseEntity is null)
+        {
+            _logger.LogWarning("Case not found or CourtType is null for CaseId: {CaseId}", command.CaseId);
+            return ContractErrors.InvalidCaseId;
+        }
 
-        if (command?.ContractFile is null)
-            return Error.Validation("Contract file is required.");
+        if (caseEntity.CourtType is null)
+        {
+            _logger.LogWarning("CourtType is null for CaseId: {CaseId}", command.CaseId);
+            return ContractErrors.InvalidCourtType;
+        }
+
 
         var contract = await _contractFactory.CreateAsync(
             caseEntity.Id,
@@ -44,7 +58,11 @@ public class CreateContractCommandHandler(
             command.IsAssigned);
 
         if (contract.IsError)
+        {
+            _logger.LogWarning("Contract creation failed: {Errors}", string.Join(", ", contract.Errors.Select(e => e.Description)));
+       
             return contract.Errors;
+        }
 
         var contractEntity = contract.Value;
 
@@ -54,7 +72,11 @@ public class CreateContractCommandHandler(
             nameof(FileType.Contract));
 
         if (filepath.IsError)
-            return Error.Failure("Failed to save contract file.");
+        {
+            _logger.LogError("File saving failed: {Errors}", string.Join(", ", filepath.Errors.Select(e => e.Description)));
+            return ContractErrors.UnexpectedFailure; // or a specific FileSaveFailed error if you add one
+
+        }
 
         var contractFile = ContractFile.Create(
             contractEntity.Id,
@@ -64,13 +86,27 @@ public class CreateContractCommandHandler(
             command.ContractFile.File.Length,
             Path.GetExtension(command.ContractFile.FileName),
             command.ContractFile.ContentType);
-        if(contractFile.IsError)
-            return contractFile.Errors;
-        
-        _context.Contracts.Add(contractEntity);
-        _context.ContractFiles.Add(contractFile.Value);
 
-        await _context.SaveChangesAsync(cancellationToken);
+        if (contractFile.IsError)
+        {
+            await _fileService.DeleteFileAsync(filepath.Value);
+            _logger.LogWarning("ContractFile creation failed: {Errors}", string.Join(", ", contractFile.Errors.Select(e => e.Description)));
+            return contractFile.Errors;
+
+        }
+
+        try
+        {
+            _context.Contracts.Add(contractEntity);
+            _context.ContractFiles.Add(contractFile.Value);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while creating contract.");
+            await _fileService.DeleteFileAsync(filepath.Value);
+            return ContractErrors.UnexpectedFailure;
+        }
 
         return contractEntity.Id;
     }

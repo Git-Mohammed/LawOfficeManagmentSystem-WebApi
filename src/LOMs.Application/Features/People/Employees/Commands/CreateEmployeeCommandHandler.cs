@@ -64,7 +64,7 @@ public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityServic
             return person.Errors;
         
         // create employee
-        var employee = Employee.Create(Guid.NewGuid(),email,person.Value,command.Role);
+        var employee = Employee.Create(Guid.NewGuid(),email,person.Value, command.Role);
         
         if (employee.IsError)
             return employee.Errors;

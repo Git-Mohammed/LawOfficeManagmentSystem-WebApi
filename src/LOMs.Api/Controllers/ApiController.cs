@@ -28,7 +28,7 @@ public class ApiController : ControllerBase
             _ => StatusCodes.Status500InternalServerError,
         };
 
-        return Problem(statusCode: statusCode, title: error.Description);
+        return Problem(statusCode: statusCode, title: error.Description, detail: error.Code);
     }
 
     private ActionResult ValidationProblem(List<Error> errors)

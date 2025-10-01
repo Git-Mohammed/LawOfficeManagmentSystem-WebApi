@@ -1,15 +1,18 @@
 ﻿using LOMs.Domain.Cases;
+using LOMs.Domain.Cases.Attachments;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Cases.Judgments;
+using LOMs.Domain.Cases.POAs;
 using LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
 using LOMs.Domain.People.Phones;
 using LOMs.Domain.POAs;
+using LOMs.Domain.Templates;
 using Microsoft.EntityFrameworkCore;
 
 public interface IAppDbContext
@@ -24,14 +27,19 @@ public interface IAppDbContext
     public DbSet<Phone> Phones { get; }
 
     public DbSet<POA> POAs { get; }
+    public DbSet<POAFile> POAFiles { get; }
     public DbSet<CourtType> CourtTypes { get; }
     public DbSet<CourtSession> CourtSessions { get; }
     public DbSet<Employee> Employees { get; }
     public DbSet<RefreshToken> RefreshTokens { get; }
     public DbSet<Judgment> Judgments { get; }
     public DbSet<JudgmentFile> JudgmentFiles { get; }
+    public DbSet<Attachment> Attachments { get; }
+    public DbSet<Template> Templates { get; }
 
     public DbSet<ClientFileWithFileNumber> ClientFilesWithFileNumber { get; }
+    public DbSet<ContractsWithContractNumber> ContractsWithContractNumber { get; }
+
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

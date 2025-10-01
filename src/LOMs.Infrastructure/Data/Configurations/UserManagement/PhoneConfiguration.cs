@@ -1,6 +1,7 @@
 ﻿using LOMs.Domain.People;
 using LOMs.Domain.People.Phones;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -27,6 +28,6 @@ public class PhoneConfiguration : IEntityTypeConfiguration<Phone>
 
 
         builder.HasIndex(p => p.PersonId);
-        builder.ToTable("Phones",SchemaNames.User);
+        builder.ToTable("Phones", SchemaNames.GetName(DatabaseSchema.User));
     }
 }

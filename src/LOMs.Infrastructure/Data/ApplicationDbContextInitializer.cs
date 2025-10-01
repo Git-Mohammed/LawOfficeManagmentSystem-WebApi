@@ -145,10 +145,10 @@ public class ApplicationDbContextInitializer(
             NationalId = "0000000000",
             Nationality = "SA",
             BirthDate = new DateOnly(1988, 7, 15),
-            Phone = "0504567890",
+            Phone = "504567890",
             Address = "Abha, Saudi Arabia",
             Email = "arammtech@gmail.com",
-            Role = Role.GeneralManager.ToString(),
+            Role = Role.GeneralManager,
             Password = "Admin123@"
         },
         new
@@ -158,10 +158,10 @@ public class ApplicationDbContextInitializer(
             NationalId = "4567890123",
             Nationality = "SA",
             BirthDate = new DateOnly(1988, 7, 15),
-            Phone = "0504567890",
+            Phone = "504567890",
             Address = "Abha, Saudi Arabia",
             Email = "salem.dosari@example.com",
-            Role = Role.Lawyer.ToString(),
+            Role = Role.Lawyer,
             Password = "P@ssword123"
         },
         new
@@ -171,10 +171,10 @@ public class ApplicationDbContextInitializer(
             NationalId = "5678901234",
             Nationality = "SA",
             BirthDate = new DateOnly(1991, 3, 22),
-            Phone = "0505678901",
+            Phone = "505678901",
             Address = "Tabuk, Saudi Arabia",
             Email = "noura.fahad@example.com",
-            Role = Role.Consultant.ToString(),
+            Role = Role.Consultant,
             Password = "P@ssword123"
         }
     };
@@ -207,7 +207,7 @@ public class ApplicationDbContextInitializer(
                     continue;
                 }
 
-                await _userManager.AddToRoleAsync(identityUser, data.Role);
+                await _userManager.AddToRoleAsync(identityUser, data.Role.ToString());
                 employeeResult.Value.AssignUser(identityUser.Id);
 
                 _context.People.Add(personResult.Value);
@@ -224,7 +224,7 @@ public class ApplicationDbContextInitializer(
 
             var phone1 = new List<Phone>
     {
-        Phone.Create(Guid.NewGuid(), "0501234567", "966").Value
+        Phone.Create(Guid.NewGuid(), "501234567", "966").Value
     };
 
             var person1Result = Person.Create(
@@ -245,7 +245,7 @@ public class ApplicationDbContextInitializer(
 
             var phone2 = new List<Phone>
     {
-        Phone.Create(Guid.NewGuid(), "0502345678", "966").Value
+        Phone.Create(Guid.NewGuid(), "502345678", "966").Value
     };
 
             var person2Result = Person.Create(
@@ -266,8 +266,8 @@ public class ApplicationDbContextInitializer(
 
             var phone3 = new List<Phone>
     {
-        Phone.Create(Guid.NewGuid(), "0503456789", "966").Value,
-        Phone.Create(Guid.NewGuid(), "0503456789", "966").Value
+        Phone.Create(Guid.NewGuid(), "503456789", "966").Value,
+        Phone.Create(Guid.NewGuid(), "503456789", "966").Value
     };
 
             var person3Result = Person.Create(

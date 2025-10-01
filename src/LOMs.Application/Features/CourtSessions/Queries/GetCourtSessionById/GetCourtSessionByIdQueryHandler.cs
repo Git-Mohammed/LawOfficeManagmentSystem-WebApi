@@ -22,12 +22,10 @@ public sealed class GetCourtSessionByIdQueryHandler(
             .Select(cs => new CourtSessionDto
             {
                 CourtSessionId = cs.Id,
-                CaseId = cs.CaseId,
                 AssignedEmployeeId = cs.AssignedEmployeeId,
                 AssignedEmployeeName = cs.AssignedEmployee != null ? cs.AssignedEmployee.Person.FullName : "Unknown",
                 ScheduledAt = cs.ScheduledAt,
-                AssignedTasks = cs.AssignedTasks,
-                IsSessionDateExpired = cs.IsSessionDateExpired
+                AssignedTasks = cs.AssignedTasks
             })
             .FirstOrDefaultAsync(cancellationToken);
 

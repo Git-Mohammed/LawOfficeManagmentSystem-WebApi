@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -7,7 +8,7 @@ public class CourtSessionConfiguration : IEntityTypeConfiguration<CourtSession>
 {
     public void Configure(EntityTypeBuilder<CourtSession> builder)
     {
-        builder.ToTable("CourtSessions", SchemaNames.Case);
+        builder.ToTable("CourtSessions", SchemaNames.GetName(DatabaseSchema.Case));
 
         builder.HasKey(cs => cs.Id).IsClustered(false);
 

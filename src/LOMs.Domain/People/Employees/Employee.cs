@@ -29,28 +29,19 @@ public sealed class Employee : AuditableEntity
         IsActive = isActive;
     }
 
-    public static Result<Employee> Create(Guid id,string email, Person person, string role)
+    public static Result<Employee> Create(Guid id,string email, Person person, Role role)
     {
         if (id == Guid.Empty)
             return EmployeeErrors.IdRequired;
         if (person is null)
             return EmployeeErrors.PersonRequired;
-        Role roleEnum;
-        try
-        {
-            roleEnum = role.Trim().ToEnum<Role>(ignoreCase: true);
-        }
-        catch (Exception e)
-        {
-            return EmployeeErrors.RoleInvalid;
-        }
-
-        if (!Enum.IsDefined(roleEnum))
+      
+        if (!Enum.IsDefined(role))
             return EmployeeErrors.RoleInvalid;
         if (string.IsNullOrWhiteSpace(email))
             return EmployeeErrors.EmailRequired;
 
-        return new Employee(id,email,person, roleEnum,true);
+        return new Employee(id,email,person, role,true);
     }
 
     public Result<bool> AssignUser(string id)
