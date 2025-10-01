@@ -29,5 +29,20 @@ namespace LOMs.Domain.People.Phones
 
             return new Phone(id, number, code);
         }
+        
+        public Result<Updated> Update(string number, string code)
+        {
+            if (string.IsNullOrWhiteSpace(number) || !Regex.IsMatch(number, @"^\+?\d{7,15}$"))
+                return PersonErrors.InvalidPhoneNumber;
+
+            if (string.IsNullOrWhiteSpace(code))
+                return Error.Validation("Phone.Code", "Code cannot be empty.");
+
+            Number = number;
+            Code = code;
+            
+            return Result.Updated;
+        }
+
     }
 }

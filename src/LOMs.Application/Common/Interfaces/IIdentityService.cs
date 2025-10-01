@@ -23,4 +23,8 @@ public interface IIdentityService
 
     Task<Result<string>> CreateUserAsync(string userName, string email, string password, string roles);
     Task<Result<bool>> DeleteUserAsync(string userId);
+    
+    Task<Result<bool>> UpdateUserAsync(string userId, string userName, string email, string roles);
+    public Task<Result<Success>> UnblockUserAsync(string userId);
+    public Task<Result<Success>> BlockUserAsync(string userId);
 }
