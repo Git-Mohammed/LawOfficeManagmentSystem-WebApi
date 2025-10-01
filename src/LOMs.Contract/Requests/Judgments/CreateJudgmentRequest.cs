@@ -20,10 +20,6 @@ public class CreateJudgmentRequest
     [DataType(DataType.Date, ErrorMessage = "Invalid date format for IssuedOn.")]
     public DateOnly IssuedOn { get; set; }
 
-    [Required(ErrorMessage = "Expiry date is required.")]
-    [DataType(DataType.Date, ErrorMessage = "Invalid date format for ExpiresOn.")]
-    public DateOnly ExpiresOn { get; set; }
-    
     [Required(ErrorMessage = "File is required.")]
     public IFormFile File { get; set; } = null!;
 }

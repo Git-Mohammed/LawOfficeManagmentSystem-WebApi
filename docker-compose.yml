@@ -1,0 +1,57 @@
+services:
+  loms-api:
+    container_name: loms-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: final
+    ports:
+      - "9092:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=LOMs;User=sa;Password=YourStrong@Password1;TrustServerCertificate=True;MultipleActiveResultSets=True
+    depends_on:
+      - sqlserver
+      - seq
+    networks:
+      - loms-net
+    restart: on-failure
+    
+  sqlserver:
+    container_name: loms-sql
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Password1
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - loms-net
+    restart: always
+
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    volumes:
+      - ./containers/seq:/data
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=true
+    networks:
+      - loms-net
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    restart: unless-stopped
+
+ 
+
+volumes:
+  sqlserver-data: {}
+
+networks:
+  loms-net:
+    driver: bridge

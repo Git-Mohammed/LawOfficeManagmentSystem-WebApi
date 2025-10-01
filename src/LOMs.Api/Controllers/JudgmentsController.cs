@@ -119,7 +119,6 @@ public sealed class JudgmentsController(ICommandMediator command, IQueryMediator
             Type: (LOMs.Domain.Cases.Judgments.JudgmentType)request.Type,
             SubType: (LOMs.Domain.Cases.Judgments.JudgmentSubType)request.SubType,
             IssuedOn: request.IssuedOn,
-            ExpiresOn: request.ExpiresOn,
             FileCommand: fileCommand
         );
 
