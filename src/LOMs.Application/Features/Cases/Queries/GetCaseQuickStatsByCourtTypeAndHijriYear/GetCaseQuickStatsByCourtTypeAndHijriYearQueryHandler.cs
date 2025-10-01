@@ -59,7 +59,7 @@ public sealed class GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler
                 CaseNumber = caseEntity.CaseNumber ?? string.Empty,
                 FileNumber = file.FileNumber,
                 ClientName = caseEntity.ClientCases
-                    .Select(cc => cc.Client.Person.FullName)
+                    .Select(cc => cc.Client!.Person!.FullName)
                     .FirstOrDefault() ?? "Unknown",
                 Status = caseEntity.Status,
                 CreatedDate = caseEntity.CreatedAtUtc.ToString("yyyy-MM-dd"),
