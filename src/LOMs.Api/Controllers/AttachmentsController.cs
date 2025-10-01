@@ -8,12 +8,14 @@ using LOMs.Application.Features.Attachments.Queries.DownloadAttachmentFile;
 using LOMs.Application.Features.Attachments.Queries.GetAttachmentsByCaseId.Paged;
 using LOMs.Application.Features.Contracts.Commands.CreateContract;
 using LOMs.Contract.Requests.Attachments;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace LOMs.Api.Controllers;
 
 [Route("api/cases/{caseId:guid}/attachments")]
+[Authorize]
 public class AttachmentsController(ICommandMediator command, IQueryMediator query) : ApiController
 {
     private readonly ICommandMediator _command = command;

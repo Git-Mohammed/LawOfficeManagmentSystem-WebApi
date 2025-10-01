@@ -9,6 +9,7 @@ using LOMs.Application.Features.Judgments.Queries.DownloadJudgmentFile;
 using LOMs.Application.Features.Judgments.Queries.GetAll;
 using LOMs.Application.Features.Judgments.Queries.GetAllByCaseId;
 using LOMs.Contract.Requests.Judgments;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -16,6 +17,7 @@ namespace LOMs.Api.Controllers;
 
 [ApiController]
 [Route("api/cases/{caseId:guid}/judgments")]
+[Authorize]
 public sealed class JudgmentsController(ICommandMediator command, IQueryMediator query) : ApiController
 {
     private readonly ICommandMediator _command = command;

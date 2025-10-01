@@ -31,8 +31,8 @@ public abstract class DbFile : AuditableEntity
         if (string.IsNullOrWhiteSpace(filename))
             return DbFileErrors.FilenameRequired;
 
-        if (!Regex.IsMatch(filename, @"^[\w\-. ]+$"))
-            return DbFileErrors.InvalidFilename;
+        //if (!Regex.IsMatch(filename, @"^[\w\-. ]+$"))
+        //    return DbFileErrors.InvalidFilename;
 
         if (string.IsNullOrWhiteSpace(filepath))
             return DbFileErrors.FilepathRequired;
