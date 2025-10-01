@@ -10,5 +10,7 @@ public sealed class GetAllEmployeesDto
     public string CountryCode { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
     public string Role { get; init; } = string.Empty;
+    public string Address {get; init; } = string.Empty;
+
     public bool IsActive { get; init; }
 }
