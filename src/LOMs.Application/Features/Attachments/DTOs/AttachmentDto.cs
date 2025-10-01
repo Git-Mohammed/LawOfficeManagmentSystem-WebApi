@@ -1,4 +1,6 @@
-﻿namespace LOMs.Application.Features.Attachments.DTOs
+﻿using LOMs.Application.Features.Templates.DTOs;
+
+namespace LOMs.Application.Features.Attachments.DTOs
 {
     public class AttachmentDto
     {
@@ -6,6 +8,6 @@
         public string AttachmentName { get; set; } = string.Empty;
         public DateTimeOffset CreatedDate { get; set; }
         public string CreatedByEmployeeName { get; set; } = string.Empty;
-        public string FilePath { get; set; } = string.Empty;
+        public FileDto File { get; set; } 
     }
 }
