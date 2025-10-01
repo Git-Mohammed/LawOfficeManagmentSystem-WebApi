@@ -1,16 +1,38 @@
 ﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace LOMs.Domain.Cases.Enums
 {
     [JsonConverter(typeof(ContractTypeJsonConverter))]
+    [TypeConverter(typeof(ContractTypeConverter))]
     public enum ContractType
     {
-        FixedTerm = 1,   // محدد المدة
-        OpenEnded = 2    // غير محدد المدة
+        [Display(Name = "محدد بمدة")]
+        FixedTerm = 1,
+        [Display(Name = "غير محدد بمدة")]
+        OpenEnded = 2
     }
+    public class  ContractTypeConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+            => sourceType == typeof(string);
 
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+        {
+            var stringValue = value?.ToString()?.Trim();
+
+            return stringValue switch
+            {
+                "محدد بمدة" => ContractType.FixedTerm,
+                "غير محدد بمدة" => ContractType.OpenEnded,
+                _ => throw new ArgumentException($"قيمة الحالة غير معروفة: {stringValue}")
+            };
+        }
+    }
     public class ContractTypeJsonConverter : JsonConverter<ContractType>
     {
         public override ContractType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -18,8 +40,8 @@ namespace LOMs.Domain.Cases.Enums
             string? value = reader.GetString();
             return value switch
             {
-                "محدد المدة" => ContractType.FixedTerm,
-                "غير محدد المدة" => ContractType.OpenEnded,
+                "محدد بمدة" => ContractType.FixedTerm,
+                "غير محدد بمدة" => ContractType.OpenEnded,
                 _ => throw new JsonException($"قيمة غير صالحة: {value}")
             };
         }
@@ -28,8 +50,8 @@ namespace LOMs.Domain.Cases.Enums
         {
             string stringValue = value switch
             {
-                ContractType.FixedTerm => "محدد المدة",
-                ContractType.OpenEnded => "غير محدد المدة",
+                ContractType.FixedTerm => "محدد بمدة",
+                ContractType.OpenEnded => "غير محدد بمدة",
                 _ => throw new JsonException($"قيمة غير معروفة: {value}")
             };
 

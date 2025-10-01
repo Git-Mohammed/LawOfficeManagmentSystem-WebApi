@@ -1,5 +1,6 @@
 using LOMs.Domain.Identity;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 using LOMs.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -10,7 +11,7 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 {
     public void Configure(EntityTypeBuilder<RefreshToken> builder)
     {
-        builder.ToTable("RefreshTokens", SchemaNames.User);
+        builder.ToTable("RefreshTokens", SchemaNames.GetName(DatabaseSchema.User));
 
         builder.HasKey(rt => rt.Id).IsClustered(false);
 

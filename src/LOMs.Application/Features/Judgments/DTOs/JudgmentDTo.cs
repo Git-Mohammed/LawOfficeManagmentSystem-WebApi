@@ -1,11 +1,12 @@
-namespace LOMs.Application.Features.Judgments.DTOs;
-
-public class JudgmentDTo
+namespace LOMs.Application.Features.Judgments.Dtos
 {
-    public Guid Id { get; set; }
-    public string Number  { get; set; } 
-    public string  Type  { get; set; } 
-    public string SubType   { get; set; }
-    public DateOnly IssuedOn  { get; set; }
+    public class JudgmentDto
+    {
+        public Guid Id { get; set; }
+        public string Number  { get; set; } 
+        public string  Type  { get; set; } 
+        public string SubType   { get; set; }
+        public DateOnly IssuedOn  { get; set; }
     
+    }
 }

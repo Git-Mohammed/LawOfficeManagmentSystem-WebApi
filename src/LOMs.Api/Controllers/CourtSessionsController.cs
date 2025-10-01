@@ -37,7 +37,7 @@ public class CourtSessionsController(ICommandMediator command, IQueryMediator qu
     }
 
     [HttpGet("/api/court-sessions/future", Name = nameof(GetFutureCourtSessions))]
-    [ProducesResponseType(typeof(IReadOnlyList<CourtSessionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IReadOnlyList<GetFutureCourtSessionDto>), StatusCodes.Status200OK)]
     [EndpointSummary("Retrieves all court sessions scheduled in the future.")]
     [EndpointDescription("Returns a list of court sessions with scheduled dates after now.")]
     [EndpointName(nameof(GetFutureCourtSessions))]
@@ -49,7 +49,7 @@ public class CourtSessionsController(ICommandMediator command, IQueryMediator qu
     }
 
     [HttpGet("/api/court-sessions/future/paged", Name = nameof(GetPaginatedFutureCourtSessions))]
-    [ProducesResponseType(typeof(PaginatedList<CourtSessionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedList<GetFutureCourtSessionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [EndpointSummary("Retrieves paginated court sessions scheduled in the future.")]

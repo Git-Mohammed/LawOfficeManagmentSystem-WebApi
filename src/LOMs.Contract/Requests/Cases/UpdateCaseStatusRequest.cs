@@ -5,7 +5,7 @@ namespace LOMs.Contract.Requests.Cases;
 
 public class UpdateCaseStatusRequest
 {
-    [Required(ErrorMessage = "الحالة الجديدة مطلوبة.")]
-    [EnumDataType(typeof(CaseStatus), ErrorMessage = "قيمة الحالة غير صالحة.")]
+    [Required(ErrorMessage = "New status is required.")]
+    [EnumDataType(typeof(CaseStatus), ErrorMessage = "Status value is invalid.")]
     public CaseStatus Status { get; set; }
 }

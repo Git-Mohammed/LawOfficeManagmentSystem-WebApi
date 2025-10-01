@@ -1,5 +1,6 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Domain.Cases;
+using LOMs.Domain.Cases.Attachments;
 using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.CourtSessions;
@@ -12,8 +13,11 @@ using LOMs.Domain.People.Clients;
 using LOMs.Domain.People.Employees;
 using LOMs.Domain.People.Phones;
 using LOMs.Domain.POAs;
+using LOMs.Domain.Templates;
 using LOMs.Infrastructure.Constants;
 using LOMs.Infrastructure.Data.Views.ClientFiles;
+using LOMs.Infrastructure.Data.Views.Contracts;
+using LOMs.Infrastructure.Enums;
 using LOMs.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -40,6 +44,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<CourtSession> CourtSessions => Set<CourtSession>();
     public DbSet<Contract> Contracts => Set<Contract>();
     public DbSet<ContractFile> ContractFiles => Set<ContractFile>();
+    public DbSet<ContractsWithContractNumber> ContractsWithContractNumber => Set<ContractsWithContractNumber>();
+
     public DbSet<POA> POAs => Set<POA>();
     public DbSet<POAFile> POAFiles => Set<POAFile>();
     public DbSet<Phone> Phones => Set<Phone>();
@@ -47,6 +53,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     // Identity
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<Attachment> Attachments => Set<Attachment>();
+
+    public DbSet<Template> Templates => Set<Template> ();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -60,14 +70,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     private static void ConfigureViews(ModelBuilder builder)
     {
+        // Map the ClientFiles view (read-only, no primary key)
         builder.Entity<ClientFileWithFileNumber>()
-            .ToView(ClientFilesWithFileNumberView.Name, SchemaNames.Case)
+            .ToView(ClientFilesWithFileNumberView.Name, ClientFilesWithFileNumberView.Schema)
+            .HasNoKey();
+
+        // Map the Contracts view (read-only, no primary key)
+        builder.Entity<ContractsWithContractNumber>()
+            .ToView(ContractsWithContractNumberView.Name, ContractsWithContractNumberView.Schema)
             .HasNoKey();
     }
 
+
     private static void ConfigureIdentityTables(ModelBuilder builder)
     {
-        var schema = SchemaNames.Identity;
+        var schema = SchemaNames.GetName(DatabaseSchema.Identity);
 
         builder.Entity<ApplicationUser>().ToTable("Users", schema);
         builder.Entity<ApplicationRole>().ToTable("Roles", schema);

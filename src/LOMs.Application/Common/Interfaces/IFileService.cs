@@ -1,4 +1,5 @@
-﻿using LOMs.Domain.Common.Results;
+﻿using LOMs.Application.Features.Contracts.Dtos;
+using LOMs.Domain.Common.Results;
 
 namespace LOMs.Application.Common.Interfaces;
 
@@ -8,5 +9,9 @@ public interface IFileService
     Task<Stream?> GetFileAsync(string relativePath);
     Task DeleteFileAsync(string relativePath);
     Task<string> ReplaceFileAsync(Stream fileStream, string fileName, string oldRelativePath, string folder);
+    
+    Task<Result<FileDownloadResult>> DownloadFileAsync(string relativePath);
+    
+
     public bool ValidateFile(string fileName, string contentType, long fileSize);
 }

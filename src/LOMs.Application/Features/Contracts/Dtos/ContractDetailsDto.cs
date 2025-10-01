@@ -1,10 +1,21 @@
-﻿namespace LOMs.Application.Features.Contracts.Dtos;
+﻿using LOMs.Domain.Cases.Enums;
+
+namespace LOMs.Application.Features.Contracts.Dtos;
 
 public sealed class ContractDetailsDto
 {
-    public Guid ContractId { get; init; }
-    public string ContractNumber { get; set; } = default!;
+    public Guid ContractId { get; set; }
+    public Guid CaseId { get; set; }
+    public string ContractNumber { get; set; } = string.Empty;
+
+    public ContractType ContractType { get; set; }
+    public DateOnly? IssueDate { get; set; }
+    public DateOnly? ExpiryDate { get; set; }
     public decimal TotalAmount { get; set; }
-    public decimal InitialPayment { get; set; }
-    public bool IsAssigned { get; set; }
+
+    public string FilePath { get; set; } = string.Empty;
+    public Guid EmployeeIdCreatedBy { get; set; } 
+    public string EmployeeNameCreatedBy { get; set; } = string.Empty;
+    public DateTimeOffset CreatedDate { get; set; }
+
 }

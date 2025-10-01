@@ -7,10 +7,10 @@ namespace LOMs.Application.Features.Contracts.Queries.GetContractList.Paged;
 
   public sealed record GetPagedContractListQuery
 (
-    int pageIndex = 1,
+    int pageNumber = 1,
     int pageSize = 10)
     : IQuery<Result<PaginatedList<ContractListItemDto>>>
     {
-        public int PageIndex { get; } = pageIndex;
+        public int PageNumber { get; } = pageNumber;
         public int PageSize { get; } = pageSize;
     }

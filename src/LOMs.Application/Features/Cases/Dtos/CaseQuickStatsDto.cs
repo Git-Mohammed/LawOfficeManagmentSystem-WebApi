@@ -9,4 +9,8 @@ public sealed class CaseQuickStatsDto
     public string ClientName { get; set; } = default!;
     public string? CaseNumber { get; set; } = default!;
     public CaseStatus Status { get; set; } = default!;
+    public string CreatedDate { get; set; } = default!;
+    public string EmployeeNameCreatedBy { get; set; } =string.Empty;
+    public Guid EmployeeIdCreatedBy { get; set; } = Guid.Empty;
+    public string CaseSubject { get; set; } = string.Empty;
 }

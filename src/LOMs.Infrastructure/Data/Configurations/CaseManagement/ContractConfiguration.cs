@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.Cases.Contracts;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,22 +10,23 @@ namespace LOMs.Infrastructure.Data.Configurations.CaseManagment
     {
         public void Configure(EntityTypeBuilder<Contract> builder)
         {
+            // Primary key (non-clustered to allow flexibility for indexing strategies)
             builder.HasKey(c => c.Id).IsClustered(false);
 
-            builder.Property(c => c.ContractNumber)
-                .IsRequired();
-
+            // Store ContractType enum as int in the database
             builder.Property(c => c.Type)
-                .HasConversion<int>() // Store enum as int
-                .HasComment("نوع العقد: 1 = محدد، 2 = غير محدد")
+                .HasConversion<int>()
+                .HasComment("Contract type: 1 = Fixed Term, 2 = Open Term")
                 .IsRequired();
 
+            // TotalAmount is a calculated property, not mapped to the database
             builder.Ignore(c => c.TotalAmount);
 
+            // Optional issue and expiry dates (depending on contract type)
             builder.Property(c => c.IssuedOn);
-
             builder.Property(c => c.ExpiresOn);
 
+            // Monetary values with precision
             builder.Property(c => c.BaseAmount)
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
@@ -33,20 +35,24 @@ namespace LOMs.Infrastructure.Data.Configurations.CaseManagment
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
 
+            builder.Property(c => c.TaxAmount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
+            // Assignment flag
             builder.Property(c => c.IsAssigned)
                 .IsRequired();
 
-            builder.Property(cf => cf.HijriYear)
+            // Hijri year is required
+            builder.Property(c => c.HijriYear)
                 .IsRequired();
 
-            builder.Property(cf => cf.OrderNumber)
+            // Court type code is required
+            builder.Property(c => c.CourtTypeCode)
                 .IsRequired();
 
-            builder.Property(cf => cf.CourtTypeCode)
-                .IsRequired();
-
-            builder.ToTable("Contracts", SchemaNames.Finance);
-
+            // Map to Contracts table in Finance schema
+            builder.ToTable("Contracts", SchemaNames.GetName(DatabaseSchema.Finance));
         }
     }
 }

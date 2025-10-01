@@ -1,5 +1,6 @@
 ﻿using LOMs.Domain.People.Clients;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,7 +18,7 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
                .IsRequired()
                .OnDelete(DeleteBehavior.Restrict);
 
-        builder.ToTable("Clients", SchemaNames.User);
+        builder.ToTable("Clients", SchemaNames.GetName(DatabaseSchema.User));
 
     }
 }

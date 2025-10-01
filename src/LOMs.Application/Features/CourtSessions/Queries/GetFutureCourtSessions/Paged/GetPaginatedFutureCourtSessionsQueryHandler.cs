@@ -2,6 +2,7 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.CourtSessions.Dtos;
+using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -11,9 +12,9 @@ namespace LOMs.Application.Features.CourtSessions.Queries.GetFutureCourtSessions
 public sealed class GetPaginatedFutureCourtSessionsQueryHandler(
     IAppDbContext context,
     ILogger<GetPaginatedFutureCourtSessionsQueryHandler> logger)
-    : IQueryHandler<GetPaginatedFutureCourtSessionsQuery, Result<PaginatedList<CourtSessionDto>>>
+    : IQueryHandler<GetPaginatedFutureCourtSessionsQuery, Result<PaginatedList<GetFutureCourtSessionDto>>>
 {
-    public async Task<Result<PaginatedList<CourtSessionDto>>> HandleAsync(
+    public async Task<Result<PaginatedList<GetFutureCourtSessionDto>>> HandleAsync(
         GetPaginatedFutureCourtSessionsQuery query,
         CancellationToken ct)
     {
@@ -41,20 +42,34 @@ public sealed class GetPaginatedFutureCourtSessionsQueryHandler(
             .OrderBy(cs => cs.ScheduledAt)
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)
-            .Select(cs => new CourtSessionDto
+                      .Select(c => new
+                      {
+                          CourtSession = c,
+                          CreatedByEmpoyeeId = context.Employees
+                              .Where(e => e.UserId == c.CreatedBy)
+                              .Select(e => e.Id)
+                              .FirstOrDefault(),
+                          CreatedByEmployeeName = context.Employees
+                    .Where(e => e.UserId == c.CreatedBy)
+                    .Select(e => e.Person.FullName)
+                    .FirstOrDefault()
+                      })
+            .Select(cs => new GetFutureCourtSessionDto
             {
-                CourtSessionId = cs.Id,
-                CaseId = cs.CaseId,
-                ScheduledAt = cs.ScheduledAt,
-                AssignedTasks = cs.AssignedTasks,
-                AssignedEmployeeId = cs.AssignedEmployeeId,
-                AssignedEmployeeName = cs.AssignedEmployee!.Person.FullName ?? string.Empty,
+                CourtSessionId = cs.CourtSession.Id,
+                CaseId = cs.CourtSession.CaseId,    
+                ScheduledAt = cs.CourtSession.ScheduledAt,
+                CreatedByEmployeeId = cs.CreatedByEmpoyeeId,
+                CreatedByEmployeeName = cs.CreatedByEmployeeName ?? string.Empty,
+                AssignedEmployeeId = cs.CourtSession.AssignedEmployeeId,
+                AssignedEmployeeName = cs.CourtSession.AssignedEmployee!.Person.FullName ?? string.Empty,
+                CreatedDate = cs.CourtSession.CreatedAtUtc
             })
             .ToListAsync(ct);
 
-        var paginated = new PaginatedList<CourtSessionDto>(
+        var paginated = new PaginatedList<GetFutureCourtSessionDto>(
             items: sessions,
-            pageIndex: query.PageNumber,
+            pageNumber: query.PageNumber,
             pageSize: query.PageSize,
             totalItemsCount: totalCount
         );

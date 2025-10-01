@@ -2,29 +2,25 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Cases.Dtos;
-using LOMs.Domain.Cases;
-using LOMs.Domain.Cases.ClientFiles;
+using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LOMs.Application.Features.Cases.Queries.GetCaseQuickStatsByCourtTypeAndHijriYear;
 
-public class GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler
+public sealed class GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler
     : IQueryHandler<GetCaseQuickStatsByCourtTypeAndHijriYearQuery, Result<PaginatedList<CaseQuickStatsDto>>>
 {
     private readonly ILogger<GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler> _logger;
     private readonly IAppDbContext _context;
-    private readonly IMapper _mapper;
 
     public GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler(
         ILogger<GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler> logger,
-        IAppDbContext context,
-        IMapper mapper)
+        IAppDbContext context)
     {
         _logger = logger;
         _context = context;
-        _mapper = mapper;
     }
 
     public async Task<Result<PaginatedList<CaseQuickStatsDto>>> HandleAsync(
@@ -32,43 +28,63 @@ public class GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Fetching cases for CourtTypeId: {CourtTypeId}, HijriYear: {HijriYear}, Page: {PageNumber}, Size: {PageSize}",
+            "Fetching case stats for CourtTypeId: {CourtTypeId}, HijriYear: {HijriYear}, Page: {PageNumber}, Size: {PageSize}",
             query.CourtTypeId, query.HijriYear, query.PageNumber, query.PageSize);
 
-        var baseQuery = from caseEntity in _context.Cases.AsNoTracking()
-                        from clientCase in caseEntity.ClientCases
-                        join fileView in _context.ClientFilesWithFileNumber
-                            on clientCase.ClientFileId equals fileView.Id
-                        where caseEntity.CourtTypeId == query.CourtTypeId
-                              && fileView.HijriYear == query.HijriYear
-                        select new CaseQuickStatsDto
-                        {
-                            CaseId = caseEntity.Id,
-                            CaseNumber = caseEntity.CaseNumber,
-                            FileNumber = fileView.FileNumber,
-                            ClientName = clientCase.Client!.Person!.FullName,
-                            Status = caseEntity.Status
-                        };
+        // 1. Get CourtType
+        var courtType = await _context.CourtTypes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(ct => ct.Id == query.CourtTypeId, cancellationToken);
 
-        // Apply status filter if provided
+        if (courtType is null)
+        {
+            _logger.LogWarning("CourtType not found: {CourtTypeId}", query.CourtTypeId);
+            return CourtTypeErrors.NotFound;
+        }
+
+        // 2. Build base query with joins
+        var baseQuery =
+            from file in _context.ClientFilesWithFileNumber.AsNoTracking()
+            where file.CourtTypeCode == courtType.Code && file.HijriYear == query.HijriYear
+            join caseEntity in _context.Cases.AsNoTracking()
+                on file.Id equals caseEntity.ClientCases
+                    .Select(cc => cc.ClientFileId)
+                    .FirstOrDefault()
+            join emp in _context.Employees.AsNoTracking()
+                on caseEntity.CreatedBy equals emp.UserId into empGroup
+            from emp in empGroup.DefaultIfEmpty()
+            select new CaseQuickStatsDto
+            {
+                CaseId = caseEntity.Id,
+                CaseNumber = caseEntity.CaseNumber ?? string.Empty,
+                FileNumber = file.FileNumber,
+                ClientName = caseEntity.ClientCases
+                    .Select(cc => cc.Client!.Person!.FullName)
+                    .FirstOrDefault() ?? "Unknown",
+                Status = caseEntity.Status,
+                CreatedDate = caseEntity.CreatedAtUtc.ToString("yyyy-MM-dd"),
+                EmployeeNameCreatedBy = emp.Person.FullName ?? "Unknown",
+                EmployeeIdCreatedBy = emp.Id,
+                CaseSubject = caseEntity.CaseSubject ?? string.Empty
+            };
+
+        // 3. Apply status filter if provided
         if (query.Status is not null)
         {
             baseQuery = baseQuery.Where(x => x.Status == query.Status);
         }
 
-        // Step 2: Paginate efficiently
+        // 4. Pagination
         var totalCount = await baseQuery.CountAsync(cancellationToken);
 
         var items = await baseQuery
-            .OrderBy(dto => dto.FileNumber) // Optional: order by FileNumber
+            .OrderBy(x => x.FileNumber)
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)
             .ToListAsync(cancellationToken);
 
-        var paginatedResult = new PaginatedList<CaseQuickStatsDto>(
+        // 5. Return paginated result
+        return new PaginatedList<CaseQuickStatsDto>(
             items, query.PageNumber, query.PageSize, totalCount);
-
-        return paginatedResult;
     }
-
 }

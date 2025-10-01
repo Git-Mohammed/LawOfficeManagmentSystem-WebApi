@@ -1,9 +1,11 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LiteBus.Queries.Abstractions;
+using LOMs.Api.Common;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Contracts.Commands.CreateContract;
 using LOMs.Application.Features.Contracts.Dtos;
 using LOMs.Application.Features.Contracts.Queries;
+using LOMs.Application.Features.Contracts.Queries.DownloadContractFile;
 using LOMs.Application.Features.Contracts.Queries.GetContractById;
 using LOMs.Application.Features.Contracts.Queries.GetContractList;
 using LOMs.Application.Features.Contracts.Queries.GetContractList.Paged;
@@ -11,6 +13,7 @@ using LOMs.Application.Features.Contracts.Queries.GetContractsDetailsByCaseId.Pa
 using LOMs.Contract.Requests.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LOMs.Api.Controllers;
 
@@ -66,7 +69,7 @@ public class ContractsController(ICommandMediator command, IQueryMediator query)
     CancellationToken ct = default)
     {
         var result = await _query.QueryAsync(
-            new GetPagedContractsByCaseIdQuery(caseId, pageNumber, pageSize),
+            new GetPagedContractsDetailsByCaseIdQuery(caseId, pageNumber, pageSize),
             ct);
 
         return result.Match(Ok, Problem);
@@ -102,6 +105,28 @@ public class ContractsController(ICommandMediator command, IQueryMediator query)
     {
         var result = await _query.QueryAsync(new GetContractListQuery(), ct);
         return result.Match(Ok, Problem);
+    }
+
+    [EnableRateLimiting(RateLimitPolicies.FileConcurrency)]
+    [HttpGet("{contractId:guid}/files/download", Name = nameof(DownloadContractFile))]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [EndpointSummary("Downloads a specific file related to a contract.")]
+    [EndpointDescription("Downloads a file by relative path under a specific contract and case.")]
+    [EndpointName(nameof(DownloadContractFile))]
+    public async Task<IActionResult> DownloadContractFile(
+    Guid caseId,
+    Guid contractId,
+    [FromQuery] string relativePath,
+    CancellationToken ct)
+    {
+        var result = await _query.QueryAsync(new DownloadContractFileQuery(caseId, contractId, relativePath), ct);
+
+        return result.Match(
+            file => File(file.FileStream, file.ContentType, file.FileName),
+            Problem
+        );
     }
 
     [HttpPost(Name = nameof(CreateContract))]

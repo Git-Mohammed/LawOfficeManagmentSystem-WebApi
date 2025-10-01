@@ -4,11 +4,11 @@ namespace LOMs.Infrastructure.Constants;
 
 public static class SchemaNames
 {
-    public const string Identity = "Identity";
-    public const string User = "UserManagment";
-    public const string Case = "CaseManagment";
-    public const string Finance = "FinanceManagment";
-    public const string File = "FileManagment";
+    private const string Identity = "Identity";
+    private const string User = "UserManagment";
+    private const string Case = "CaseManagment";
+    private const string Finance = "FinanceManagment";
+    private const string File = "FileManagment";
 
     public static string GetName(DatabaseSchema schema) => schema switch
     {

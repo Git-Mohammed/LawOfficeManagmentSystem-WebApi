@@ -6,80 +6,112 @@ using System.Text;
 
 namespace LOMs.Infrastructure.Services;
 
+/// <summary>
+/// Provides secure password generation and hashing utilities.
+/// </summary>
 public class PasswordGenerator(IOptions<PasswordGeneratorOptions> passwordOptions) : IPasswordGenerator
 {
-    private readonly byte[] _key = Encoding.UTF8.GetBytes(passwordOptions.Value.Key.PadRight(32).Substring(0, 32));
-    private readonly string _tt = "Temp-"; // Temp Token
+    // Constants for PBKDF2
+    private const int SaltSize = 16;          // 128-bit salt
+    private const int KeySize = 32;           // 256-bit key
+    private const int Iterations = 100_000;   // PBKDF2 iterations
+    private static readonly HashAlgorithmName HashAlgorithm = HashAlgorithmName.SHA256;
 
+    // Prefix for temporary passwords (hashed before use)
+    private const string TempPrefix = "Temp-";
 
+    /// <summary>
+    /// Generates a temporary password with a hashed prefix and strong random part.
+    /// </summary>
     public string GenerateTempPassword()
     {
-        // Step 1: Generate an 8-character random password
-        string tempPassword = _tt + GenerateRandom(8); // e.g., "Temp-ab12cd34"
-
-        // Step 2: Encrypt the temporary password
-        return Encrypt(tempPassword);
+        string prefixHash = HashPrefix(TempPrefix);
+        string randomPart = GenerateComplexPassword(12);
+        return prefixHash + randomPart;
     }
 
-    public string? IsTempPassword(string password)
+    /// <summary>
+    /// Hashes a password using PBKDF2 with SHA256.
+    /// </summary>
+    public string HashPassword(string password)
     {
-        var decryptedPassword = Decrypt(password);
+        using var deriveBytes = new Rfc2898DeriveBytes(password, SaltSize, Iterations, HashAlgorithm);
+        var salt = deriveBytes.Salt;
+        var key = deriveBytes.GetBytes(KeySize);
 
-        return decryptedPassword.StartsWith(_tt) ? decryptedPassword : null;
+        var result = new byte[salt.Length + key.Length];
+        Buffer.BlockCopy(salt, 0, result, 0, salt.Length);
+        Buffer.BlockCopy(key, 0, result, salt.Length, key.Length);
+
+        return Convert.ToBase64String(result);
     }
 
-    public string EncryptPassword(string password)
+    /// <summary>
+    /// Verifies a password against a stored PBKDF2 hash.
+    /// </summary>
+    public bool VerifyPassword(string password, string storedHash)
     {
-        // Step 1: Prepend "Temp-" if not already present (for manual encryption calls)
-        string passwordToEncrypt = password.StartsWith("Temp-") ? password : "Temp-" + password;
+        var fullBytes = Convert.FromBase64String(storedHash);
+        var salt = new byte[SaltSize];
+        var key = new byte[KeySize];
 
-        // Step 2: Encrypt the password
-        return Encrypt(passwordToEncrypt);
+        Buffer.BlockCopy(fullBytes, 0, salt, 0, salt.Length);
+        Buffer.BlockCopy(fullBytes, salt.Length, key, 0, key.Length);
+
+        using var deriveBytes = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithm);
+        var newKey = deriveBytes.GetBytes(KeySize);
+
+        return key.SequenceEqual(newKey);
     }
 
-    public string DecryptPassword(string encryptedPassword)
+    /// <summary>
+    /// Generates a strong password that satisfies Identity rules:
+    /// - At least one uppercase, lowercase, digit, and symbol.
+    /// - Minimum length enforced.
+    /// </summary>
+    private string GenerateComplexPassword(int length)
     {
-        // Step 1: Decrypt the password
-        return Decrypt(encryptedPassword);
-    }
+        if (length < 8) length = 8; // enforce minimum
 
-    public string GenerateRandom(int num)
-    {
-        return Guid.NewGuid().ToString("N")[..num]; // e.g., "Temp-ab12cd34"
-    }
+        const string upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string lower = "abcdefghijklmnopqrstuvwxyz";
+        const string digits = "0123456789";
+        const string symbols = "!@#$%^&*()-_=+[]{}<>?";
 
-    private string Encrypt(string plainText)
-    {
-        using var aes = Aes.Create();
-        aes.Key = _key;
-        aes.GenerateIV();
-        var iv = aes.IV;
-
-        using var encryptor = aes.CreateEncryptor(aes.Key, iv);
-        using var ms = new MemoryStream();
-        ms.Write(iv, 0, iv.Length); // Prepend IV
-        using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-        using (var sw = new StreamWriter(cs))
+        string allChars = upper + lower + digits + symbols;
+        var chars = new List<char>
         {
-            sw.Write(plainText);
-        }
-        return Convert.ToBase64String(ms.ToArray());
+            GetRandomChar(upper),
+            GetRandomChar(lower),
+            GetRandomChar(digits),
+            GetRandomChar(symbols)
+        };
+
+        while (chars.Count < length)
+            chars.Add(GetRandomChar(allChars));
+
+        // Shuffle to avoid predictable order
+        return new string(chars.OrderBy(_ => Guid.NewGuid()).ToArray());
     }
 
-    private string Decrypt(string cipherText)
+    /// <summary>
+    /// Returns a random character from the given charset using a secure RNG.
+    /// </summary>
+    private static char GetRandomChar(string charset)
     {
-        var fullCipher = Convert.FromBase64String(cipherText);
-        using var aes = Aes.Create();
-        aes.Key = _key;
-        var iv = new byte[16];
-        Array.Copy(fullCipher, 0, iv, 0, iv.Length);
-        aes.IV = iv;
-
-        using var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-        using var ms = new MemoryStream(fullCipher, iv.Length, fullCipher.Length - iv.Length);
-        using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
-        using var sr = new StreamReader(cs);
-        return sr.ReadToEnd();
+        var data = RandomNumberGenerator.GetBytes(4);
+        int value = BitConverter.ToInt32(data, 0) & int.MaxValue;
+        return charset[value % charset.Length];
     }
 
+    /// <summary>
+    /// Hashes the prefix using SHA256 and returns a short fragment.
+    /// </summary>
+    private static string HashPrefix(string prefix)
+    {
+        using var sha256 = SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(prefix);
+        var hash = sha256.ComputeHash(bytes);
+        return Convert.ToBase64String(hash)[..6]; // short, non-obvious prefix
+    }
 }

@@ -54,4 +54,20 @@ public static class POAErrors
 
     public static readonly Error CreationFailed =
         Error.Unexpected("POA.CreationFailed", "An unexpected error occurred while creating the POA.");
+
+    public static readonly Error MissingFilePath =
+    Error.Conflict("POA.MissingFilePath", "File path is required to download the POA file.");
+
+    public static readonly Error InvalidId =
+        Error.NotFound("POA.InvalidId", "POA not found or does not belong to the specified case.");
+
+    public static readonly Error FileNotFound =
+        Error.NotFound("POA.FileNotFound", "The requested POA file could not be found.");
+
+    public static readonly Error FileAccessDenied =
+        Error.Forbidden("POA.FileAccessDenied", "You do not have permission to access this POA file.");
+
+    public static readonly Error FileDownloadFailed =
+        Error.Failure("POA.FileDownloadFailed", "An unexpected error occurred while downloading the POA file.");
+
 }

@@ -8,5 +8,6 @@ public enum FileType
     PowerOfAttorney,
     Judgment,
     Avatars,
-    POA
+    POA,
+    Template
 }

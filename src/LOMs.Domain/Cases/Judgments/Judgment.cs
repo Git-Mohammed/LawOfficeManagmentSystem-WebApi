@@ -12,7 +12,6 @@ public class Judgment : AuditableEntity
     public JudgmentType Type { get; private set; }
     public JudgmentSubType SubType { get; private set; }
     public DateOnly IssuedOn { get; private set; }
-    public DateOnly ExpiresOn { get; private set; }
 
     #region Navigation Properties
     public Case Case { get; private set; }
@@ -21,19 +20,17 @@ public class Judgment : AuditableEntity
     
     private Judgment(){}
 
-    private Judgment(Guid id ,Guid caseId, string number, JudgmentType type, JudgmentSubType subType, DateOnly issuedOn,
-        DateOnly expiresOn): base(id)
+    private Judgment(Guid id ,Guid caseId, string number, JudgmentType type, JudgmentSubType subType, DateOnly issuedOn): base(id)
     {
         Number = number;
         Type = type;
         IssuedOn = issuedOn;
-        ExpiresOn = expiresOn;
         CaseId = caseId;
         SubType = subType;
     }
 
-    public static Result<Judgment> Create(Guid caseId, string number, string type, string subType,
-        DateOnly issuedOn, DateOnly expiresOn)
+    public static Result<Judgment> Create(Guid caseId, string number, JudgmentType type, JudgmentSubType subType,
+        DateOnly issuedOn)
     {
         if (caseId == Guid.Empty)
             return JudgmentErrors.CaseIdRequired;
@@ -41,40 +38,17 @@ public class Judgment : AuditableEntity
         if (string.IsNullOrWhiteSpace(number))
             return JudgmentErrors.NumberRequired;
 
-        var judgmentType = type.ToEnumOrDefault(JudgmentType.None);
-        
-        if (judgmentType == JudgmentType.None)
+        if (type == JudgmentType.None || !Enum.IsDefined(type))
             return JudgmentErrors.TypeRequired;
-        var subtype = subType.ToEnumOrDefault(JudgmentSubType.None); 
-        if (subtype == JudgmentSubType.None)
+
+        if (subType == JudgmentSubType.None || !Enum.IsDefined(subType))
             return JudgmentErrors.SubTypeRequired;
 
         if (issuedOn == default)
             return JudgmentErrors.IssuedOnRequired;
 
-        if (expiresOn == default)
-            return JudgmentErrors.ExpiresOnRequired;
-
-        if (expiresOn <= issuedOn)
-            return JudgmentErrors.InvalidDateRange;
-
         
-        return new Judgment(Guid.NewGuid(), caseId, number, judgmentType, subtype, issuedOn, expiresOn);
+        return new Judgment(Guid.NewGuid(), caseId, number, type, subType, issuedOn);
     }
 }
 
-public enum JudgmentSubType
-{
-    None,
-    Vip,
-    Normal
-}
-
-public enum JudgmentType
-{
-    None,
-    JudgmentOne,
-    JudgmentTwo,
-    JudgmentThree,
-    JudgmentFour,
-}
