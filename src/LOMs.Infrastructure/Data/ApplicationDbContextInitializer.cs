@@ -141,42 +141,16 @@ public class ApplicationDbContextInitializer(
         new
         {
             PersonId = Guid.Parse("44444444-dd2d-4eee-ffff-444443244443"),
-            Name = "arammtech",
+            Name = "عبدالعزيز حسن",
             NationalId = "0000000000",
             Nationality = "SA",
-            BirthDate = new DateOnly(1988, 7, 15),
-            Phone = "504567890",
+            BirthDate = new DateOnly(2006, 3, 3),
+            Phone = "547020151",
             Address = "Abha, Saudi Arabia",
-            Email = "arammtech@gmail.com",
+            Email = "abdulaziz.ksa939@gmail.com",
             Role = Role.GeneralManager,
             Password = "Admin123@"
         },
-        new
-        {
-            PersonId = Guid.Parse("44444444-dddd-4eee-ffff-444444444444"),
-            Name = "Salem Al-Dosari",
-            NationalId = "4567890123",
-            Nationality = "SA",
-            BirthDate = new DateOnly(1988, 7, 15),
-            Phone = "504567890",
-            Address = "Abha, Saudi Arabia",
-            Email = "salem.dosari@example.com",
-            Role = Role.Lawyer,
-            Password = "P@ssword123"
-        },
-        new
-        {
-            PersonId = Guid.Parse("55555555-eeee-4fff-aaaa-555555555555"),
-            Name = "Noura Al-Fahad",
-            NationalId = "5678901234",
-            Nationality = "SA",
-            BirthDate = new DateOnly(1991, 3, 22),
-            Phone = "505678901",
-            Address = "Tabuk, Saudi Arabia",
-            Email = "noura.fahad@example.com",
-            Role = Role.Consultant,
-            Password = "P@ssword123"
-        }
     };
 
             foreach (var data in employeesData)
@@ -217,220 +191,220 @@ public class ApplicationDbContextInitializer(
             await _context.SaveChangesAsync();
         }
 
-        // --- Clients Seed Data ---
-        if (!_context.Clients.Any())
-        {
-            var clients = new List<Client>();
+    //    // --- Clients Seed Data ---
+    //    if (!_context.Clients.Any())
+    //    {
+    //        var clients = new List<Client>();
 
-            var phone1 = new List<Phone>
-    {
-        Phone.Create(Guid.NewGuid(), "501234567", "966").Value
-    };
+    //        var phone1 = new List<Phone>
+    //{
+    //    Phone.Create(Guid.NewGuid(), "501234567", "966").Value
+    //};
 
-            var person1Result = Person.Create(
-                Guid.Parse("11111111-aaaa-4bbb-cccc-111111111111"),
-                "Ahmed Al-Harbi",
-                "1234567890",
-                "SA",
-                new DateOnly(1990, 5, 12),
-                "Riyadh, Saudi Arabia",
-                phone1
-            );
-            if (person1Result.IsSuccess)
-            {
-                var client1 = Client.Create(Guid.Parse("aaaa1111-bbbb-4ccc-dddd-111111111111"), person1Result.Value).Value;
-                _context.People.Add(person1Result.Value);
-                _context.Clients.Add(client1);
-            }
+    //        var person1Result = Person.Create(
+    //            Guid.Parse("11111111-aaaa-4bbb-cccc-111111111111"),
+    //            "Ahmed Al-Harbi",
+    //            "1234567890",
+    //            "SA",
+    //            new DateOnly(1990, 5, 12),
+    //            "Riyadh, Saudi Arabia",
+    //            phone1
+    //        );
+    //        if (person1Result.IsSuccess)
+    //        {
+    //            var client1 = Client.Create(Guid.Parse("aaaa1111-bbbb-4ccc-dddd-111111111111"), person1Result.Value).Value;
+    //            _context.People.Add(person1Result.Value);
+    //            _context.Clients.Add(client1);
+    //        }
 
-            var phone2 = new List<Phone>
-    {
-        Phone.Create(Guid.NewGuid(), "502345678", "966").Value
-    };
+    //        var phone2 = new List<Phone>
+    //{
+    //    Phone.Create(Guid.NewGuid(), "502345678", "966").Value
+    //};
 
-            var person2Result = Person.Create(
-                Guid.Parse("22222222-bbbb-4ccc-dddd-222222222222"),
-                "Fatimah Al-Qahtani",
-                "2345678901",
-                "SA",
-                new DateOnly(1985, 11, 3),
-                "Jeddah, Saudi Arabia",
-                phone2
-            );
-            if (person2Result.IsSuccess)
-            {
-                var client2 = Client.Create(Guid.Parse("bbbb2222-cccc-4ddd-eeee-222222222222"), person2Result.Value).Value;
-                _context.People.Add(person2Result.Value);
-                _context.Clients.Add(client2);
-            }
+    //        var person2Result = Person.Create(
+    //            Guid.Parse("22222222-bbbb-4ccc-dddd-222222222222"),
+    //            "Fatimah Al-Qahtani",
+    //            "2345678901",
+    //            "SA",
+    //            new DateOnly(1985, 11, 3),
+    //            "Jeddah, Saudi Arabia",
+    //            phone2
+    //        );
+    //        if (person2Result.IsSuccess)
+    //        {
+    //            var client2 = Client.Create(Guid.Parse("bbbb2222-cccc-4ddd-eeee-222222222222"), person2Result.Value).Value;
+    //            _context.People.Add(person2Result.Value);
+    //            _context.Clients.Add(client2);
+    //        }
 
-            var phone3 = new List<Phone>
-    {
-        Phone.Create(Guid.NewGuid(), "503456789", "966").Value,
-        Phone.Create(Guid.NewGuid(), "503456789", "966").Value
-    };
+    //        var phone3 = new List<Phone>
+    //{
+    //    Phone.Create(Guid.NewGuid(), "503456789", "966").Value,
+    //    Phone.Create(Guid.NewGuid(), "503456789", "966").Value
+    //};
 
-            var person3Result = Person.Create(
-                Guid.Parse("33333333-cccc-4ddd-eeee-333333333333"),
-                "Mohammed Al-Shehri",
-                "3456789012",
-                "SA",
-                new DateOnly(1992, 2, 20),
-                "Dammam, Saudi Arabia",
-                phone3
-            );
-            if (person3Result.IsSuccess)
-            {
-                var client3 = Client.Create(Guid.NewGuid(), person3Result.Value).Value;
-                _context.People.Add(person3Result.Value);
-                _context.Clients.Add(client3);
-            }
+    //        var person3Result = Person.Create(
+    //            Guid.Parse("33333333-cccc-4ddd-eeee-333333333333"),
+    //            "Mohammed Al-Shehri",
+    //            "3456789012",
+    //            "SA",
+    //            new DateOnly(1992, 2, 20),
+    //            "Dammam, Saudi Arabia",
+    //            phone3
+    //        );
+    //        if (person3Result.IsSuccess)
+    //        {
+    //            var client3 = Client.Create(Guid.NewGuid(), person3Result.Value).Value;
+    //            _context.People.Add(person3Result.Value);
+    //            _context.Clients.Add(client3);
+    //        }
 
-            await _context.SaveChangesAsync();
-        }
-
-
-
-        // --- Cases Seed Data ---
-        if (!_context.Cases.Any())
-        {
-            _logger.LogInformation("Seeding initial cases...");
-
-            var seededCases = new List<Case>();
-            var seededClientCases = new List<ClientCase>();
-            var seededClientFiles = new List<ClientFile>();
-
-            // Ensure required court type and employee exist
-            var defaultCourtType = await _context.CourtTypes.FirstOrDefaultAsync();
-            var defaultEmployee = await _context.Employees.FirstOrDefaultAsync();
-
-            if (defaultCourtType is null || defaultEmployee is null)
-            {
-                _logger.LogWarning("Cannot seed cases: missing CourtType or Employee.");
-                return;
-            }
-
-            // Example Case Seeds
-            var caseSeeds = new[]
-            {
-        new
-        {
-            Id = Guid.Parse("30000000-cccc-dddd-eeee-000000000003"),
-            CaseNumber = "CASE-001",
-            Subject = "Property Dispute",
-            PartyRole = PartyRole.Plaintiff,
-            Requests = "Recover ownership of disputed land.",
-            ReviewDate = DateOnly.FromDateTime(DateTime.Today.AddDays(30)),
-            Status = CaseStatus.Processing,
-            Opinion = "Strong case with supporting documents.",
-            ClientId = Guid.Parse("aaaa1111-bbbb-4ccc-dddd-111111111111") // seeded client
-        },
-        new
-        {
-            Id = Guid.Parse("40000000-dddd-eeee-ffff-000000000004"),
-            CaseNumber = "CASE-002",
-            Subject = "Contract Breach",
-            PartyRole = PartyRole.Defendant,
-            Requests = "Dismiss breach claims and recover damages.",
-            ReviewDate = DateOnly.FromDateTime(DateTime.Today.AddDays(45)),
-            Status = CaseStatus.Draft,
-            Opinion = "Requires further evidence from client.",
-            ClientId = Guid.Parse("bbbb2222-cccc-4ddd-eeee-222222222222") // seeded client
-        },
-        new
-        {
-            Id = Guid.Parse("50000000-eeee-ffff-aaaa-000000000005"),
-            CaseNumber = "CASE-003",
-            Subject = "Inheritance Dispute",
-            PartyRole = PartyRole.Plaintiff,
-            Requests = "Claim rightful inheritance share.",
-            ReviewDate = DateOnly.FromDateTime(DateTime.Today.AddDays(60)),
-            Status = CaseStatus.Pending,
-            Opinion = "Awaiting notarized documents.",
-            ClientId = Guid.Parse("cccc3333-dddd-4eee-ffff-333333333333") // seeded client
-        }
-    };
-
-            foreach (var seed in caseSeeds)
-            {
-                // Create case entity
-                var caseResult = Case.Create(
-                    id: seed.Id,
-                    courtTypeId: defaultCourtType.Id,
-                    caseNumber: seed.CaseNumber,
-                    caseSubject: seed.Subject,
-                    partyRole: seed.PartyRole,
-                    clientRequests: seed.Requests,
-                    estimatedReviewDate: seed.ReviewDate,
-                    status: seed.Status,
-                    lawyerOpinion: seed.Opinion,
-                    assignedEmployeeId: defaultEmployee.Id
-                );
-
-                if (caseResult.IsError)
-                {
-                    _logger.LogWarning("Failed to seed case {CaseNumber}: {Errors}",
-                        seed.CaseNumber, string.Join(", ", caseResult.Errors));
-                    continue;
-                }
-
-                var caseEntity = caseResult.Value;
-                seededCases.Add(caseEntity);
-
-                // Ensure client exists
-                var client = await _context.Clients
-                    .Include(c => c.ClientFiles)
-                    .FirstOrDefaultAsync(c => c.Id == seed.ClientId);
-
-                if (client is null)
-                {
-                    _logger.LogWarning("Skipping case {CaseNumber}: missing client {ClientId}",
-                        seed.CaseNumber, seed.ClientId);
-                    continue;
-                }
-
-                // Create/Find client file for the case
-                var currentHijriYear = HijriDateConverter.GetFullHijriYear();
-                var clientFile = client.ClientFiles
-                    .FirstOrDefault(cf => cf.CourtTypeCode == defaultCourtType.Code && cf.HijriYear == currentHijriYear);
-
-                if (clientFile is null)
-                {
-                    var clientFileResult = ClientFile.Create(client.Id, defaultCourtType, (short)currentHijriYear);
-                    if (clientFileResult.IsError)
-                    {
-                        _logger.LogWarning("Failed to create client file for client {ClientId}", client.Id);
-                        continue;
-                    }
-                    clientFile = clientFileResult.Value;
-                    //seededClientFiles.Add(clientFile);
-                }
-
-                // Link client to case
-                var clientCase = new ClientCase(caseEntity.Id, client.Id, clientFile.Id);
-                seededClientCases.Add(clientCase);
-                     _context.Cases.Add(caseEntity);
-                     _context.ClientFiles.Add(clientFile);
-                     _context.ClientCases.Add(clientCase);
-                await _context.SaveChangesAsync();
+    //        await _context.SaveChangesAsync();
+    //    }
 
 
-                _logger.LogInformation("Seeded case {CaseNumber} with client {ClientId}", seed.CaseNumber, client.Id);
-            }
 
-            //// Save all at once
-            //if (seededCases.Any())
-            //    await _context.Cases.AddRangeAsync(seededCases);
+    //    // --- Cases Seed Data ---
+    //    if (!_context.Cases.Any())
+    //    {
+    //        _logger.LogInformation("Seeding initial cases...");
 
-            //if (seededClientFiles.Any())
-            //    await _context.ClientFiles.AddRangeAsync(seededClientFiles);
+    //        var seededCases = new List<Case>();
+    //        var seededClientCases = new List<ClientCase>();
+    //        var seededClientFiles = new List<ClientFile>();
 
-            //if (seededClientCases.Any())
-            //    await _context.ClientCases.AddRangeAsync(seededClientCases);
+    //        // Ensure required court type and employee exist
+    //        var defaultCourtType = await _context.CourtTypes.FirstOrDefaultAsync();
+    //        var defaultEmployee = await _context.Employees.FirstOrDefaultAsync();
 
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Seeding of cases completed successfully.");
-        }
+    //        if (defaultCourtType is null || defaultEmployee is null)
+    //        {
+    //            _logger.LogWarning("Cannot seed cases: missing CourtType or Employee.");
+    //            return;
+    //        }
+
+    //        // Example Case Seeds
+    //        var caseSeeds = new[]
+    //        {
+    //    new
+    //    {
+    //        Id = Guid.Parse("30000000-cccc-dddd-eeee-000000000003"),
+    //        CaseNumber = "CASE-001",
+    //        Subject = "Property Dispute",
+    //        PartyRole = PartyRole.Plaintiff,
+    //        Requests = "Recover ownership of disputed land.",
+    //        ReviewDate = DateOnly.FromDateTime(DateTime.Today.AddDays(30)),
+    //        Status = CaseStatus.Processing,
+    //        Opinion = "Strong case with supporting documents.",
+    //        ClientId = Guid.Parse("aaaa1111-bbbb-4ccc-dddd-111111111111") // seeded client
+    //    },
+    //    new
+    //    {
+    //        Id = Guid.Parse("40000000-dddd-eeee-ffff-000000000004"),
+    //        CaseNumber = "CASE-002",
+    //        Subject = "Contract Breach",
+    //        PartyRole = PartyRole.Defendant,
+    //        Requests = "Dismiss breach claims and recover damages.",
+    //        ReviewDate = DateOnly.FromDateTime(DateTime.Today.AddDays(45)),
+    //        Status = CaseStatus.Draft,
+    //        Opinion = "Requires further evidence from client.",
+    //        ClientId = Guid.Parse("bbbb2222-cccc-4ddd-eeee-222222222222") // seeded client
+    //    },
+    //    new
+    //    {
+    //        Id = Guid.Parse("50000000-eeee-ffff-aaaa-000000000005"),
+    //        CaseNumber = "CASE-003",
+    //        Subject = "Inheritance Dispute",
+    //        PartyRole = PartyRole.Plaintiff,
+    //        Requests = "Claim rightful inheritance share.",
+    //        ReviewDate = DateOnly.FromDateTime(DateTime.Today.AddDays(60)),
+    //        Status = CaseStatus.Pending,
+    //        Opinion = "Awaiting notarized documents.",
+    //        ClientId = Guid.Parse("cccc3333-dddd-4eee-ffff-333333333333") // seeded client
+    //    }
+    //};
+
+    //        foreach (var seed in caseSeeds)
+    //        {
+    //            // Create case entity
+    //            var caseResult = Case.Create(
+    //                id: seed.Id,
+    //                courtTypeId: defaultCourtType.Id,
+    //                caseNumber: seed.CaseNumber,
+    //                caseSubject: seed.Subject,
+    //                partyRole: seed.PartyRole,
+    //                clientRequests: seed.Requests,
+    //                estimatedReviewDate: seed.ReviewDate,
+    //                status: seed.Status,
+    //                lawyerOpinion: seed.Opinion,
+    //                assignedEmployeeId: defaultEmployee.Id
+    //            );
+
+    //            if (caseResult.IsError)
+    //            {
+    //                _logger.LogWarning("Failed to seed case {CaseNumber}: {Errors}",
+    //                    seed.CaseNumber, string.Join(", ", caseResult.Errors));
+    //                continue;
+    //            }
+
+    //            var caseEntity = caseResult.Value;
+    //            seededCases.Add(caseEntity);
+
+    //            // Ensure client exists
+    //            var client = await _context.Clients
+    //                .Include(c => c.ClientFiles)
+    //                .FirstOrDefaultAsync(c => c.Id == seed.ClientId);
+
+    //            if (client is null)
+    //            {
+    //                _logger.LogWarning("Skipping case {CaseNumber}: missing client {ClientId}",
+    //                    seed.CaseNumber, seed.ClientId);
+    //                continue;
+    //            }
+
+    //            // Create/Find client file for the case
+    //            var currentHijriYear = HijriDateConverter.GetFullHijriYear();
+    //            var clientFile = client.ClientFiles
+    //                .FirstOrDefault(cf => cf.CourtTypeCode == defaultCourtType.Code && cf.HijriYear == currentHijriYear);
+
+    //            if (clientFile is null)
+    //            {
+    //                var clientFileResult = ClientFile.Create(client.Id, defaultCourtType, (short)currentHijriYear);
+    //                if (clientFileResult.IsError)
+    //                {
+    //                    _logger.LogWarning("Failed to create client file for client {ClientId}", client.Id);
+    //                    continue;
+    //                }
+    //                clientFile = clientFileResult.Value;
+    //                //seededClientFiles.Add(clientFile);
+    //            }
+
+    //            // Link client to case
+    //            var clientCase = new ClientCase(caseEntity.Id, client.Id, clientFile.Id);
+    //            seededClientCases.Add(clientCase);
+    //                 _context.Cases.Add(caseEntity);
+    //                 _context.ClientFiles.Add(clientFile);
+    //                 _context.ClientCases.Add(clientCase);
+    //            await _context.SaveChangesAsync();
+
+
+    //            _logger.LogInformation("Seeded case {CaseNumber} with client {ClientId}", seed.CaseNumber, client.Id);
+    //        }
+
+    //        //// Save all at once
+    //        //if (seededCases.Any())
+    //        //    await _context.Cases.AddRangeAsync(seededCases);
+
+    //        //if (seededClientFiles.Any())
+    //        //    await _context.ClientFiles.AddRangeAsync(seededClientFiles);
+
+    //        //if (seededClientCases.Any())
+    //        //    await _context.ClientCases.AddRangeAsync(seededClientCases);
+
+    //        await _context.SaveChangesAsync();
+    //        _logger.LogInformation("Seeding of cases completed successfully.");
+    //    }
 
 
     }
