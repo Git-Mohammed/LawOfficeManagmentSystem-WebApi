@@ -60,12 +60,12 @@ public sealed class GetContractsDetailsByCaseIdHandler
                 IssueDate = contract.IssuedOn,
                 ExpiryDate = contract.ExpiresOn,
                 TotalAmount = contract.BaseAmount + contract.TaxAmount,
-                Files  = fileGroup.Select(f => new FileDto
+                File  = fileGroup.Select(f => new FileDto
                 {
                     FilePath = f.Filepath,
                     FileName = f.Filename,
                     FileType = f.ContentType
-                }).ToList(),
+                }).FirstOrDefault(),
                 EmployeeIdCreatedBy = emp.Id,
                 EmployeeNameCreatedBy = emp.Person.FullName ?? "Unknown",
                 CreatedDate = contract.CreatedAtUtc

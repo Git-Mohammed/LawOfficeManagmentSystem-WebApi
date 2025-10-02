@@ -15,7 +15,7 @@ public sealed class ContractDetailsDto
     public DateOnly? ExpiryDate { get; set; }
     public decimal TotalAmount { get; set; }
 
-    public  List<FileDto> Files { get; set; } 
+    public  FileDto File { get; set; } 
     public Guid EmployeeIdCreatedBy { get; set; } 
     public string EmployeeNameCreatedBy { get; set; } = string.Empty;
     public DateTimeOffset CreatedDate { get; set; }

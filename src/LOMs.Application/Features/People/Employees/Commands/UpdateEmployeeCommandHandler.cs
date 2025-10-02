@@ -33,17 +33,17 @@ public class UpdateEmployeeCommandHandler(IAppDbContext context, ILogger<UpdateE
                 if(isExistEmployeeHaveSameNationalId) return Error.Conflict("NationalIdUsedAnotherExistsEmployee","National id already exists");
             }
             
-            var updatePersonResult =  existingEmployee.Person.Update(command.FullName, command.NationalId, command.BirthDate, command.Address);
+            var updatePersonResult =  existingEmployee.Person.Update(command.FullName, command.NationalId, command.BirthDate, command.Address, command.CountryCode);
             if(updatePersonResult.IsError) return updatePersonResult.Errors;
            
             var phone = existingEmployee.Person.Phones.FirstOrDefault();
             if (phone is not null)
             {
-                var updatePhoneResult =  phone.Update(command.PhoneNumber, command.CountryCode);
+                var updatePhoneResult =  phone.Update(command.PhoneNumber, command.PhoneCode);
                 if(updatePhoneResult.IsError) return updatePhoneResult.Errors;
             }
 
-            var updateEmployeeResult = existingEmployee.Update(command.Email, command.Role);
+            var updateEmployeeResult = existingEmployee.Update(command.Email, command.Role.ToString());
             if(updateEmployeeResult.IsError) return updateEmployeeResult.Errors;
 
             var user = await _identityService.GetUserByIdAsync(existingEmployee.UserId);

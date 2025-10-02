@@ -1,3 +1,4 @@
+using LOMs.Application.Features.Templates.DTOs;
 using LOMs.Domain.Cases.Judgments;
 
 public sealed class JudgmentDetailsDto
@@ -12,5 +13,5 @@ public sealed class JudgmentDetailsDto
 
     public string EmployeeNameCreatedBy { get; set; } = string.Empty; 
     public DateTimeOffset CreatedDate { get; set; }
-    public string FilePath { get; set; } = string.Empty;
+    public FileDto File { get; set; } = default!;
 }

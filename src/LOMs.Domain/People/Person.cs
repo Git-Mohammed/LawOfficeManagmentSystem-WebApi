@@ -86,7 +86,7 @@ public sealed class Person : AuditableEntity
     }
 
 
-    public Result<Updated> Update(string fullName, string nationalId, DateOnly birthDate, string address)
+    public Result<Updated> Update(string fullName, string nationalId, DateOnly birthDate, string address, string countryCode)
     {
         if (string.IsNullOrWhiteSpace(fullName) || fullName.Length < 3)
             return PersonErrors.FullNameRequired;
@@ -101,6 +101,20 @@ public sealed class Person : AuditableEntity
 
         if (string.IsNullOrWhiteSpace(address) || address.Length < 10)
             return PersonErrors.InvalidAddress;
+
+        if (string.IsNullOrWhiteSpace(countryCode))
+            return PersonErrors.CountryCodeRequired;
+
+        countryCode = countryCode.Trim().ToUpper();
+        CountryCode code;
+        try
+        {
+            code = countryCode.ToEnum<CountryCode>();
+        }
+        catch
+        {
+            return PersonErrors.CountryCodeInvalid;
+        }
 
         FullName = fullName;
         NationalId = nationalId;

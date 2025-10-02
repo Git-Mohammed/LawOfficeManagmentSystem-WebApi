@@ -49,14 +49,14 @@ public sealed class GetPOAsByCaseIdQueryHandler
                 IssuingAuthority = poa.IssuingAuthority,
                 EmployeeNameCreatedBy = employee != null ? employee.Person!.FullName : "N/A",
                 CreatedDate = poa.CreatedAtUtc,
-                Files = poa.POAFiles
+                File = poa.POAFiles
             .OrderByDescending(f => f.CreatedAtUtc)
             .Select(f => new FileDto
             {
                 FilePath = f.Filepath,
                 FileName = f.Filename,
                 FileType = f.ContentType
-            }).ToList(),
+            }).FirstOrDefault(),
                 EmployeeIdCreatedBy = employee != null ? employee.Id : Guid.Empty
             };
 

@@ -74,7 +74,7 @@ public sealed class GetPagedContractsDetailsByCaseIdHandler
            IssueDate = contract.IssuedOn,
            ExpiryDate = contract.ExpiresOn,
            TotalAmount = contract.BaseAmount + contract.TaxAmount,
-           Files = fileGroup.Select(f => new FileDto { FilePath = f.Filepath, FileName = f.Filename, FileType = f.ContentType }).ToList(),
+           File = fileGroup.Select(f => new FileDto { FilePath = f.Filepath, FileName = f.Filename, FileType = f.ContentType }).FirstOrDefault(),
            EmployeeIdCreatedBy = emp.Id,
            EmployeeNameCreatedBy = emp.Person.FullName ?? "Unknown",
            CreatedDate = contract.CreatedAtUtc

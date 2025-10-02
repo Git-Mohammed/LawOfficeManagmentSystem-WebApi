@@ -6,6 +6,7 @@ using LOMs.Application.Features.People.Employees.Commands;
 using LOMs.Application.Features.People.Employees.Dtos;
 using LOMs.Application.Features.People.Employees.Queries;
 using LOMs.Application.Features.People.Employees.Queries.GetAvailableEmployeesByDate;
+using LOMs.Contract.Commons.Enums;
 using LOMs.Contract.Requests.Employees;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -123,7 +124,7 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
     
     
     
-    [HttpPut(Name = nameof(UpdateEmployee))]
+    [HttpPut("{id:guid}",Name = nameof(UpdateEmployee))]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -131,10 +132,10 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
     [EndpointSummary("Updates an existing employee.")]
     [EndpointDescription("Updates employee information based on the provided request.")]
     [EndpointName(nameof(UpdateEmployee))]
-    public async Task<IActionResult> UpdateEmployee([FromBody] UpdateEmployeeRequest request, CancellationToken ct)
+    public async Task<IActionResult> UpdateEmployee([FromBody] UpdateEmployeeRequest request, Guid id, CancellationToken ct)
     {
         var command = new UpdateEmployeeCommand(
-            request.Id,
+            id,
             request.FullName,
             request.NationalId,
             request.BirthDate,
@@ -142,7 +143,7 @@ public class EmployeesController(ICommandMediator command, IQueryMediator query)
             request.Phone.Code,
             request.Address,
             request.CountryCode,
-            request.Role,
+            (LOMs.Domain.Identity.Role)request.Role,
             request.Email,
             request.IsActive
         );

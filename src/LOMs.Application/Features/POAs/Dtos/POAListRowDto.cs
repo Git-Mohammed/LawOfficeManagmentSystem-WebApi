@@ -15,5 +15,5 @@ public sealed class POAListRowDto
     public Guid EmployeeIdCreatedBy { get; init; }
     public string EmployeeNameCreatedBy { get; init; } = default!;
     public DateTimeOffset CreatedDate { get; init; } = default!;
-    public List< FileDto> Files{ get; set; } = default!;
+    public FileDto File { get; set; } = default!;
 }

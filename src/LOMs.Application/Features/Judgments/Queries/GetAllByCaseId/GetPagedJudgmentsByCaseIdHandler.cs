@@ -2,7 +2,9 @@
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Judgments.Dtos;
+using LOMs.Application.Features.Templates.DTOs;
 using LOMs.Domain.Cases;
+using LOMs.Domain.Common.Files;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -64,7 +66,7 @@ namespace LOMs.Application.Features.Judgments.Queries.GetAllByCaseId
                     EmployeeIdCreatedBy = emp.Id,
                     EmployeeNameCreatedBy = emp.Person.FullName ?? "Unknown",
                     CreatedDate = j.CreatedAtUtc,
-                    FilePath = fileGroup.Select(f => f.Filepath).FirstOrDefault() ?? string.Empty
+                    File = fileGroup.Select(x => new FileDto {FileName = x.Filename, FilePath = x.Filepath, FileType = string.Empty}).FirstOrDefault()
                 })
                 .Skip((query.PageNumber - 1) * query.PageSize)
                 .Take(query.PageSize)
