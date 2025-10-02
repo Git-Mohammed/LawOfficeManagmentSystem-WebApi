@@ -43,7 +43,6 @@ builder.Host.UseSerilog((context, loggerConfig) =>
 
 var app = builder.Build();
 
-await app.InitialiseDatabaseAsync();
 
 if (app.Environment.IsDevelopment())
 {
@@ -67,4 +66,5 @@ app.UseCoreMiddlewares(builder.Configuration);
 app.MapControllers();
 app.MapStaticAssets();
 
+await app.InitialiseDatabaseAsync();
 app.Run();
