@@ -52,13 +52,7 @@ public sealed class GetPagedJudgmentsHandler
                 EmployeeIdCreatedBy = emp.Id,
                 EmployeeNameCreatedBy = emp.Person.FullName ?? "Unknown",
                 CreatedDate = j.CreatedAtUtc,
-                Files =fileGroup
-                .OrderByDescending(f => f.CreatedAtUtc)
-                .Select(
-                    f =>new FileDto { 
-                        FileName =f.Filename,
-                        FilePath=f.Filepath,
-                        FileType=f.ContentType}).ToList(),
+                FilePath = string.Empty
             })
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)

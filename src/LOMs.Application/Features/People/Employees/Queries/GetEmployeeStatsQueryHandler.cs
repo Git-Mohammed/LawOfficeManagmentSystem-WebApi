@@ -19,9 +19,9 @@ public class GetEmployeeStatsQueryHandler(IAppDbContext context, ILogger<GetEmpl
                 .GroupBy(e => 1) 
                 .Select(g => new EmployeeStatsDto
                 {
-                    TotalEmployees = g.Count(),
-                    ActiveEmployees = g.Count(e => true),
-                    InactiveEmployees = g.Count(e => !true)
+                    TotalEmployees = g.Count(x => x != null),
+                    ActiveEmployees = g.Count(e => e.IsActive),
+                    InactiveEmployees = g.Count(e => !e.IsActive)
                 })
                 .FirstOrDefaultAsync(cancellationToken);
 

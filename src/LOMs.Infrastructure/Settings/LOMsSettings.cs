@@ -18,7 +18,6 @@ public sealed class PaginationSettings
 
 public sealed class NotificationSettings
 {
-    public int CourtSessionReminderDaysAhead { get; set; } = 1;
     public bool EnableArabicFallback { get; set; } = true;
     public string DefaultSenderEmail { get; set; } = "noreply@loms.local";
 }

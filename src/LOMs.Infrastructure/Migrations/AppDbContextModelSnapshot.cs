@@ -488,6 +488,96 @@ namespace LOMs.Infrastructure.Migrations
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
                     b.ToTable("CourtTypes", "CaseManagment");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("b3a1f8b4-1e6a-4b3e-9c3d-0a9f8d8a1b11"),
+                            Code = (short)100,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "المحكمة العامة",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "العامة"
+                        },
+                        new
+                        {
+                            Id = new Guid("c4f2a9d7-2b7e-4a4f-8b2e-1c2d3e4f5a66"),
+                            Code = (short)200,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "المحكمة الجنائية",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "الجنائية"
+                        },
+                        new
+                        {
+                            Id = new Guid("d5e3b0c8-3c8f-4c5f-9d3f-2d3e4f5a6b77"),
+                            Code = (short)300,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "المحكمة العمالية",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "العمالية"
+                        },
+                        new
+                        {
+                            Id = new Guid("e6f4c1d9-4d9f-4d6f-ae4f-3e4f5a6b7c88"),
+                            Code = (short)400,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "محكمة الأحوال الشخصية",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "الأحوال الشخصية"
+                        },
+                        new
+                        {
+                            Id = new Guid("f7a5d2ea-5eaf-4e7f-bf5f-4f5a6b7c8d99"),
+                            Code = (short)500,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "المحكمة التجارية",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "التجارية"
+                        },
+                        new
+                        {
+                            Id = new Guid("a8b6e3fb-6fb0-4f8f-cf6f-5a6b7c8d9e10"),
+                            Code = (short)600,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "المحكمة الإدارية",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "الإدارية"
+                        },
+                        new
+                        {
+                            Id = new Guid("1816e3fb-6fb0-428f-cf6f-5a7b7c829e10"),
+                            Code = (short)700,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "اللجان شبه القضائية",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "اللجان شبه القضائية"
+                        },
+                        new
+                        {
+                            Id = new Guid("b9c7f40c-70c1-4f9f-df7f-6b7c8d9e0f21"),
+                            Code = (short)32000,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "أخرى",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "أخرى"
+                        });
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.Judgments.Judgment", b =>

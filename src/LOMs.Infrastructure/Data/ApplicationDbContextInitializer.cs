@@ -1,80 +1,80 @@
-
-using LOMs.Application.Features.ClientFiles;
-using LOMs.Application.Utilities;
-using LOMs.Domain.Cases;
-using LOMs.Domain.Cases.ClientFiles;
-using LOMs.Domain.Cases.CourtTypes;
-using LOMs.Domain.Cases.Enums;
-using LOMs.Domain.Identity;
-using LOMs.Domain.People;
-using LOMs.Domain.People.Clients;
-using LOMs.Domain.People.Employees;
-using LOMs.Domain.People.Phones;
-using LOMs.Infrastructure.Constants;
-using LOMs.Infrastructure.Data.Views;
 using LOMs.Infrastructure.Data.Views.Registry;
-using LOMs.Infrastructure.Enums;
 using LOMs.Infrastructure.Identity;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using LOMs.Infrastructure.Data.Seeds;
+using LOMs.Infrastructure.Constants;
+
 namespace LOMs.Infrastructure.Data;
 
-public class ApplicationDbContextInitializer(
-    ILogger<ApplicationDbContextInitializer> logger,
-    AppDbContext context,
-    RoleManager<ApplicationRole> roleManager,
-    UserManager<ApplicationUser> userManager
-
-    )
+public class ApplicationDbContextInitializer
 {
-    private readonly ILogger<ApplicationDbContextInitializer> _logger = logger;
-    private readonly AppDbContext _context = context;
-    private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly ILogger<ApplicationDbContextInitializer> _logger;
+    private readonly AppDbContext                         _context;
+    private readonly RoleManager<ApplicationRole>         _roleManager;
+    private readonly UserManager<ApplicationUser>         _userManager;
 
+    public ApplicationDbContextInitializer(
+        ILogger<ApplicationDbContextInitializer> logger,
+        AppDbContext context,
+        RoleManager<ApplicationRole> roleManager,
+        UserManager<ApplicationUser> userManager)
+    {
+        _logger     = logger;
+        _context    = context;
+        _roleManager = roleManager;
+        _userManager = userManager;
+    }
+
+    /// <summary>
+    /// Applies all pending EF Core migrations.
+    /// </summary>
     public async Task InitialiseAsync()
     {
         try
         {
-            if ( (await _context.Database.GetPendingMigrationsAsync()).Any())
-            {
-               await _context.Database.MigrateAsync();
-            }
-         
+            _logger.LogInformation("Applying pending migrations (if any)...");
+            await _context.Database.MigrateAsync();
+            _logger.LogInformation("Migrations applied successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while initialising the database.");
+            _logger.LogError(ex, "An error occurred while applying migrations.");
             throw;
         }
     }
 
-
+    /// <summary>
+    /// Creates or updates all registered SQL views.
+    /// </summary>
     public async Task EnsureViewsCreatedAsync(CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Ensuring SQL views are created or updated...");
 
         foreach (var view in SqlViewRegistry.All)
         {
-            var schemaName = SchemaNames.GetName(view.Schema);
+            var schemaName   = SchemaNames.GetName(view.Schema);
             var fullViewName = $"{schemaName}.[{view.ViewName}]";
 
             try
             {
                 await _context.Database.ExecuteSqlRawAsync(view.Sql, cancellationToken);
-                _logger.LogInformation("View {ViewName} created or updated successfully.", fullViewName);
+                _logger.LogInformation("View {ViewName} created/updated.", fullViewName);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to create or update SQL view {ViewName}.", fullViewName);
+                _logger.LogError(ex, "Failed to create/update view {ViewName}.", fullViewName);
                 throw;
             }
         }
     }
+
+    /// <summary>
+    /// Runs idempotent seed logic for roles, lookup data and default user.
+    /// </summary>
     public async Task SeedAsync()
     {
         try
@@ -90,217 +90,57 @@ public class ApplicationDbContextInitializer(
 
     private async Task TrySeedAsync()
     {
-        if (!_context.CourtTypes.Any())
+        // Roles
+        foreach (var roleName in SeedData.Roles.Names)
         {
-            var courtTypes = new[]
+            if (!await _roleManager.RoleExistsAsync(roleName))
             {
-                CourtType.Create(Guid.Parse("b3a1f8b4-1e6a-4b3e-9c3d-0a9f8d8a1b11"), "العامة", 100, "المحكمة العامة").Value,
-                CourtType.Create(Guid.Parse("c4f2a9d7-2b7e-4a4f-8b2e-1c2d3e4f5a66"), "الجنائية", 200, "المحكمة الجنائية").Value,
-                CourtType.Create(Guid.Parse("d5e3b0c8-3c8f-4c5f-9d3f-2d3e4f5a6b77"), "العمالية", 300, "المحكمة العمالية").Value,
-                CourtType.Create(Guid.Parse("e6f4c1d9-4d9f-4d6f-ae4f-3e4f5a6b7c88"), "الأحوال الشخصية", 400, "محكمة الأحوال الشخصية").Value,
-                CourtType.Create(Guid.Parse("f7a5d2ea-5eaf-4e7f-bf5f-4f5a6b7c8d99"), "التجارية", 500, "المحكمة التجارية").Value,
-                CourtType.Create(Guid.Parse("a8b6e3fb-6fb0-4f8f-cf6f-5a6b7c8d9e10"), "الإدارية", 600, "المحكمة الإدارية ").Value,
-                CourtType.Create(Guid.Parse("1816e3fb-6fb0-428f-cf6f-5a7b7c829e10"), "اللجان شبه القضائية", 700, "اللجان شبه القضائية ").Value,
+                await _roleManager.CreateAsync(new ApplicationRole { Name = roleName });
+                _logger.LogInformation("Created role {Role}.", roleName);
+            }
+        }
 
-                CourtType.Create(Guid.Parse("b9c7f40c-70c1-4f9f-df7f-6b7c8d9e0f21"), "أخرى", 32000, "أخرى").Value
+        // Default admin user
+        var admin = await _userManager.FindByNameAsync(SeedData.DefaultUser.NationalId);
+        if (admin == null)
+        {
+            admin = new ApplicationUser
+            {
+                UserName       = SeedData.DefaultUser.NationalId,
+                Email          = SeedData.DefaultUser.Email,
+                EmailConfirmed = true
             };
 
-
-            _context.CourtTypes.AddRange(courtTypes);
-            await _context.SaveChangesAsync();
-        }
-        if (_roleManager != null)
-        {
-            var roles = new[]
+            var result = await _userManager.CreateAsync(admin, SeedData.DefaultUser.Password);
+            if (result.Succeeded)
             {
-                Role.GeneralManager.ToString(),
-                Role.ExecutiveManager.ToString(),
-                Role.Consultant.ToString(),
-                Role.Lawyer.ToString()
-           };
-
-            foreach (var roleName in roles)
+                await _userManager.AddToRoleAsync(admin, SeedData.DefaultUser.TheRole.ToString());
+                _logger.LogInformation("Created default user {User}.", admin.UserName);
+            }
+            else
             {
-                if (!await _roleManager.RoleExistsAsync(roleName))
-                {
-                    var result = await _roleManager.CreateAsync(new ApplicationRole { Name = roleName });
-
-                    if (!result.Succeeded)
-                    {
-                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                        _logger.LogWarning($"Failed to create role '{roleName}': {errors}");
-                    }
-                }
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                _logger.LogWarning("Failed creating default user: {Errors}", errors);
             }
         }
-        // --- Employees and Identity Users Seed Data ---
-        if (!_context.Employees.Any())
-        {
-            var employeesData = new[]
-            {
-        new
-        {
-            PersonId = Guid.Parse("44444444-dd2d-4eee-ffff-444443244443"),
-            Name = "arammtech",
-            NationalId = "0000000000",
-            Nationality = "SA",
-            BirthDate = new DateOnly(1988, 7, 15),
-            Phone = "504567890",
-            Address = "Abha, Saudi Arabia",
-            Email = "arammtech@gmail.com",
-            Role = Role.GeneralManager,
-            Password = "Admin123@"
-        },
-        new
-        {
-            PersonId = Guid.Parse("44444444-dddd-4eee-ffff-444444444444"),
-            Name = "Salem Al-Dosari",
-            NationalId = "4567890123",
-            Nationality = "SA",
-            BirthDate = new DateOnly(1988, 7, 15),
-            Phone = "504567890",
-            Address = "Abha, Saudi Arabia",
-            Email = "salem.dosari@example.com",
-            Role = Role.Lawyer,
-            Password = "P@ssword123"
-        },
-        new
-        {
-            PersonId = Guid.Parse("55555555-eeee-4fff-aaaa-555555555555"),
-            Name = "Noura Al-Fahad",
-            NationalId = "5678901234",
-            Nationality = "SA",
-            BirthDate = new DateOnly(1991, 3, 22),
-            Phone = "505678901",
-            Address = "Tabuk, Saudi Arabia",
-            Email = "noura.fahad@example.com",
-            Role = Role.Consultant,
-            Password = "P@ssword123"
-        }
-    };
 
-            foreach (var data in employeesData)
-            {
-                var phones = new List<Phone>
-        {
-            Phone.Create(Guid.NewGuid(), data.Phone, "966").Value
-        };
 
-                var personResult = Person.Create(data.PersonId, data.Name, data.NationalId, data.Nationality, data.BirthDate, data.Address, phones);
-                if (personResult.IsError) continue;
-
-                var employeeResult = Employee.Create(Guid.NewGuid(), data.Email, personResult.Value, data.Role);
-                if (employeeResult.IsError) continue;
-
-                var identityUser = new ApplicationUser
-                {
-                    UserName = data.NationalId,
-                    Email = data.Email,
-                    EmailConfirmed = true
-                };
-
-                var result = await _userManager.CreateAsync(identityUser, data.Password);
-                if (!result.Succeeded)
-                {
-                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                    _logger.LogWarning($"Failed to create user '{data.NationalId}': {errors}");
-                    continue;
-                }
-
-                await _userManager.AddToRoleAsync(identityUser, data.Role.ToString());
-                employeeResult.Value.AssignUser(identityUser.Id);
-
-                _context.People.Add(personResult.Value);
-                _context.Employees.Add(employeeResult.Value);
-            }
-
-            await _context.SaveChangesAsync();
-        }
-
-        // --- Clients Seed Data ---
-        if (!_context.Clients.Any())
-        {
-            var clients = new List<Client>();
-
-            var phone1 = new List<Phone>
-    {
-        Phone.Create(Guid.NewGuid(), "501234567", "966").Value
-    };
-
-            var person1Result = Person.Create(
-                Guid.Parse("11111111-aaaa-4bbb-cccc-111111111111"),
-                "Ahmed Al-Harbi",
-                "1234567890",
-                "SA",
-                new DateOnly(1990, 5, 12),
-                "Riyadh, Saudi Arabia",
-                phone1
-            );
-            if (person1Result.IsSuccess)
-            {
-                var client1 = Client.Create(Guid.Parse("aaaa1111-bbbb-4ccc-dddd-111111111111"), person1Result.Value).Value;
-                _context.People.Add(person1Result.Value);
-                _context.Clients.Add(client1);
-            }
-
-            var phone2 = new List<Phone>
-    {
-        Phone.Create(Guid.NewGuid(), "502345678", "966").Value
-    };
-
-            var person2Result = Person.Create(
-                Guid.Parse("22222222-bbbb-4ccc-dddd-222222222222"),
-                "Fatimah Al-Qahtani",
-                "2345678901",
-                "SA",
-                new DateOnly(1985, 11, 3),
-                "Jeddah, Saudi Arabia",
-                phone2
-            );
-            if (person2Result.IsSuccess)
-            {
-                var client2 = Client.Create(Guid.Parse("bbbb2222-cccc-4ddd-eeee-222222222222"), person2Result.Value).Value;
-                _context.People.Add(person2Result.Value);
-                _context.Clients.Add(client2);
-            }
-
-            var phone3 = new List<Phone>
-    {
-        Phone.Create(Guid.NewGuid(), "503456789", "966").Value,
-        Phone.Create(Guid.NewGuid(), "503456789", "966").Value
-    };
-
-            var person3Result = Person.Create(
-                Guid.Parse("33333333-cccc-4ddd-eeee-333333333333"),
-                "Mohammed Al-Shehri",
-                "3456789012",
-                "SA",
-                new DateOnly(1992, 2, 20),
-                "Dammam, Saudi Arabia",
-                phone3
-            );
-            if (person3Result.IsSuccess)
-            {
-                var client3 = Client.Create(Guid.NewGuid(), person3Result.Value).Value;
-                _context.People.Add(person3Result.Value);
-                _context.Clients.Add(client3);
-            }
-
-            await _context.SaveChangesAsync();
-        }
+        // You can add more lookup or client seed sections here...
     }
 }
 
+/// <summary>
+/// Extension to wire up initialization on application startup.
+/// </summary>
 public static class InitialiserExtensions
 {
     public static async Task InitialiseDatabaseAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
+        var initializer = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
 
-        var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
-
-        await initialiser.InitialiseAsync();
-        await initialiser.EnsureViewsCreatedAsync(); // Create views before seeding
-        await initialiser.SeedAsync();               // Seed data that might use views
+        await initializer.InitialiseAsync();            // apply migrations
+        await initializer.EnsureViewsCreatedAsync();     // create/update views
+        await initializer.SeedAsync();                  // seed roles, user, lookups
     }
 }
