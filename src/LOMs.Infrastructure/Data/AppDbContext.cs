@@ -15,6 +15,7 @@ using LOMs.Domain.People.Phones;
 using LOMs.Domain.POAs;
 using LOMs.Domain.Templates;
 using LOMs.Infrastructure.Constants;
+using LOMs.Infrastructure.Data.Seeds;
 using LOMs.Infrastructure.Data.Views.ClientFiles;
 using LOMs.Infrastructure.Data.Views.Contracts;
 using LOMs.Infrastructure.Enums;
@@ -66,6 +67,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
         ConfigureViews(builder);
         ConfigureIdentityTables(builder);
+                    // Seed immutable CourtType lookups
+        builder.Entity<CourtType>()
+                .HasData(SeedData.CourtTypes.Data);
     }
 
     private static void ConfigureViews(ModelBuilder builder)

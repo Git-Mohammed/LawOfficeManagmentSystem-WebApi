@@ -1,80 +1,80 @@
-
-using LOMs.Application.Features.ClientFiles;
-using LOMs.Application.Utilities;
-using LOMs.Domain.Cases;
-using LOMs.Domain.Cases.ClientFiles;
-using LOMs.Domain.Cases.CourtTypes;
-using LOMs.Domain.Cases.Enums;
-using LOMs.Domain.Identity;
-using LOMs.Domain.People;
-using LOMs.Domain.People.Clients;
-using LOMs.Domain.People.Employees;
-using LOMs.Domain.People.Phones;
-using LOMs.Infrastructure.Constants;
-using LOMs.Infrastructure.Data.Views;
 using LOMs.Infrastructure.Data.Views.Registry;
-using LOMs.Infrastructure.Enums;
 using LOMs.Infrastructure.Identity;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using LOMs.Infrastructure.Data.Seeds;
+using LOMs.Infrastructure.Constants;
+
 namespace LOMs.Infrastructure.Data;
 
-public class ApplicationDbContextInitializer(
-    ILogger<ApplicationDbContextInitializer> logger,
-    AppDbContext context,
-    RoleManager<ApplicationRole> roleManager,
-    UserManager<ApplicationUser> userManager
-
-    )
+public class ApplicationDbContextInitializer
 {
-    private readonly ILogger<ApplicationDbContextInitializer> _logger = logger;
-    private readonly AppDbContext _context = context;
-    private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly ILogger<ApplicationDbContextInitializer> _logger;
+    private readonly AppDbContext                         _context;
+    private readonly RoleManager<ApplicationRole>         _roleManager;
+    private readonly UserManager<ApplicationUser>         _userManager;
 
+    public ApplicationDbContextInitializer(
+        ILogger<ApplicationDbContextInitializer> logger,
+        AppDbContext context,
+        RoleManager<ApplicationRole> roleManager,
+        UserManager<ApplicationUser> userManager)
+    {
+        _logger     = logger;
+        _context    = context;
+        _roleManager = roleManager;
+        _userManager = userManager;
+    }
+
+    /// <summary>
+    /// Applies all pending EF Core migrations.
+    /// </summary>
     public async Task InitialiseAsync()
     {
         try
         {
-            if ( (await _context.Database.GetPendingMigrationsAsync()).Any())
-            {
-               await _context.Database.MigrateAsync();
-            }
-         
+            _logger.LogInformation("Applying pending migrations (if any)...");
+            await _context.Database.MigrateAsync();
+            _logger.LogInformation("Migrations applied successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while initialising the database.");
+            _logger.LogError(ex, "An error occurred while applying migrations.");
             throw;
         }
     }
 
-
+    /// <summary>
+    /// Creates or updates all registered SQL views.
+    /// </summary>
     public async Task EnsureViewsCreatedAsync(CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Ensuring SQL views are created or updated...");
 
         foreach (var view in SqlViewRegistry.All)
         {
-            var schemaName = SchemaNames.GetName(view.Schema);
+            var schemaName   = SchemaNames.GetName(view.Schema);
             var fullViewName = $"{schemaName}.[{view.ViewName}]";
 
             try
             {
                 await _context.Database.ExecuteSqlRawAsync(view.Sql, cancellationToken);
-                _logger.LogInformation("View {ViewName} created or updated successfully.", fullViewName);
+                _logger.LogInformation("View {ViewName} created/updated.", fullViewName);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to create or update SQL view {ViewName}.", fullViewName);
+                _logger.LogError(ex, "Failed to create/update view {ViewName}.", fullViewName);
                 throw;
             }
         }
     }
+
+    /// <summary>
+    /// Runs idempotent seed logic for roles, lookup data and default user.
+    /// </summary>
     public async Task SeedAsync()
     {
         try
@@ -90,7 +90,8 @@ public class ApplicationDbContextInitializer(
 
     private async Task TrySeedAsync()
     {
-        if (!_context.CourtTypes.Any())
+        // Roles
+        foreach (var roleName in SeedData.Roles.Names)
         {
             var courtTypes = new[]
             {
@@ -153,25 +154,16 @@ public class ApplicationDbContextInitializer(
         },
     };
 
-            foreach (var data in employeesData)
-            {
-                var phones = new List<Phone>
+        // Default admin user
+        var admin = await _userManager.FindByNameAsync(SeedData.DefaultUser.NationalId);
+        if (admin == null)
         {
-            Phone.Create(Guid.NewGuid(), data.Phone, "966").Value
-        };
-
-                var personResult = Person.Create(data.PersonId, data.Name, data.NationalId, data.Nationality, data.BirthDate, data.Address, phones);
-                if (personResult.IsError) continue;
-
-                var employeeResult = Employee.Create(Guid.NewGuid(), data.Email, personResult.Value, data.Role);
-                if (employeeResult.IsError) continue;
-
-                var identityUser = new ApplicationUser
-                {
-                    UserName = data.NationalId,
-                    Email = data.Email,
-                    EmailConfirmed = true
-                };
+            admin = new ApplicationUser
+            {
+                UserName       = SeedData.DefaultUser.NationalId,
+                Email          = SeedData.DefaultUser.Email,
+                EmailConfirmed = true
+            };
 
                 var result = await _userManager.CreateAsync(identityUser, data.Password);
                 if (!result.Succeeded)
@@ -410,16 +402,18 @@ public class ApplicationDbContextInitializer(
     }
 }
 
+/// <summary>
+/// Extension to wire up initialization on application startup.
+/// </summary>
 public static class InitialiserExtensions
 {
     public static async Task InitialiseDatabaseAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
+        var initializer = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
 
-        var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
-
-        await initialiser.InitialiseAsync();
-        await initialiser.EnsureViewsCreatedAsync(); // Create views before seeding
-        await initialiser.SeedAsync();               // Seed data that might use views
+        await initializer.InitialiseAsync();            // apply migrations
+        await initializer.EnsureViewsCreatedAsync();     // create/update views
+        await initializer.SeedAsync();                  // seed roles, user, lookups
     }
 }
