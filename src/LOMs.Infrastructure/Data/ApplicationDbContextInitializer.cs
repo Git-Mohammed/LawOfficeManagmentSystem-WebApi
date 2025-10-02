@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using LOMs.Infrastructure.Data.Seeds;
 using LOMs.Infrastructure.Constants;
+using LOMs.Domain.Identity;
 
 namespace LOMs.Infrastructure.Data;
 
@@ -90,26 +91,7 @@ public class ApplicationDbContextInitializer
 
     private async Task TrySeedAsync()
     {
-        // Roles
-        foreach (var roleName in SeedData.Roles.Names)
-        {
-            var courtTypes = new[]
-            {
-                CourtType.Create(Guid.Parse("b3a1f8b4-1e6a-4b3e-9c3d-0a9f8d8a1b11"), "العامة", 100, "المحكمة العامة").Value,
-                CourtType.Create(Guid.Parse("c4f2a9d7-2b7e-4a4f-8b2e-1c2d3e4f5a66"), "الجنائية", 200, "المحكمة الجنائية").Value,
-                CourtType.Create(Guid.Parse("d5e3b0c8-3c8f-4c5f-9d3f-2d3e4f5a6b77"), "العمالية", 300, "المحكمة العمالية").Value,
-                CourtType.Create(Guid.Parse("e6f4c1d9-4d9f-4d6f-ae4f-3e4f5a6b7c88"), "الأحوال الشخصية", 400, "محكمة الأحوال الشخصية").Value,
-                CourtType.Create(Guid.Parse("f7a5d2ea-5eaf-4e7f-bf5f-4f5a6b7c8d99"), "التجارية", 500, "المحكمة التجارية").Value,
-                CourtType.Create(Guid.Parse("a8b6e3fb-6fb0-4f8f-cf6f-5a6b7c8d9e10"), "الإدارية", 600, "المحكمة الإدارية ").Value,
-                CourtType.Create(Guid.Parse("1816e3fb-6fb0-428f-cf6f-5a7b7c829e10"), "اللجان شبه القضائية", 700, "اللجان شبه القضائية ").Value,
 
-                CourtType.Create(Guid.Parse("b9c7f40c-70c1-4f9f-df7f-6b7c8d9e0f21"), "أخرى", 32000, "أخرى").Value
-            };
-
-
-            _context.CourtTypes.AddRange(courtTypes);
-            await _context.SaveChangesAsync();
-        }
         if (_roleManager != null)
         {
             var roles = new[]
@@ -155,25 +137,25 @@ public class ApplicationDbContextInitializer
     };
 
         // Default admin user
-        var admin = await _userManager.FindByNameAsync(SeedData.DefaultUser.NationalId);
-        if (admin == null)
+        var identityUser = await _userManager.FindByNameAsync(SeedData.DefaultUser.NationalId);
+        if (identityUser == null)
         {
-            admin = new ApplicationUser
+                identityUser = new ApplicationUser
             {
                 UserName       = SeedData.DefaultUser.NationalId,
                 Email          = SeedData.DefaultUser.Email,
                 EmailConfirmed = true
             };
 
-                var result = await _userManager.CreateAsync(identityUser, data.Password);
+                var result = await _userManager.CreateAsync(identityUser, employeesData[0].Password);
                 if (!result.Succeeded)
                 {
                     var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                    _logger.LogWarning($"Failed to create user '{data.NationalId}': {errors}");
+                    _logger.LogWarning($"Failed to create user '{employeesData[0].NationalId}': {errors}");
                     continue;
                 }
 
-                await _userManager.AddToRoleAsync(identityUser, data.Role.ToString());
+                await _userManager.AddToRoleAsync(identityUser, employeesData[0].Role.ToString());
                 employeeResult.Value.AssignUser(identityUser.Id);
 
                 _context.People.Add(personResult.Value);
