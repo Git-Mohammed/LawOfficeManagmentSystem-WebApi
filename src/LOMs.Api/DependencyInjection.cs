@@ -90,9 +90,9 @@ public static class DependencyInjection
 
         services.AddCors(options =>
         {
-            options.AddPolicy(policyName, policy =>
+            options.AddPolicy("AllowAll", policy =>
             {
-                policy.WithOrigins(["https://localhost:4200"])
+                policy.WithOrigins("https://localhost:4200", "https://law-office-management-sigma.vercel.app", "https://law-office-management-mu.vercel.app")
                       .AllowAnyMethod()
                       .AllowAnyHeader()
                       .AllowCredentials();
@@ -130,7 +130,7 @@ public static class DependencyInjection
 
         // 4. CORS
         var policyName = configuration["AppSettings:CorsPolicyName"] ?? "AllowAll";
-        app.UseCors(policyName);
+        app.UseCors("AllowAll");
 
         // 5. Rate limiting (before authentication to protect auth endpoints)
         app.UseRateLimiter();

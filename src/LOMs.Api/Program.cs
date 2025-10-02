@@ -99,6 +99,8 @@ else
     app.UseHsts();
 }
 
+
+
 app.UseCoreMiddlewares(builder.Configuration);
 app.MapControllers();
 app.MapStaticAssets();

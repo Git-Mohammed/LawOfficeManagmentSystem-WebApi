@@ -23,7 +23,7 @@ namespace LOMs.Api.Extensions
                 // Customize by cookie name
                 Expires = cookieName.ToLower() switch
                 {
-                    "access-token" => DateTime.UtcNow.AddSeconds(10),
+                    "access-token" => DateTime.UtcNow.AddMinutes(15),
                     "refresh-token" => DateTime.UtcNow.AddDays(30),
                     _ => DateTime.UtcNow.AddMinutes(10)
                 }
