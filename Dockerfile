@@ -25,7 +25,6 @@ RUN dotnet restore "src/LOMs.Api/LOMs.Api.csproj"
 COPY . .
 
 # Build and publish the app in Release mode into /app
-# --no-restore avoids re-restoring since we already did it above
 RUN dotnet publish "src/LOMs.Api/LOMs.Api.csproj" -c Release -o /app 
 
 

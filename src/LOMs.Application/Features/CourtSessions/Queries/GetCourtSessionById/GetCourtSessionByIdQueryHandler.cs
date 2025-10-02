@@ -25,7 +25,13 @@ public sealed class GetCourtSessionByIdQueryHandler(
                 AssignedEmployeeId = cs.AssignedEmployeeId,
                 AssignedEmployeeName = cs.AssignedEmployee != null ? cs.AssignedEmployee.Person.FullName : "Unknown",
                 ScheduledAt = cs.ScheduledAt,
-                AssignedTasks = cs.AssignedTasks
+                AssignedTasks = cs.AssignedTasks,
+                CreatedAt = cs.CreatedAtUtc,
+                EmployeeCreateItName = context.Employees
+            .Where(e => e.UserId == cs.CreatedBy)
+            .Select(e => e.Person.FullName)
+            .FirstOrDefault() ?? "Unknown"
+
             })
             .FirstOrDefaultAsync(cancellationToken);
 

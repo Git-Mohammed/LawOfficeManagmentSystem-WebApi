@@ -1,5 +1,6 @@
 ﻿using LiteBus.Queries.Abstractions;
 using LOMs.Application.Common.Models;
+using LOMs.Application.Features.Templates.DTOs;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -51,7 +52,13 @@ public sealed class GetPagedJudgmentsHandler
                 EmployeeIdCreatedBy = emp.Id,
                 EmployeeNameCreatedBy = emp.Person.FullName ?? "Unknown",
                 CreatedDate = j.CreatedAtUtc,
-                FilePath = fileGroup.Select(f => f.Filepath).FirstOrDefault() ?? string.Empty
+                Files =fileGroup
+                .OrderByDescending(f => f.CreatedAtUtc)
+                .Select(
+                    f =>new FileDto { 
+                        FileName =f.Filename,
+                        FilePath=f.Filepath,
+                        FileType=f.ContentType}).ToList(),
             })
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)
