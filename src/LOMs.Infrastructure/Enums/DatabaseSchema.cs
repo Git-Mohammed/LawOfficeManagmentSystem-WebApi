@@ -6,6 +6,7 @@
         User,         // Handles people, clients, employees
         Case,         // Manages legal case lifecycle and metadata
         Finance,      // Tracks billing, payments, and financial records
-        File          // Stores and indexes uploaded documents and attachments
+        File,
+        Templates// Stores and indexes uploaded documents and attachments
     }
 }

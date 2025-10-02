@@ -4,55 +4,59 @@ using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LOMs.Infrastructure.Data.Configurations.CaseManagment
+namespace LOMs.Infrastructure.Data.Configurations.CaseManagement;
+
+internal class ContractConfiguration : IEntityTypeConfiguration<Contract>
 {
-    internal class ContractConfiguration : IEntityTypeConfiguration<Contract>
+    public void Configure(EntityTypeBuilder<Contract> builder)
     {
-        public void Configure(EntityTypeBuilder<Contract> builder)
-        {
-            // Primary key (non-clustered to allow flexibility for indexing strategies)
-            builder.HasKey(c => c.Id).IsClustered(false);
+        builder.HasKey(c => c.Id)
+               .IsClustered(false);
+        builder.Property(c => c.Id)
+               .ValueGeneratedNever();
 
-            // Store ContractType enum as int in the database
-            builder.Property(c => c.Type)
-                .HasConversion<int>()
-                .HasComment("Contract type: 1 = Fixed Term, 2 = Open Term")
-                .IsRequired();
+        builder.Property(c => c.Type)
+               .HasConversion<string>()
+               .HasMaxLength(20)
+               .IsUnicode(false)
+               .IsRequired();
 
-            // TotalAmount is a calculated property, not mapped to the database
-            builder.Ignore(c => c.TotalAmount);
+        builder.Ignore(c => c.TotalAmount);
 
-            // Optional issue and expiry dates (depending on contract type)
-            builder.Property(c => c.IssuedOn);
-            builder.Property(c => c.ExpiresOn);
+        builder.Property(c => c.IssuedOn)
+               .HasColumnType("date");
 
-            // Monetary values with precision
-            builder.Property(c => c.BaseAmount)
-                .HasColumnType("decimal(18,2)")
-                .IsRequired();
+        builder.Property(c => c.ExpiresOn)
+               .HasColumnType("date");
 
-            builder.Property(c => c.InitialPayment)
-                .HasColumnType("decimal(18,2)")
-                .IsRequired();
+        builder.Property(c => c.BaseAmount)
+               .HasPrecision(18, 2)
+               .IsRequired();
 
-            builder.Property(c => c.TaxAmount)
-                .HasColumnType("decimal(18,2)")
-                .IsRequired();
+        builder.Property(c => c.InitialPayment)
+               .HasPrecision(18, 2)
+               .IsRequired();
 
-            // Assignment flag
-            builder.Property(c => c.IsAssigned)
-                .IsRequired();
+        builder.Property(c => c.TaxAmount)
+               .HasPrecision(18, 2)
+               .IsRequired();
 
-            // Hijri year is required
-            builder.Property(c => c.HijriYear)
-                .IsRequired();
+        builder.Property(c => c.IsAssigned)
+               .IsRequired();
 
-            // Court type code is required
-            builder.Property(c => c.CourtTypeCode)
-                .IsRequired();
+        builder.Property(c => c.HijriYear)
+               .HasColumnType("smallint")
+               .IsRequired();
+        builder.HasIndex(c => c.HijriYear)
+               .HasDatabaseName("IX_Contracts_HijriYear");
 
-            // Map to Contracts table in Finance schema
-            builder.ToTable("Contracts", SchemaNames.GetName(DatabaseSchema.Finance));
-        }
+        builder.Property(c => c.CourtTypeCode)
+               .HasMaxLength(10)
+               .IsUnicode(false)
+               .IsRequired();
+        builder.HasIndex(c => c.CourtTypeCode)
+               .HasDatabaseName("IX_Contracts_CourtTypeCode");
+
+        builder.ToTable("Contracts", SchemaNames.GetName(DatabaseSchema.Finance));
     }
 }

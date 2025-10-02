@@ -17,7 +17,7 @@ namespace LOMs.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -25,20 +25,22 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.Attachments.Attachment", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("AttachmentName")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<Guid>("CaseId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ContentType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
@@ -48,18 +50,27 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("Extension")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
 
-                    b.Property<int>("FileType")
-                        .HasColumnType("int");
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
 
                     b.Property<string>("Filename")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("Filepath")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -72,8 +83,6 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
-
                     b.HasIndex("CaseId");
 
                     b.ToTable("Attachments", "CaseManagment");
@@ -82,25 +91,24 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.Case", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AssignedEmployeeId")
-                        .HasMaxLength(100)
-                        .HasColumnType("uniqueidentifier")
-                        .HasComment("The ID of the employee assigned to follow up on the case");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CaseNumber")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("CaseSubject")
                         .HasMaxLength(1000)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("ClientRequests")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasMaxLength(2000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<Guid>("CourtTypeId")
                         .HasColumnType("uniqueidentifier");
@@ -123,21 +131,33 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("LawyerOpinion")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PartyRole")
-                        .HasColumnType("int")
-                        .HasComment("Client's role in the case: 1 = Plaintiff, 2 = Defendant");
+                    b.Property<string>("PartyRole")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)")
+                        .HasComment("Client's role: Plaintiff or Defendant");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int")
-                        .HasComment("Current status of the case: 0 = Draft, 1 = Pending, 2 = In Progress, 3 = Completed, 4 = Cancelled");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)");
 
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("AssignedEmployeeId");
+                    b.HasIndex("AssignedEmployeeId")
+                        .HasDatabaseName("IX_Cases_AssignedEmployeeId");
 
                     b.HasIndex("CourtTypeId");
+
+                    b.HasIndex("PartyRole")
+                        .HasDatabaseName("IX_Cases_PartyRole");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Cases_Status");
 
                     b.ToTable("Cases", "CaseManagment");
                 });
@@ -165,13 +185,14 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.ClientFiles.ClientFile", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ClientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<short>("CourtTypeCode")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
                         .HasColumnType("smallint");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -193,7 +214,11 @@ namespace LOMs.Infrastructure.Migrations
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("ClientId");
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("IX_ClientFiles_ClientId");
+
+                    b.HasIndex("CourtTypeCode")
+                        .HasDatabaseName("IX_ClientFiles_CourtTypeCode");
 
                     b.ToTable("ClientFiles", "CaseManagment");
                 });
@@ -240,16 +265,18 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.Contracts.Contract", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("BaseAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("CaseId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<short>("CourtTypeCode")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
                         .HasColumnType("smallint");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -265,6 +292,7 @@ namespace LOMs.Infrastructure.Migrations
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("InitialPayment")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsAssigned")
@@ -280,11 +308,14 @@ namespace LOMs.Infrastructure.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("int")
-                        .HasComment("Contract type: 1 = Fixed Term, 2 = Open Term");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)");
 
                     b.HasKey("Id");
 
@@ -292,19 +323,25 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("CaseId");
 
+                    b.HasIndex("CourtTypeCode")
+                        .HasDatabaseName("IX_Contracts_CourtTypeCode");
+
+                    b.HasIndex("HijriYear")
+                        .HasDatabaseName("IX_Contracts_HijriYear");
+
                     b.ToTable("Contracts", "FinanceManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.Contracts.ContractFile", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<Guid>("ContractId")
                         .HasColumnType("uniqueidentifier");
@@ -317,22 +354,27 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("Extension")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
 
                     b.Property<string>("FileType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
 
                     b.Property<string>("Filename")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("Filepath")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -347,7 +389,11 @@ namespace LOMs.Infrastructure.Migrations
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("ContractId");
+                    b.HasIndex("ContractId")
+                        .HasDatabaseName("IX_ContractFiles_ContractId");
+
+                    b.HasIndex("ContractId", "FileType")
+                        .HasDatabaseName("IX_ContractFiles_ContractId_FileType");
 
                     b.ToTable("ContractFiles", "FileManagment");
                 });
@@ -355,6 +401,7 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.Contracts.ContractsWithContractNumber", b =>
                 {
                     b.Property<decimal>("BaseAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("CaseId")
@@ -384,6 +431,7 @@ namespace LOMs.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("InitialPayment")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsAssigned")
@@ -402,6 +450,7 @@ namespace LOMs.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Type")
@@ -415,7 +464,6 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.CourtSessions.CourtSession", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AssignedEmployeeId")
@@ -423,6 +471,7 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("AssignedTasks")
                         .IsRequired()
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("CaseId")
@@ -447,9 +496,11 @@ namespace LOMs.Infrastructure.Migrations
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("AssignedEmployeeId");
+                    b.HasIndex("AssignedEmployeeId")
+                        .HasDatabaseName("IX_CourtSessions_AssignedEmployeeId");
 
-                    b.HasIndex("CaseId");
+                    b.HasIndex("CaseId")
+                        .HasDatabaseName("IX_CourtSessions_CaseId");
 
                     b.ToTable("CourtSessions", "CaseManagment");
                 });
@@ -457,10 +508,11 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Cases.CourtTypes.CourtType", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<short>("Code")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
                         .HasColumnType("smallint");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -480,12 +532,20 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(255)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("UX_CourtTypes_Code");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("IX_CourtTypes_Name");
 
                     b.ToTable("CourtTypes", "CaseManagment");
 
@@ -606,34 +666,39 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("Number")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("SubType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("Judgments", "CaseManagement");
+                    b.ToTable("Judgments", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.Judgments.JudgmentFile", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
@@ -643,22 +708,27 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("Extension")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
 
                     b.Property<string>("FileType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
 
                     b.Property<string>("Filename")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("Filepath")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<Guid>("JudgmentId")
                         .HasColumnType("uniqueidentifier");
@@ -676,19 +746,21 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("JudgmentId");
 
-                    b.ToTable("JudgmentFiles", "CaseManagement");
+                    b.HasIndex("JudgmentId", "FileType");
+
+                    b.ToTable("JudgmentFiles", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.POAs.POAFile", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
@@ -698,22 +770,27 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("Extension")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
 
                     b.Property<string>("FileType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
 
                     b.Property<string>("Filename")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("Filepath")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -731,7 +808,11 @@ namespace LOMs.Infrastructure.Migrations
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("POAId");
+                    b.HasIndex("POAId")
+                        .HasDatabaseName("IX_POAFiles_POAId");
+
+                    b.HasIndex("POAId", "FileType")
+                        .HasDatabaseName("IX_POAFiles_POAId_FileType");
 
                     b.ToTable("POAFiles", "FileManagment");
                 });
@@ -739,7 +820,6 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Identity.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -758,8 +838,9 @@ namespace LOMs.Infrastructure.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Token")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -771,9 +852,10 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("Token")
                         .IsUnique()
-                        .HasFilter("[Token] IS NOT NULL");
+                        .HasDatabaseName("UX_RefreshTokens_Token");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_RefreshTokens_UserId");
 
                     b.ToTable("RefreshTokens", "UserManagment");
                 });
@@ -781,7 +863,6 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.POAs.POA", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CaseId")
@@ -794,14 +875,13 @@ namespace LOMs.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateOnly>("IssueDate")
-                        .HasColumnType("date")
-                        .HasComment("Date the POA was issued");
+                        .HasColumnType("date");
 
                     b.Property<string>("IssuingAuthority")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
-                        .HasComment("The authority that issued the POA, such as a court or notary");
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -811,15 +891,16 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("POANumber")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasComment("Official POA number as stated in the document");
+                        .HasMaxLength(255)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("CaseId");
+                    b.HasIndex("CaseId")
+                        .HasDatabaseName("IX_POAs_CaseId");
 
                     b.ToTable("POAs", "CaseManagment");
                 });
@@ -827,7 +908,6 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.People.Clients.Client", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -850,7 +930,8 @@ namespace LOMs.Infrastructure.Migrations
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
                     b.HasIndex("PersonId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("UX_Clients_PersonId");
 
                     b.ToTable("Clients", "UserManagment");
                 });
@@ -858,7 +939,6 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.People.Employees.Employee", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -870,7 +950,8 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -887,7 +968,8 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -897,12 +979,17 @@ namespace LOMs.Infrastructure.Migrations
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("Email");
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Employees_Email");
 
                     b.HasIndex("PersonId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("UX_Employees_PersonId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Employees_UserId");
 
                     b.ToTable("Employees", "UserManagment");
                 });
@@ -910,12 +997,12 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.People.Person", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasMaxLength(250)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(250)");
 
                     b.Property<DateOnly>("BirthDate")
@@ -923,7 +1010,9 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("CountryCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
@@ -933,8 +1022,9 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(255)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -945,13 +1035,19 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("NationalId")
                         .IsRequired()
                         .HasMaxLength(11)
-                        .HasColumnType("nvarchar(11)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(11)");
 
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("NationalId");
+                    b.HasIndex("CountryCode")
+                        .HasDatabaseName("IX_People_CountryCode");
+
+                    b.HasIndex("NationalId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_People_NationalId");
 
                     b.ToTable("People", "UserManagment");
                 });
@@ -959,13 +1055,13 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.People.Phones.Phone", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
@@ -982,7 +1078,8 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("Number")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uniqueidentifier");
@@ -991,7 +1088,8 @@ namespace LOMs.Infrastructure.Migrations
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("PersonId");
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("IX_Phones_PersonId");
 
                     b.ToTable("Phones", "UserManagment");
                 });
@@ -999,12 +1097,13 @@ namespace LOMs.Infrastructure.Migrations
             modelBuilder.Entity("LOMs.Domain.Templates.Template", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ContentType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
@@ -1014,18 +1113,27 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("Extension")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
 
-                    b.Property<int>("FileType")
-                        .HasColumnType("int");
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
 
                     b.Property<string>("Filename")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("Filepath")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -1039,11 +1147,15 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("TemplateName")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
 
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("TemplateName")
+                        .HasDatabaseName("IX_Templates_TemplateName");
 
                     b.ToTable("Templates", "Templates");
                 });

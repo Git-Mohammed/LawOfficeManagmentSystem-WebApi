@@ -21,11 +21,24 @@ namespace LOMs.Domain.People.Phones
 
         public static Result<Phone> Create(Guid id, string number, string code)
         {
-            if (string.IsNullOrWhiteSpace(number) || !Regex.IsMatch(number, @"^\+?\d{7,15}$"))
-                return PersonErrors.InvalidPhoneNumber;
+            if (string.IsNullOrWhiteSpace(number))
+                return PhoneErrors.NumberRequired;
+
+            if (!Regex.IsMatch(number, @"^\+?\d{7,15}$"))
+                return PhoneErrors.NumberInvalid;
 
             if (string.IsNullOrWhiteSpace(code))
-                return Error.Validation("Phone.Code", "Code cannot be empty.");
+                return PhoneErrors.CodeRequired;
+
+            if ((code.Length < 1 || code.Length > 4) || code.StartsWith("+") || code.StartsWith("00"))
+                return PhoneErrors.CodeInvalid;
+
+            if (number.Length < 7)
+                return PhoneErrors.NumberTooShort;
+
+            if (number.Length > 15)
+                return PhoneErrors.NumberTooLong;
+
 
             return new Phone(id, number, code);
         }

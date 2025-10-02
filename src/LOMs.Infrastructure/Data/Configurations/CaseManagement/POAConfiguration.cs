@@ -4,35 +4,40 @@ using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LOMs.Infrastructure.Data.Configurations.CaseManagment;
+namespace LOMs.Infrastructure.Data.Configurations.CaseManagement;
 
 public class POAConfiguration : IEntityTypeConfiguration<POA>
 {
     public void Configure(EntityTypeBuilder<POA> builder)
     {
-        builder.HasKey(p => p.Id).IsClustered(false);
+        builder.HasKey(p => p.Id)
+               .IsClustered(false);
+        builder.Property(p => p.Id)
+               .ValueGeneratedNever();
 
+        builder.Property(p => p.CaseId)
+               .IsRequired();
+        builder.HasIndex(p => p.CaseId)
+               .HasDatabaseName("IX_POAs_CaseId");
         builder.HasOne(p => p.Case)
-            .WithMany(p => p.POAs)
-            .HasForeignKey(p => p.CaseId)
-            .OnDelete(DeleteBehavior.Restrict);
+               .WithMany(c => c.POAs)
+               .HasForeignKey(p => p.CaseId)
+               .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(p => p.POANumber)
-            .IsRequired()
-            .HasMaxLength(100)
-            .HasComment("Official POA number as stated in the document");
+               .IsRequired()
+               .HasMaxLength(255)
+               .IsUnicode();
 
         builder.Property(p => p.IssueDate)
-            .IsRequired()
-            .HasComment("Date the POA was issued");
+               .IsRequired()
+               .HasColumnType("date");
 
         builder.Property(p => p.IssuingAuthority)
-            .IsRequired()
-            .HasMaxLength(200)
-            .HasComment("The authority that issued the POA, such as a court or notary");
-
+               .IsRequired()
+               .HasMaxLength(500)
+               .IsUnicode(true);
 
         builder.ToTable("POAs", SchemaNames.GetName(DatabaseSchema.Case));
-
     }
 }

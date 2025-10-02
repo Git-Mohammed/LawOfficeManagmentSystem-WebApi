@@ -5,7 +5,7 @@ using LOMs.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LOMs.Infrastructure.Data.Configurations;
+namespace LOMs.Infrastructure.Data.Configurations.UserManagement;
 
 public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 {
@@ -13,15 +13,25 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
     {
         builder.ToTable("RefreshTokens", SchemaNames.GetName(DatabaseSchema.User));
 
-        builder.HasKey(rt => rt.Id).IsClustered(false);
+        builder.HasKey(rt => rt.Id)
+               .IsClustered(false);
+        builder.Property(rt => rt.Id)
+               .ValueGeneratedNever();
 
-        builder.Property(rt => rt.Token).HasMaxLength(200);
+        builder.Property(rt => rt.Token)
+               .IsRequired()
+               .HasMaxLength(255);
+        builder.HasIndex(rt => rt.Token)
+               .IsUnique()
+               .HasDatabaseName("UX_RefreshTokens_Token");
 
-        builder.HasIndex(rt => rt.Token).IsUnique();
+        builder.Property(rt => rt.UserId)
+               .IsRequired();
+        builder.HasIndex(rt => rt.UserId)
+               .HasDatabaseName("IX_RefreshTokens_UserId");
 
-        builder.Property(rt => rt.UserId).IsRequired();
-
-        builder.Property(rt => rt.ExpiresOnUtc).IsRequired();
+        builder.Property(rt => rt.ExpiresOnUtc)
+               .IsRequired();
 
         builder.HasOne<ApplicationUser>()
             .WithMany(u => u.RefreshTokens)
