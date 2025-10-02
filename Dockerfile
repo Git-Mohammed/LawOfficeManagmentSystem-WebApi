@@ -15,6 +15,8 @@ COPY ["src/LOMs.Application/LOMs.Application.csproj", "src/LOMs.Application/"]
 COPY ["src/LOMs.Domain/LOMs.Domain.csproj", "src/LOMs.Domain/"]
 COPY ["src/LOMs.Contract/LOMs.Contract.csproj", "src/LOMs.Contract/"]
 COPY ["src/LOMs.Infrastructure/LOMs.Infrastructure.csproj", "src/LOMs.Infrastructure/"]
+COPY ["Directory.Packages.props", "."]
+COPY ["Directory.Build.props", "."]
 
 # Restore NuGet dependencies (done once, cached if csproj files unchanged)
 RUN dotnet restore "src/LOMs.Api/LOMs.Api.csproj"
