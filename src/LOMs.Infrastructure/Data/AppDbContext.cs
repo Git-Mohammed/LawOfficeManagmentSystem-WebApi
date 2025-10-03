@@ -7,6 +7,7 @@ using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Cases.Judgments;
 using LOMs.Domain.Cases.POAs;
+using LOMs.Domain.Common;
 using LOMs.Domain.Identity;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
@@ -79,10 +80,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             .ToView(ClientFilesWithFileNumberView.Name, ClientFilesWithFileNumberView.Schema)
             .HasNoKey();
 
-        // Map the Contracts view (read-only, no primary key)
-        builder.Entity<ContractsWithContractNumber>()
-            .ToView(ContractsWithContractNumberView.Name, ContractsWithContractNumberView.Schema)
+        builder.Entity<ContractsWithContractNumber>(entity =>
+        {
+            entity.ToView(
+                ContractsWithContractNumberView.Name,
+                ContractsWithContractNumberView.Schema
+            )
             .HasNoKey();
+
+            entity.Property(e => e.BaseAmount)
+                  .HasPrecision(18, 2);
+            entity.Property(e => e.InitialPayment)
+                  .HasPrecision(18, 2);
+            entity.Property(e => e.TaxAmount)
+                  .HasPrecision(18, 2);
+        });
     }
 
 

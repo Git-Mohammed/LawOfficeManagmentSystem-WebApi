@@ -11,23 +11,31 @@ public class PhoneConfiguration : IEntityTypeConfiguration<Phone>
 {
     public void Configure(EntityTypeBuilder<Phone> builder)
     {
-        builder.HasKey(p => p.Id).IsClustered(false);
+        builder.HasKey(p => p.Id)
+               .IsClustered(false);
+        builder.Property(p => p.Id)
+               .ValueGeneratedNever();
+
+        builder.Property(p => p.PersonId)
+               .IsRequired();
+        builder.HasIndex(p => p.PersonId)
+               .HasDatabaseName("IX_Phones_PersonId");
 
         builder.Property(p => p.Number)
                .IsRequired()
-               .HasMaxLength(20);
+               .HasMaxLength(20)
+               .IsUnicode(false);
 
         builder.Property(p => p.Code)
                .IsRequired()
-               .HasMaxLength(5);
+               .HasMaxLength(10)
+               .IsUnicode(false);
 
         builder.HasOne(p => p.Person)
                .WithMany(p => p.Phones)
                .HasForeignKey(p => p.PersonId)
                .OnDelete(DeleteBehavior.Cascade);
 
-
-        builder.HasIndex(p => p.PersonId);
         builder.ToTable("Phones", SchemaNames.GetName(DatabaseSchema.User));
     }
 }
