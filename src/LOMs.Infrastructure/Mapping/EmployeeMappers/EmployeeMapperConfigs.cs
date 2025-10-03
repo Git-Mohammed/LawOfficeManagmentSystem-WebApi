@@ -35,9 +35,9 @@ public class EmployeeMapperConfigs: IRegister
         config.NewConfig<Employee, EmployeeDto>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.Name, src => src.Person.FullName)
-            .Map(dest => dest.PhoneNumber,
+            .Map(dest => dest.Phone,
                 src => src.Person.Phones
-                    .Select(p => p.Code + " " + p.Number)
+                    .Select(p => new PhoneDto { PhoneId = p.Id, Code = p.Code, Number = p.Number})
                     .FirstOrDefault())
             .Map(dest => dest.BirthDate, src => src.Person.BirthDate)
             .Map(dest => dest.CountryCode, src => src.Person.CountryCode)
@@ -55,9 +55,14 @@ public class EmployeeMapperConfigs: IRegister
         config.NewConfig<Employee, GetAllEmployeesDto>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.Name, src => src.Person.FullName)
-            .Map(dest => dest.PhoneNumber, 
+            .Map(dest => dest.Phone, 
                 src => src.Person.Phones
-                    .Select(p => p.Code + " " + p.Number)
+                    .Select(p => new PhoneDto
+                    {
+                        PhoneId = p.Id,
+                        Number = p.Number,
+                        Code = p.Code
+                    })
                     .FirstOrDefault())
             .Map(dest => dest.BirthDate, src => src.Person.BirthDate)
             .Map(dest => dest.CountryCode, src => src.Person.CountryCode)
