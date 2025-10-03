@@ -2,51 +2,57 @@
 using LOMs.Api.Infrastructure;
 using LOMs.Api.Services;
 using LOMs.Application.Common.Interfaces;
-using Microsoft.AspNetCore.RateLimiting;
+using LOMs.Contract.Commons.Enums;
+using LOMs.Domain.Cases.Enums;
+using LOMs.Domain.Cases.Judgments;
+using LOMs.Domain.Identity;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Reflection;
-using System.Threading.RateLimiting;
+using System.Text.Json.Serialization;
 
-namespace LOMs.Api;
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddPresentation(this IServiceCollection services, IConfiguration configuration)
+    /// <summary>
+    /// Registers all Presentation (API) layer services.
+    /// </summary>
+    public static IServiceCollection AddPresentation(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment env)
     {
-        services
-            .AddIdentityInfrastructure()
-            .AddExceptionHandlingInfrastructure()
-            .AddSwaggerInfrastructure()
-            .AddCorsInfrastructure(configuration)
+        return services
+            .AddIdentityServices()
+            .AddExceptionHandling()
+            .AddSwaggerConfiguration()
+            .AddCorsConfiguration(configuration, env)
             .AddAppRateLimiting(configuration);
-
-        return services;
     }
 
-    private static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services)
+    private static IServiceCollection AddIdentityServices(this IServiceCollection services)
     {
         services.AddScoped<IUser, CurrentUser>();
         services.AddHttpContextAccessor();
         return services;
     }
 
-    private static IServiceCollection AddExceptionHandlingInfrastructure(this IServiceCollection services)
+    private static IServiceCollection AddExceptionHandling(this IServiceCollection services)
     {
-        services.AddProblemDetails(); // Enables IProblemDetailsService
-        services.AddExceptionHandler<GlobalExceptionHandler>(); // Registers your custom handler
+        services.AddProblemDetails();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
         return services;
     }
 
-    private static IServiceCollection AddSwaggerInfrastructure(this IServiceCollection services)
+    private static IServiceCollection AddSwaggerConfiguration(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>
         {
             options.SwaggerDoc("v1", new() { Title = "LOMs API", Version = "v1" });
-            options.CustomSchemaIds(type => type.FullName);
+            options.CustomSchemaIds(t => t.FullName);
 
-            //  JWT Bearer token support
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
@@ -54,7 +60,7 @@ public static class DependencyInjection
                 Scheme = "Bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description = "Enter your JWT token in the format: Bearer {your token}"
+                Description = "Enter your JWT token as: Bearer {token}"
             });
 
             options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -65,82 +71,126 @@ public static class DependencyInjection
                         Reference = new OpenApiReference
                         {
                             Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
+                            Id   = "Bearer"
                         }
                     },
                     Array.Empty<string>()
                 }
             });
 
-            //  XML comments
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            if (System.IO.File.Exists(xmlPath))
-            {
+            if (File.Exists(xmlPath))
                 options.IncludeXmlComments(xmlPath);
+        });
+        return services;
+    }
+
+    /// <summary>
+    /// Registers JSON converters for MVC.
+    /// </summary>
+    public static IMvcBuilder ConfigureJsonConverters(this IMvcBuilder builder)
+    {
+        var converters = new JsonConverter[]
+        {
+            new PartyRoleJsonConverter(),
+            new ContractTypeJsonConverter(),
+            new CaseStatusJsonConverter(),
+            new PartyRoleArabicJsonConverter(),
+            new CaseStatusArabicJsonConverter(),
+            new cContractTypeJsonConverter(),
+            new JudgmentTypeJsonConverter(),
+            new JudgmentSubTypeJsonConverter(),
+            new cJudgmentTypeJsonConverter(),
+            new cJudgmentSubTypeJsonConverter(),
+            new cRoleJsonConverter(),
+            new RoleJsonConverter()
+        };
+
+        builder.AddJsonOptions(opts =>
+        {
+            foreach (var converter in converters)
+            {
+                if (!opts.JsonSerializerOptions.Converters.Contains(converter))
+                    opts.JsonSerializerOptions.Converters.Add(converter);
             }
         });
 
-        return services;
+        return builder;
     }
 
-    private static IServiceCollection AddCorsInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddCorsConfiguration(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment env)
     {
-        var policyName = configuration["AppSettings:CorsPolicyName"] ?? "AllowAll";
+        var section = configuration.GetSection("AppSettings");
+        var policyName = section["CorsPolicyName"]
+                         ?? (env.IsDevelopment() ? "DevCors" : "ProdCorsPolicy");
+
+        var allowedOrigins = section
+            .GetSection("AllowedOrigins")
+            .Get<string[]>() ?? Array.Empty<string>();
 
         services.AddCors(options =>
         {
-            options.AddPolicy("AllowAll", policy =>
+            options.AddPolicy("DevCors", b =>
+                b.AllowAnyOrigin()
+                 .AllowAnyHeader()
+                 .AllowAnyMethod());
+
+            options.AddPolicy(policyName, b =>
             {
-                policy.WithOrigins("https://localhost:4200", "https://law-office-management-sigma.vercel.app", "https://law-office-management-mu.vercel.app")
-                      .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials();
-                       
+                if (env.IsDevelopment())
+                {
+                    b.AllowAnyOrigin()
+                     .AllowAnyHeader()
+                     .AllowAnyMethod();
+                }
+                else
+                {
+                    b.WithOrigins(allowedOrigins)
+                     .AllowAnyHeader()
+                     .WithMethods(
+                         HttpMethods.Get,
+                         HttpMethods.Post,
+                         HttpMethods.Put,
+                         HttpMethods.Delete)
+                     .AllowCredentials()
+                     .SetPreflightMaxAge(TimeSpan.FromHours(1));
+                }
             });
         });
 
+        services.AddSingleton(new CorsPolicyName(policyName));
         return services;
     }
 
-    public static IApplicationBuilder UseCoreMiddlewares(this IApplicationBuilder app, IConfiguration configuration)
+    /// <summary>
+    /// Configures the middleware pipeline.
+    /// </summary>
+    public static IApplicationBuilder UseCoreMiddlewares(
+        this IApplicationBuilder app,
+        IConfiguration configuration)
     {
-        // 1. Exception handling should be FIRST to catch all errors
         app.UseExceptionHandler();
-
-        // 2. HTTPS redirection
         app.UseHttpsRedirection();
-
-        /** 
-         * Enables Serilog's built-in middleware for logging HTTP requests.
-         * 
-         * This should be placed early in the middleware pipeline to ensure that:
-         * - All incoming requests are logged before any other processing occurs.
-         * - Useful metadata like request path, method, status code, and duration are captured.
-         * 
-         * Serilog will automatically log structured entries for each request,
-         * which can be enriched with additional context (e.g., user info, trace IDs).
-         * 
-         * ✅ Recommended for diagnostics, performance tracking, and integration with sinks like Seq.
-         */
         app.UseSerilogRequestLogging();
-
-        // 3. Static files
         app.UseStaticFiles();
 
-        // 4. CORS
-        var policyName = configuration["AppSettings:CorsPolicyName"] ?? "AllowAll";
-        app.UseCors("AllowAll");
+        var policyName = app.ApplicationServices
+            .GetRequiredService<CorsPolicyName>().Name;
+        app.UseCors(policyName);
 
-        // 5. Rate limiting (before authentication to protect auth endpoints)
         app.UseRateLimiter();
-
-        // 6. Authentication
         app.UseAuthentication();
-
-        // 7. Authorization
         app.UseAuthorization();
 
         return app;
     }
 }
+
+/// <summary>
+/// Holds the resolved CORS policy name for runtime.
+/// </summary>
+public record CorsPolicyName(string Name);
