@@ -1,0 +1,10 @@
+<div class="text-center p-5">
+    <div class="mb-3">
+        <i class="fa-solid fa-folder-open fa-3x text-muted"></i>
+    </div>
+    <h4 class="text-muted">{{title}}</h4>
+    <p class="text-muted">{{msg}}</p>
+    @if (hasAction) {
+        <button class="action btn bg-main" (click)="actionClicked.emit()">{{action}}</button>
+    }
+</div>

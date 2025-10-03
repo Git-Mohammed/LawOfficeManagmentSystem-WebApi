@@ -1,0 +1,51 @@
+<mat-toolbar>
+    <div class="d-flex align-items-center w-100 gap-4">
+
+        <button class="side-btn" [class.bg-accent]="IsnavigatorsTextVisable()" (click)="collapsed.set(!collapsed())"><i
+                class="fa-solid fa-bars"></i></button>
+
+        <app-page-header-component [title]="activeRout.title"></app-page-header-component>
+    </div>
+</mat-toolbar>
+<mat-sidenav-container>
+    <mat-sidenav mode="side" opened fixedInViewport="true" fixedTopGap="65" [style.width]="sideNavWidth()">
+        <nav>
+            <ul>
+                @for (item of navElements; track item.name) {
+                @if (hasRole(item)) {
+                <a [routerLink]="item.route" (isActiveChange)="routeChanged($event, item)" routerLinkActive="bg-main"
+                    class="btn" [ngClass]="!IsnavigatorsTextVisable() ? ['justify-content-center', 'only-icon'] : []">
+
+                    <i [class]=item.icon></i>
+                    @if (IsnavigatorsTextVisable())
+                    {
+                    <span>{{item.name}}</span>
+                    }
+                </a>
+
+                }
+                }
+            </ul>
+
+            <div class="logout">
+                <button [matMenuTriggerFor]="menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                <mat-menu #menu="matMenu">
+                    <button mat-menu-item class="btn bg-accent" (click)="changePassword()">تغير كلمة المرور</button>
+                </mat-menu>
+                <a (click)="logout()" class="btn bg-main justify-content-center">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    @if (IsnavigatorsTextVisable()) {
+                    <span>تسجيل الخروج</span>
+                    }
+                </a>
+            </div>
+
+        </nav>
+    </mat-sidenav>
+
+    <mat-sidenav-content [style.margin-right]="sideNavWidth()">
+        <router-outlet></router-outlet>
+    </mat-sidenav-content>
+</mat-sidenav-container>
+<ngx-spinner bdColor="rgba(0,0,0,0.59)" size="medium" color="#fff" type="square-jelly-box"
+    [fullScreen]="true"></ngx-spinner>

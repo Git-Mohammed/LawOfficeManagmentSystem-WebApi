@@ -1,0 +1,208 @@
+<section class="section">
+    <h3>البحث عن العميل</h3>
+    <div class="search-box">
+        <form #searchForm="ngForm" (ngSubmit)="search(natId, natIdModel?.invalid!)">
+            <div class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" name="natid" [(ngModel)]="natId" #natIdModel="ngModel"
+                        [class.border-error]="(natIdModel.invalid) && showNatBoxErrors" required maxlength="10"
+                        pattern="^\d{10}$" placeholder="أدخل رقم الهوية للبحث" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <input type="submit" value="بحث" class="btn bg-accent w-fill" />
+                </div>
+            </div>
+            @if (natIdModel.invalid && showNatBoxErrors) {
+            <div class="errors" animate.enter="error-animation">
+                @if (natIdModel.errors?.['required']) {
+                <p>يجب إدخال رقم الهوية</p>
+                }
+                @if (natIdModel.errors?.['pattern']) {
+                <p>رقم الهوية يجب أن يتكون من 10 خانات</p>
+                }
+            </div>
+            }
+        </form>
+        @if ((addCaseForm.value.existingClients?.length) || (addCaseForm.value.newClients?.length)) {
+        <div class="parties-container">
+            <p>أطراف القضية المختارة:</p>
+            <div class="row g-3 mt-3">
+                @for(client of addCaseForm.value.existingClients; track idx; let idx = $index) {
+                <div class="parties client-id  myrow col-12">
+                    <p class="flex">رقم الهوية: {{client.natId}}</p>
+                    <button [matMenuTriggerFor]="menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    <mat-menu #menu="matMenu" class="bg-accent">
+                        <button mat-menu-item class="btn-del" (click)="deleteExistingClient(idx)"><i
+                                class="fa-solid fa-xmark"></i>
+                                حذف
+                            </button>
+                    </mat-menu>
+                </div>
+                }
+
+                @for(client of addCaseForm.value.newClients; track client.person?.natId; let idx = $index) {
+                <div class="parties client-id  myrow col-12">
+                    <p class="flex">رقم الهوية: {{client?.person?.natId}}</p>
+                    
+                    <button [matMenuTriggerFor]="menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    <mat-menu #menu="matMenu" class="bg-accent">
+                        <button mat-menu-item class="btn-del bg-main" (click)="deleteNewClient(idx)">
+                            <i class="fa-solid fa-xmark"></i>
+                            حذف
+                        </button>
+                    </mat-menu>
+                </div>
+                }
+            </div>
+        </div>
+        }
+        <p class="txt">💡 إذا لم يتم العثور على العميل، ستفتح نافذة لإضافة عميل جديد</p>
+    </div>
+</section>
+<form [formGroup]="addCaseForm">
+    <section formGroupName="case" class="section">
+        <h3>بيانات القضية</h3>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">موضوع القضية</label>
+                <input type="text" formControlName="subject" placeholder="أدخل موضوع القضية"
+                    [class.border-error]="(addCaseForm.controls.case.controls.subject.touched && addCaseForm.controls.case.controls.subject.invalid)"
+                    class="form-control" />
+
+                @if (addCaseForm?.controls?.case?.controls?.subject?.touched) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (addCaseForm.controls?.case?.controls?.subject?.errors?.['required']) {
+                    <p>هذا الحقل مطلوب</p>
+                    }
+                    @if (addCaseForm.controls?.case?.controls?.subject?.errors?.['minlength']) {
+                    <p>يجب أن يكون على الأقل 3 أحرف</p>
+                    }
+                </div>
+                }
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">اطراف الدعوى</label>
+                <select formControlName="partiesToTheCase"
+                    [class.border-error]="(addCaseForm.controls.case.controls.partiesToTheCase.touched && addCaseForm.controls.case.controls.partiesToTheCase.invalid)"
+                    class="form-control">
+                    <option value="مدعي">مدعي</option>
+                    <option value="مدعي عليه">مدعي عليه</option>
+                </select>
+                @if (addCaseForm.controls?.case?.controls?.partiesToTheCase?.touched) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (addCaseForm.controls?.case?.controls?.partiesToTheCase?.errors?.['required']) {
+                    <p>هاذا الحقل مطلوب</p>
+                    }
+                </div>
+                }
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">الوقت المتوقع للدراسة</label>
+                <input type="date" formControlName="estimatedTime"
+                    [class.border-error]="(addCaseForm.controls.case.controls.estimatedTime.touched && addCaseForm.controls.case.controls.estimatedTime.invalid)"
+                    class="form-control" />
+
+                @if (addCaseForm.controls?.case?.controls?.estimatedTime?.touched) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (addCaseForm.controls?.case?.controls?.estimatedTime?.errors?.['required']) {
+                    <p>يرجى تحديد التاريخ</p>
+                    }
+                    @if (addCaseForm.controls?.case?.controls?.estimatedTime?.errors?.['pastDate']) {
+                    <p>ادخل وقت في الحاضر او المستقبل</p>
+                    }
+                </div>
+                }
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">نوع المحكمة</label>
+                <select formControlName="courtType"
+                    [class.border-error]="(addCaseForm.controls.case.controls.courtType.touched && addCaseForm.controls.case.controls.courtType.invalid)"
+                    class="form-select">
+                    @for (court of courts; track court.courtTypeId; let first = $first) {
+                    <option selected [value]="court.courtTypeId">{{court.name}}</option>
+                    }
+                </select>
+                @if (addCaseForm.controls?.case?.controls?.courtType?.touched) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (addCaseForm.controls?.case?.controls?.courtType?.errors?.['required']) {
+                    <p>هذا الحقل مطلوب</p>
+                    }
+                </div>
+                }
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">الموظف الموكل على القضية</label>
+                <select formControlName="assignedOfficer" class="form-select"
+                    [class.border-error]="(addCaseForm.controls.case.controls.assignedOfficer.touched && addCaseForm.controls.case.controls.assignedOfficer.invalid)">
+                    @for (em of employeeNames; track em.id) {
+                    <option [value]="em.id">{{em.name}}</option>
+                    }
+                </select>
+                @if (addCaseForm.controls?.case?.controls?.assignedOfficer?.touched) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (addCaseForm.controls?.case?.controls?.assignedOfficer?.errors?.['required']) {
+                    <p>هذا الحقل مطلوب</p>
+                    }
+                </div>
+                }
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">رقم القضية</label>
+                <input type="text" formControlName="caseNumber" placeholder="أدخل رقم القضية"
+                    [class.border-error]="(addCaseForm.controls.case.controls.caseNumber.touched && addCaseForm.controls.case.controls.caseNumber.invalid)"
+                    class="form-control" />
+
+                @if (addCaseForm.controls?.case?.controls?.caseNumber?.touched) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (addCaseForm.controls?.case?.controls?.caseNumber?.errors?.['required']) {
+                    <p>هذا الحقل مطلوب</p>
+                    }
+                </div>
+                }
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">متطلبات العميل</label>
+                <textarea formControlName="clientRequests"
+                    [class.border-error]="(addCaseForm.controls.case.controls.clientRequests.touched && addCaseForm.controls.case.controls.clientRequests.invalid)"
+                    placeholder="متطلبات العميل" class="form-control"></textarea>
+
+                @if (addCaseForm.controls?.case?.controls?.clientRequests?.touched) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (addCaseForm.controls?.case?.controls?.clientRequests?.errors?.['required']) {
+                    <p>هذا الحقل مطلوب</p>
+                    }
+                </div>
+                }
+            </div>
+
+            <div class="col-12 lawyer-opnion">
+                <label class="form-label">رأي المحامي</label>
+                <textarea formControlName="lawyerOpinion"
+                    [class.border-error]="(addCaseForm.controls.case.controls.lawyerOpinion.touched && addCaseForm.controls.case.controls.lawyerOpinion.invalid)"
+                    placeholder="رأي المحامي" class="form-control"></textarea>
+
+                @if (addCaseForm.controls?.case?.controls?.lawyerOpinion?.touched) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (addCaseForm.controls?.case?.controls?.lawyerOpinion?.errors?.['required']) {
+                    <p>هذا الحقل مطلوب</p>
+                    }
+                    @if (addCaseForm.controls?.case?.controls?.lawyerOpinion?.errors?.['minlength']) {
+                    <p>يجب أن يحتوي على 10 أحرف على الأقل</p>
+                    }
+                </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <div class="btn-group" role="group" aria-label="Buttons Action group">
+        <button type="submit" (click)="submit(false)" class="btn bg-sub">إرسال الموافقة</button>
+        <button type="submit" (click)="submit(true)" class="btn bg-accent">حفظ كمسودة</button>
+    </div>
+</form>

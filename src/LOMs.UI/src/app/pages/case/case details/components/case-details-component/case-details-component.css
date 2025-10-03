@@ -1,0 +1,20 @@
+.title {
+    color: rgb(148, 148, 148);
+}
+
+.text {
+    display: inline-block;
+}
+
+.text > p {
+    font-size: 1.1rem;
+    display: flex; 
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+section.case-content {
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}

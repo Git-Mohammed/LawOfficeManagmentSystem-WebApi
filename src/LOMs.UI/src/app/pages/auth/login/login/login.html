@@ -1,0 +1,38 @@
+<div class="body">
+    <form [formGroup]="loginForm" (ngSubmit)="login()" class="col-lg-3 col-md-6 col-sm-9">
+        <header>
+            <div class="icon d-flex justify-content-center"><img src="icon-img.png" width="300px" height="300px" alt=""></div>
+            <h4>تسجيل الدخول للنظام</h4>
+        </header>
+        <div class="content row g-3">
+            <div class="col-md-12">
+                <label class="form-label">رقم الهوية</label>
+                <input type="text" [class.border-error]="loginForm.controls.natId.invalid && showErrors"
+                    formControlName="natId" required placeholder="أدخل رقم الهوية" class="form-control">
+                @if (loginForm.controls.natId.invalid && showErrors) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (loginForm.controls.natId?.errors?.['required']) {
+                    <p>هذا الحقل مطلوب</p>
+                    } @if(loginForm.controls.natId?.errors?.['minlength']) {
+                    <p>يجب أن يكون على الأقل 3 أحرف</p>
+                    }
+                </div>
+                }
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">كلمة المرور</label>
+                <input type="password" formControlName="password"
+                    [class.border-error]="loginForm.controls.password.invalid && showErrors"
+                    required placeholder="أدخل كلمة المرور" class="form-control">
+                @if (loginForm.controls.password.invalid && showErrors) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (loginForm.controls.password?.errors?.['required']) {
+                    <p>هذا الحقل مطلوب</p>
+                    }
+                </div>
+                }
+            </div>
+        </div>
+        <input type="submit" value="تسجيل الدخول" class="btn bg-accent w-fill">
+    </form>
+</div>

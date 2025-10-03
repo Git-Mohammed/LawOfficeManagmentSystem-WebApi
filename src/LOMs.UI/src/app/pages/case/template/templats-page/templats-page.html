@@ -1,0 +1,20 @@
+<section class="body">
+    <section class="mb-5">
+        <header class="row align-items">
+            <app-section-button actionText="إضافة" (action)="addTemplate()"></app-section-button>
+        </header>
+    </section>
+
+    <section class="section">
+        @if (templates.length) {
+            <div class="templates-container d-flex flex-wrap gap-3">
+                @for (box of templates; track box.id) {
+                <app-template-box-component (download)="download(box)" [header]="box.name"></app-template-box-component>
+                }
+            </div>
+        }@else {
+            <app-empty-table msg="لايوجد نماذج في النظام" title="لا يوجد نماذج" action="أضف نموذج" [hasAction]="true" (actionClicked)="addTemplate()"></app-empty-table>
+        }
+
+    </section>
+</section>

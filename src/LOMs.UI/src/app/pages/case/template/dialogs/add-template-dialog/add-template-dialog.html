@@ -1,0 +1,46 @@
+<app-dialog-header-component title="إضافة نموذج جديد" (onClose)="dialogRef.close()"></app-dialog-header-component>
+
+<mat-dialog-content>
+  <form [formGroup]="addTemplateForm" id="addTemplateForm" (ngSubmit)="submit()">
+    <div class="row d-flex g-3">
+      <div class="col-md-6">
+        <label class="form-label">اسم النموذج</label>
+        <input type="text" formControlName="name"
+          [class.border-error]="addTemplateForm.controls.name.touched && addTemplateForm.controls.name.invalid"
+          class="form-control" placeholder="أدخل اسم القالب" />
+          @if (addTemplateForm.controls.name.touched) {
+            <div class="errors" animate.enter="error-animation">
+              @if (addTemplateForm.controls.name.errors?.['required']) {
+                <p>هذا الحقل مطلوب</p>
+              }
+            </div>
+          }
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">ملف القالب</label>
+        <input type="file" (change)="onFileChange($event)"
+          [class.border-error]="addTemplateForm.controls.file.touched && addTemplateForm.controls.file.invalid"
+          class="form-control" [accept]="['.pdf','.doc','.docx']" />
+        @if (addTemplateForm.controls.file.touched) {
+        <div class="errors" animate.enter="error-animation">
+          @if (addTemplateForm.controls.file.errors?.['required']) {
+          <p>هذا الحقل مطلوب</p>
+          }
+          @if (addTemplateForm.controls.file.errors?.['extension']) {
+          <p>{{ addTemplateForm.controls?.file?.errors?.['extension'].message }}</p>
+          }
+          @else if (addTemplateForm.controls.file.errors?.['maxSize']) {
+          <p>{{ addTemplateForm.controls?.file?.errors?.['maxSize'].message }}</p>
+          }
+        </div>
+        }
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions class="btn-group d-flex justfiy-content-center gap-3" role="group">
+  <input type="submit" value="رفع النموذج" form="addTemplateForm" class="btn bg-main col-sm-12">
+  <button class="btn bg-accent " type="button" mat-dialog-close>إلغاء</button>
+</mat-dialog-actions>

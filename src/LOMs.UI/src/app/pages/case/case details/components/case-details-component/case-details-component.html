@@ -1,0 +1,135 @@
+<section class="section">
+  <header>
+    <h3>معلومات القضية</h3>
+  </header>
+
+  <section class="case-content d-myflex my-justi gap-5">
+    <!-- General Info -->
+    <div class="text">
+      <p><span class="title">رقم القضية:</span> <span class="content">{{case?.caseNumber || 'لايوجد رقم'}}</span></p>
+    </div>
+    <div class="text">
+      <p><span class="title">نوع المحكمة:</span> <span class="content">{{case?.courtTypeName || 'غير محدد'}}</span></p>
+    </div>
+    <div class="text">
+      <p><span class="title">الموظف الموكل:</span> <span class="content">{{case?.assignedEmployeeName || 'غير محدد'}}</span></p>
+    </div>
+    <div class="text">
+      <p><span class="title">منشئ القضية:</span> <span class="content">{{case?.employeeName || 'غير معروف'}}</span></p>
+    </div>
+
+    <!-- Status & Subject -->
+    <div class="text">
+      <p><span class="title">الحالة:</span> <span appCaseStatus class="content">{{case?.status || 'غير محددة'}}</span>
+      </p>
+    </div>
+    <div class="text">
+      <p><span class="title">موضوع القضية:</span> <span class="content">{{case?.caseSubject || 'لا يوجد عنوان'}}</span>
+      </p>
+    </div>
+
+    <!-- Legal Context -->
+    <div class="text">
+      <p><span class="title">طلبات العميل:</span> <span class="content">{{case?.clientRequests || 'لا توجد طلبات'}}</span></p>
+    </div>
+    <div class="text">
+      <p><span class="title">رأي المحامي:</span> <span class="content">{{case?.layerOpinion || 'لم يتم الإدلاء بالرأي'}}</span></p>
+    </div>
+
+    <!-- Timeline -->
+    <div class="text">
+      <p><span class="title">تاريخ الإنشاء:</span> <span class="content">{{case?.createdDate || 2024-02-02 |
+          date:'dd/MM/yyyy'}}</span></p>
+    </div>
+    <div class="text">
+      <p><span class="title">التاريخ المتوقع:</span> <span class="content">{{case?.estimatedDate || 2024-02-02 |
+          date:'dd/MM/yyyy'}}</span></p>
+    </div>
+
+    <div class="text">
+      <p><span class="title">تغير الحالة:</span> 
+            <select #selectedCase [(ngModel)]="status" class="form-select">
+              <option value="قيد نظر">قيد نظر</option>
+              <option value="قيد تنفيذ">قيد تنفيذ</option>
+              <option value="قيد منتهي">قيد منتهي</option>
+              <option value="ملغي">ملغي</option>
+          </select>
+          <button (click)="update(status)" class="btn bg-accent">تحديث</button>
+      </p>
+    </div>
+  </section>
+
+</section>
+
+<section class="section">
+  <header>
+    <h3>اطراف القضية</h3>
+  </header>
+
+  <div class="row justify-content-between mb-3">
+    <!-- Filter Input -->
+    <div class="col-4 mb-2">
+      <input type="text" placeholder="ابحث في الأطراف..." (keyup)="filterParties($event)" class="form-control">
+    </div>
+  </div>
+
+  <div class="table-responsive tb-container">
+    <table matSort mat-table [dataSource]="partiesDataSource" class="mat-elevation-z8 table">
+
+      <!-- Index Column -->
+      <ng-container [matColumnDef]="displayedColumns[0]">
+        <th mat-header-cell *matHeaderCellDef>#</th>
+        <td mat-cell *matCellDef="let i = index">
+          {{ helper.getCurrentRowNumber(i, paginator?.pageIndex || 0, paginator?.pageSize || 20) }}
+        </td>
+      </ng-container>
+
+      <!-- Name Column -->
+      <ng-container [matColumnDef]="displayedColumns[1]">
+        <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[1]">اسم العميل</th>
+        <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+      </ng-container>
+
+      <!-- National ID Column -->
+      <ng-container [matColumnDef]="displayedColumns[2]">
+        <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[2]">رقم الهوية</th>
+        <td mat-cell *matCellDef="let element"> {{element.natId}} </td>
+      </ng-container>
+
+      <!-- Phone Column -->
+      <ng-container [matColumnDef]="displayedColumns[3]">
+        <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[3]">رقم الهاتف</th>
+        <td mat-cell *matCellDef="let element"> {{element.phoneNumber}} </td>
+      </ng-container>
+
+      <!-- Nationality Column -->
+      <ng-container [matColumnDef]="displayedColumns[4]">
+        <th mat-header-cell *matHeaderCellDef>تاريخ الميلاد</th>
+        <td mat-cell *matCellDef="let element"> {{element.birthDate || 2024-2-5 | date}} </td>
+      </ng-container>
+
+
+      <!-- Nationality Column -->
+      <ng-container [matColumnDef]="displayedColumns[5]">
+        <th mat-header-cell *matHeaderCellDef>الجنسية</th>
+        <td mat-cell *matCellDef="let element"> السعودية </td>
+      </ng-container>
+
+
+      <!-- Nationality Column -->
+      <ng-container [matColumnDef]="displayedColumns[6]">
+        <th mat-header-cell *matHeaderCellDef>العنوان</th>
+        <td mat-cell *matCellDef="let element"> {{element.address}} </td>
+      </ng-container>
+
+      <!-- Header and Row Definitions -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <!-- Pagination -->
+    <mat-paginator [pageSizeOptions]="[10, 20, 30, 40, 50]" (page)="handlePage($event)" [pageIndex]="currentPage"
+      [length]="partiesDataSource.filteredData.length" pageSize="20">
+    </mat-paginator>
+  </div>
+</section>

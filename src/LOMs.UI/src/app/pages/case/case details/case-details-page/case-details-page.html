@@ -1,0 +1,15 @@
+<app-page-header-component title="تفاصيل القضية"></app-page-header-component>
+<ul class="row">
+    <li routerLink='case' routerLinkActive="bg-main" class="btn col-md-3 col-lg">نظرة عامة</li>
+    <li routerLink="judgments" routerLinkActive="bg-main" class="btn col-md-3 col-lg">صكوك الاحكام</li>
+    @if (hasRole()) {
+        <li routerLink="contracts" routerLinkActive="bg-main" class="btn col-md-3 col-lg">العقود</li>
+    }
+    <li routerLink="poas" routerLinkActive="bg-main" class="btn col-md-3 col-lg">الوكالات</li>
+    <li routerLink="attachments" routerLinkActive="bg-main" class="btn col-md-3 col-lg">المرفقات</li>
+    <li routerLink="sessions" routerLinkActive="bg-main" class="btn col-md-3 col-lg">الجلسات</li>
+</ul>
+
+<main>
+    <router-outlet></router-outlet>
+</main>

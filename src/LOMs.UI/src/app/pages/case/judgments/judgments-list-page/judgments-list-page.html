@@ -1,0 +1,96 @@
+<section class="body">
+    <section class="mb-5">
+        <header>
+        </header>
+    </section>
+    <section class="section">
+
+        @if (dataSource.data.length) {
+        <div class="table-responsive tb-container">
+
+            <!-- @if (dataSource?.data?.length) { -->
+            <div appearance="outline" class="mb-3 col-3">
+                <input (keyup)="applyFilter($event)" class="form-control" placeholder="اكتب للبحث...">
+            </div>
+
+            <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 w-100 table">
+
+                <!-- Index Column -->
+                <ng-container [matColumnDef]="displayedColumns[0]">
+                    <th mat-header-cell *matHeaderCellDef>#</th>
+                    <td mat-cell *matCellDef="let i = index">
+                        {{ helper.getCurrentRowNumber(i, paginator?.pageIndex || 0, paginator?.pageSize || 20) }}
+                    </td>
+                </ng-container>
+                <!-- رقم الحكم -->
+                <ng-container matColumnDef="number">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>رقم الحكم</th>
+                    <td mat-cell *matCellDef="let row">{{ row.number }}</td>
+                </ng-container>
+
+                <!-- نوع الحكم -->
+                <ng-container matColumnDef="type">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>النوع</th>
+                    <td mat-cell *matCellDef="let row"> <span appJudgmentStyle>{{ row.type }}</span></td>
+                </ng-container>
+
+                <!-- النوع الفرعي -->
+                <ng-container matColumnDef="subType">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>النوع الفرعي</th>
+                    <td mat-cell *matCellDef="let row"> <span appJudgmentSubTypeStyle>{{ row.subType }}</span></td>
+                </ng-container>
+
+                <!-- تاريخ الإصدار -->
+                <ng-container matColumnDef="issueDate">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>تاريخ الإصدار</th>
+                    <td mat-cell *matCellDef="let row">{{ row.issueDate | date:'yyyy/MM/dd' }}</td>
+                </ng-container>
+
+                <!-- اسم المنشئ -->
+                <ng-container matColumnDef="creatorName">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>المنشئ</th>
+                    <td mat-cell *matCellDef="let row">{{ row.creatorName }}</td>
+                </ng-container>
+
+                <!-- تاريخ الإنشاء -->
+                <ng-container matColumnDef="createdDate">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>تاريخ الإنشاء</th>
+                    <td mat-cell *matCellDef="let row">{{ row.createdDate | date:'yyyy/MM/dd' }}</td>
+                </ng-container>
+
+                <!-- تحميل الملف -->
+                <ng-container matColumnDef="download">
+                    <th mat-header-cell *matHeaderCellDef>تحميل</th>
+                    <td mat-cell *matCellDef="let row">
+
+                        <button [matMenuTriggerFor]="menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        <mat-menu #menu="matMenu">
+                            <button mat-menu-item class="btn" (click)="download(row)" title="تحميل">
+                                <i class="fa-solid fa-download"></i>
+                                تحميل
+                            </button>
+                            <a [routerLink]="['../case-details', row.caseId]" class="h-fit">
+                                <i class="fa-solid fa-eye me-1"></i>
+                                تفصيل القضية
+                            </a>
+                        </mat-menu>
+
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" [length]="dataSource.data.length" pageSize="20"></mat-paginator>
+            <!-- } @else {
+                <app-empty-table title="لايوجد صكوك احكام" msg="لايوجد معلومات لاي صك حكم في النظام"></app-empty-table>
+                } -->
+
+        </div>
+        } @else {
+        <app-empty-table title="لا توجد صكوك" msg="لا توجد صكوك مسجل بعد في النظام"></app-empty-table>
+        }
+    </section>
+
+</section>

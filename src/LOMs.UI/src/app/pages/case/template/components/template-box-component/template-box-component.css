@@ -1,0 +1,24 @@
+.box {
+    width: 230px;
+    height: 230px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #cfcfcf;
+    transition: 0.3s;
+    gap: 1rem
+}
+
+.box:hover {
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
+
+.icon {
+    font-size: 1.5rem;
+}
+h3 {
+    font-size: 1.2rem;
+}

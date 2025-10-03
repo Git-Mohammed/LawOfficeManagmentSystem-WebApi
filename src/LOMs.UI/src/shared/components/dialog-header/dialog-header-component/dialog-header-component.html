@@ -1,0 +1,12 @@
+<div class="d-myflex my-justi m-3">
+    <div class="d-flex align-items-center gap-2">
+        @if (icon) {
+            <ng-container >
+                <i [class]="icon"></i>
+            </ng-container>
+        }
+        <h2 class="dialog-title">{{ title }}</h2>
+    </div>
+
+    <a (click)="onClose.emit()" class="btn-del"><i class="fa-solid fa-xmark"></i></a>
+</div>

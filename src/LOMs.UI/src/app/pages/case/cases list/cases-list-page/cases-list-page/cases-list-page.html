@@ -1,0 +1,116 @@
+<div class="content">
+    <div class="section">
+        <h2>المحاكم</h2>
+        <div class="row">
+            @for (court of courts; track court.courtTypeId; let firstItem = $first) {
+            <button (click)="updateTableData(court.courtTypeId, selectedYear)" (click)="onCourtChange(court)"
+                class="btn col-sm-12 col-lg-1 d-flex justfi-content-center h-fit text-center w-fit"
+                [ngClass]="{'bg-main': activeButton === court.code}" (click)="setActiveButton(court.code)">
+                {{ court.name }}
+            </button>
+            }
+        </div>
+    </div>
+
+    <div class="section">
+        @if (casesList?.items?.length) {
+        <h3 class="col-md-10">القضايا</h3>
+        <div class="row justify-content-between">
+            <!-- Enhanced Search Section -->
+            <div class="col-3 mb-2 ">
+                <input type="text" placeholder="ابحث في القضايا..." (keyup)="filter($event)" class="form-control">
+            </div>
+
+            <div class="col-sm-3 mb-2">
+                <select (change)="updateTableData(selectedCourt.courtTypeId, selectedYear.value)"
+                    [(ngModel)]="selectedYear" #selectedYear class="form-select">
+                    @for (year of selectedCourt.years; track year; let firstItem = $first) {
+                    <option (focus)="yearChanged(year)" [value]="year" [selected]="firstItem">{{year}}</option>
+                    }
+                </select>
+            </div>
+
+        </div>
+
+        <!-- Enhanced Table with Sort, Filter & Pagination -->
+        <div class="table-responsive tb-container">
+            <table matSort mat-table [dataSource]="casesDataSource" class="mat-elevation-z8 table">
+
+                <!-- Index Column -->
+                <ng-container [matColumnDef]="displayedColumns[0]">
+                    <th mat-header-cell *matHeaderCellDef>#</th>
+                    <td mat-cell *matCellDef="let i = index">
+                        {{ helper.getCurrentRowNumber(i, paginator?.pageIndex || 0, paginator?.pageSize || 20) }}
+                    </td>
+                </ng-container>
+
+                <!-- File Number Column with Sort -->
+                <ng-container [matColumnDef]="displayedColumns[1]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[1]">رقم الملف</th>
+                    <td mat-cell *matCellDef="let element">{{element.fileNumber}}</td>
+                </ng-container>
+
+                <!-- Case Number Column with Sort -->
+                <ng-container [matColumnDef]="displayedColumns[2]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[2]">رقم القضية</th>
+                    <td mat-cell *matCellDef="let element">{{element.caseNumber}}</td>
+                </ng-container>
+
+                <!-- Case Status Column with Sort -->
+                <ng-container [matColumnDef]="displayedColumns[3]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[3]">حالة القضية</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span appCaseStatus>{{element.status}}</span>
+                    </td>
+                </ng-container>
+
+                <!-- Created Date Column -->
+                <ng-container [matColumnDef]="displayedColumns[4]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[4]">تاريخ الإنشاء</th>
+                    <td mat-cell *matCellDef="let element">{{element.createdDate | date:'dd/MM/yyyy'}}</td>
+                </ng-container>
+
+                <!-- Employee Name Column -->
+                <ng-container [matColumnDef]="displayedColumns[5]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[5]">اسم الموظف</th>
+                    <td mat-cell *matCellDef="let element">{{element.employeeName}}</td>
+                </ng-container>
+
+                <!-- Case Subject Column -->
+                <ng-container [matColumnDef]="displayedColumns[6]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[6]">موضوع القضية</th>
+                    <td mat-cell *matCellDef="let element">{{element.caseSubject}}</td>
+                </ng-container>
+
+
+                <!-- Actions Column -->
+                <ng-container [matColumnDef]="displayedColumns[7]">
+                    <th mat-header-cell *matHeaderCellDef>التفاصيل</th>
+                    <td mat-cell *matCellDef="let element">
+                        <button [matMenuTriggerFor]="menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        <mat-menu #menu="matMenu" class="bg-accent">
+                            <a [routerLink]="['../case-details', element.caseId]" class="h-fit">
+                                <i class="fa-solid fa-eye me-1"></i>
+                                التفاصيل
+                            </a>
+                        </mat-menu>
+                    </td>
+                </ng-container>
+
+                <!-- Header and Row Definitions -->
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+
+            <!-- Pagination -->
+            <mat-paginator [pageSizeOptions]="[10, 20, 30, 40, 50]" (page)="handlePage($event)"
+                [pageIndex]="currentPage" [length]="casesDataSource.filteredData.length" pageSize="20">
+            </mat-paginator>
+        </div>
+
+        } @else {
+        <app-empty-table title="لا توجد قضايا" msg="لا توجد قضايا مطابقة للمعايير المحددة"></app-empty-table>
+        }
+
+    </div>
+</div>

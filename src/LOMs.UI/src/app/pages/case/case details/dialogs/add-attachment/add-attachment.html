@@ -1,0 +1,47 @@
+<app-dialog-header-component title="إضافة مرفق جديد" (onClose)="dialogRef.close()"></app-dialog-header-component>
+<mat-dialog-content>
+
+    <form [formGroup]="addAttachmentForm" id="addAttachmentForm" (ngSubmit)="submit()">
+        <div class="row d-flex g-3">
+            <div class="col-md-6">
+                <label class="form-label">اسم المرفق</label>
+                <input type="text" formControlName="name"
+                    [class.border-error]="(addAttachmentForm.controls.name.touched && addAttachmentForm.controls.name.invalid)"
+                    class="form-control" [accept]="['.pdf','.doc','.docx']"/>
+                <div class="errors" *ngIf="addAttachmentForm.controls.name.touched" animate.enter="error-animation">
+                    <p *ngIf="addAttachmentForm.controls.name?.errors?.['required']">هذا الحقل مطلوب</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">المرفق</label>
+                <input type="file" (change)="onFileChange($event)"
+                    [class.border-error]="(addAttachmentForm.controls.attachmentFile.touched && addAttachmentForm.controls.attachmentFile.invalid)"
+                    class="form-control" />
+                @if (addAttachmentForm.controls.attachmentFile.touched) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (addAttachmentForm.controls.attachmentFile?.errors?.['required']) {
+                    <p *ngIf="">هذا الحقل مطلوب</p>
+                    }
+                    @if (addAttachmentForm.controls.attachmentFile?.errors?.['required']) {
+                    <p>هذا الحقل مطلوب</p>
+                    }
+
+                    @if (addAttachmentForm.controls?.attachmentFile?.errors?.['extension']) {
+                    <p>{{addAttachmentForm.controls?.attachmentFile?.errors?.['extension']?.message}}</p>
+                    }
+
+                    @else if (addAttachmentForm.controls?.attachmentFile?.errors?.['maxSize']) {
+                    <p>{{addAttachmentForm.controls?.attachmentFile?.errors?.['maxSize']?.message}}</p>
+                    }
+                </div>
+
+                }
+            </div>
+        </div>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions class="btn-group d-flex justfiy-content-center gap-3" role="group">
+    <input type="submit" value="رفع المرفق" form="addAttachmentForm" class="btn bg-main col-sm-12">
+    <button class="btn bg-accent " type="button" mat-dialog-close>إلغاء</button>
+</mat-dialog-actions>

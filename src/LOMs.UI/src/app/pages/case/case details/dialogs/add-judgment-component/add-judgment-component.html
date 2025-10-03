@@ -1,0 +1,78 @@
+<app-dialog-header-component title="إضافة حكم جديد" (onClose)="dialogRef.close()"></app-dialog-header-component>
+
+<mat-dialog-content>
+    <form [formGroup]="judgmentForm" id="judgmentForm" (ngSubmit)="submit()" class="row d-flex g-3">
+        <div class="col-md-6">
+            <label class="form-label">رقم الحكم</label>
+            <input type="text" formControlName="number"
+                [class.border-error]="judgmentForm.controls.number.invalid && judgmentForm.controls.number.touched"
+                class="form-control" placeholder="أدخل رقم الحكم" />
+            @if (judgmentForm.controls.number.invalid && judgmentForm.controls.file.touched) {
+            <div class="errors" animate.enter="error-animation">
+                @if (judgmentForm.controls?.number?.errors?.['required']) {
+                <p>هذا الحقل مطلوب</p>
+                }
+            </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">نوع الحكم</label>
+            <select formControlName="type" class="form-control">
+                @for (st of judgmentTypes; track st) {
+                <option [value]="st">{{ st }}</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">نوع فرعي</label>
+            <select formControlName="subType" class="form-control">
+                @for (st of judgmentSubTypes; track st) {
+                <option [value]="st">{{ st }}</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">تاريخ الإصدار</label>
+            <input type="date" formControlName="issueDate"
+                [class.border-error]="judgmentForm.controls.issueDate.invalid && judgmentForm.controls.issueDate.touched"
+                class="form-control" />
+            @if (judgmentForm.controls.issueDate.invalid && judgmentForm.controls.file.touched) {
+            <div class="errors" animate.enter="error-animation">
+                @if (judgmentForm.controls.issueDate?.errors?.['required']) {
+                <p>هذا الحقل مطلوب</p>
+                }
+            </div>
+            }
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">ملف الحكم</label>
+            <input type="file" (change)="onFileChange($event)"
+                [class.border-error]="judgmentForm.controls.file.invalid && judgmentForm.controls.file.touched" class="form-control"
+                [accept]="['.pdf','.doc','.docx']" />
+            @if (judgmentForm.controls.file.invalid  && judgmentForm.controls.file.touched) {
+            <div class="errors" animate.enter="error-animation">
+                @if (judgmentForm.controls.file?.errors?.['required']) {
+                <p>الملف مطلوب</p>
+                }
+
+                @if (judgmentForm.controls?.file?.errors?.['extension']) {
+                <p>{{judgmentForm.controls?.file?.errors?.['extension']?.message}}</p>
+                }
+
+                @else if (judgmentForm.controls?.file?.errors?.['maxSize']) {
+                <p>{{judgmentForm.controls?.file?.errors?.['maxSize']?.message}}</p>
+                }
+            </div>
+
+            }
+        </div>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions  class="btn-group d-flex justfiy-content-center gap-3" role="group">
+    <input type="submit" value="إضافة الحكم" form="judgmentForm" class="btn bg-main w-fill">
+    <button class="btn bg-accent " type="button" mat-dialog-close>إلغاء</button>
+</mat-dialog-actions>

@@ -1,0 +1,91 @@
+<section class="section">
+
+    @if (judgmentsDataSource.data?.length) {
+    <header class="d-myflex my-justi mb-2">
+        <h3>صكوك الاحكام</h3>
+        <button class="btn bg-sub" (click)="openAddJudgmentDialog()">إضافة</button>
+    </header>
+
+    <!-- Filter Input -->
+    <div class="row justify-content-between mb-3">
+        <div class="col-4 mb-2">
+            <input type="text" placeholder="ابحث في صكوك الاحكام..." (keyup)="filter()" class="form-control">
+        </div>
+    </div>
+    <div class="table-responsive tb-container">
+        <table matSort mat-table [dataSource]="judgmentsDataSource" class="mat-elevation-z8 table">
+            <!-- Index Column -->
+            <ng-container matColumnDef="index">
+                <th mat-header-cell *matHeaderCellDef>#</th>
+                <td mat-cell *matCellDef="let i = index">
+                    {{ helper.getCurrentRowNumber(i, paginator?.pageIndex || 0, paginator?.pageSize || 20) }}
+                </td>
+            </ng-container>
+
+            <!-- Contract Number -->
+            <ng-container [matColumnDef]="displayedColumns[1]">
+                <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[1]">رقم الصك</th>
+                <td mat-cell *matCellDef="let element">{{ element.number }}</td>
+            </ng-container>
+
+            <!-- Contract Type -->
+            <ng-container [matColumnDef]="displayedColumns[2]">
+                <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[2]">نوع الصك</th>
+                <td mat-cell *matCellDef="let element"><span appJudgmentStyle>{{ element.type }}</span></td>
+            </ng-container>
+
+            <!-- Total Amount -->
+            <ng-container [matColumnDef]="displayedColumns[3]">
+                <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[3]">النوع الفرعي</th>
+                <td mat-cell *matCellDef="let element"> <span appJudgmentSubTypeStyle> {{ element.subType }}</span></td>
+            </ng-container>
+
+            <!-- Remaining Amount -->
+            <ng-container [matColumnDef]="displayedColumns[4]">
+                <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[4]">تاريخ الاصدار</th>
+                <td mat-cell *matCellDef="let element">{{ element.issueDate | date:'dd/MM/yyyy' }}</td>
+            </ng-container>
+
+            <!-- Issue Date -->
+            <ng-container [matColumnDef]="displayedColumns[5]">
+                <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[5]">المنشئ</th>
+                <td mat-cell *matCellDef="let element">{{ element.creatorName }}</td>
+            </ng-container>
+
+            <!-- Remaining Amount -->
+            <ng-container [matColumnDef]="displayedColumns[6]">
+                <th mat-header-cell *matHeaderCellDef>تاريخ الانشاء</th>
+                <td mat-cell *matCellDef="let element">{{ element.createdDate | date:'dd/MM/yyyy' }}</td>
+            </ng-container>
+
+            <!-- Remaining Amount -->
+            <ng-container [matColumnDef]="displayedColumns[7]">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>الاجراءات</th>
+                <td mat-cell *matCellDef="let element">
+                    <button [matMenuTriggerFor]="menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    <mat-menu #menu="matMenu">
+                        <button mat-menu-item class="btn" (click)="download(element)"
+                            title="تحميل">
+                            <i class="fa-solid fa-download"></i>
+                            تحميل
+                        </button>
+                    </mat-menu>
+
+                </td>
+            </ng-container>
+
+            <!-- Header and Row Definitions -->
+            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <!-- Pagination -->
+        <mat-paginator [pageSizeOptions]="[10, 20, 30, 40, 50]" (page)="handlePage($event)" [pageIndex]="currentPage"
+            [length]="judgmentsDataSource.filteredData.length" pageSize="20">
+        </mat-paginator>
+    </div>
+    } @else {
+    <app-empty-table title="لاتوجد صكوك مسجلة بعد في هذه القضية" msg="لاتوجد صكوك مسجلة, يمكنك إضافة واحدة"
+        [hasAction]="true" (actionClicked)="openAddJudgmentDialog()" action="أضف"></app-empty-table>
+    }
+</section>

@@ -1,0 +1,10 @@
+.btn-icon {
+    transition: 0.3s;
+    border: 1px solid var(--txt);
+    font-size: 0.8rem;
+}
+
+.btn-icon:last-of-type {
+    color: red;
+}
+

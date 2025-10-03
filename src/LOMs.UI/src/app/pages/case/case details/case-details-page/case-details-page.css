@@ -1,0 +1,18 @@
+ul {
+    background-color: rgba(221, 221, 221, 0.623);
+    padding: 0.2rem;
+    border-radius: 5px;
+}
+
+ul li {
+    display: flex;
+    justify-content: center;
+    cursor: pointer;
+    transition: hover 0.3s;
+}
+
+
+ul li:hover {
+    background-color: rgba(221, 221, 221, 0.738);
+    color: black;
+}

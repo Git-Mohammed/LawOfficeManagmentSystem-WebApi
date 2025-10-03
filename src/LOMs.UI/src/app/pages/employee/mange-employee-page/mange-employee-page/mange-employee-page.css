@@ -1,0 +1,38 @@
+/* .body {
+    height: 100vh;
+} */
+
+.tb-container {
+    height: 500px;
+}
+
+.row.align-items {
+    align-items: center;
+}
+
+/* button {
+    text-align: center;
+    background: linear-gradient(135deg, var(--secondary), rgb(41, 73, 106));
+    color: white;
+    height: fit-content;
+} */
+
+
+.btn-icon {
+    transition: 0.3s;
+    border: 1px solid var(--txt);
+    font-size: 0.8rem;
+}
+
+.btn-icon:last-of-type {
+    color: red;
+}
+
+.btn-icon:hover {
+    background-color: var(--secondary);
+    color: var(--secondary-foreground);
+}
+
+.h-fit {
+    height: fit-content;
+}

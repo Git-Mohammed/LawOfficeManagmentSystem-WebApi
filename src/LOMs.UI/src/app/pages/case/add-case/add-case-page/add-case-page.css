@@ -1,0 +1,53 @@
+section,
+.section {
+    border: 1px solid var(--txt);
+    border-radius: 10px;
+    padding: 1.5rem 1rem;
+    margin-bottom: 2rem;
+}
+
+
+h3 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.parties-container > .row {
+    gap: 1rem;
+}
+
+.parties-container {
+    margin-bottom: 1rem;
+}
+
+.parties {
+    margin-top: -0.5rem;
+    background-color: rgba(210, 210, 210, 0.232);
+    padding: 0.5rem;
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 7px;
+}
+
+.parties p {
+    margin: 0;
+}
+
+.searchbtn {
+    height: fit-content;
+    align-self: center;
+    padding: 0.4rem 1rem;
+}
+
+
+.btn-group {
+    gap: 1rem;
+}
+
+.btn.bg-accent:hover {
+    background-color: var(--secondary);
+    color: var(--secondary-foreground);
+}

@@ -1,0 +1,94 @@
+.body {
+    height: 100vh;
+    max-width: 100%;
+}
+
+
+nav {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+ul {
+    flex: 1;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.3rem;
+    padding: 0;
+}
+
+
+a {
+    width: 100%;
+    transition: hover 0.3s;
+    margin-bottom: 0.2rem;
+    padding: 0.3rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 7px;
+}
+
+a:hover {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid var(--txt);
+}
+
+.logout a {
+    margin: 1rem 0.5rem 0;
+    padding: 0.5rem;
+    text-align: center;
+    transition: 0.2s;
+}
+
+
+ngx-spinner {
+    z-index: 99999;
+}
+
+
+mat-sidenav {
+    padding: 1rem 0.4rem;
+    background-color: rgb(255, 255, 255);
+    border-left: 1px solid #cccccc !important;
+    height: 100%;
+    height: calc(100% - 65px);  
+}
+
+mat-sidenav-container {
+    height: calc(100vh - 65px);
+}
+
+mat-sidenav-content {
+    padding: 1rem 1.5rem;
+}
+
+.side-btn {
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    font-size: 1.4rem;
+}
+
+.visible {
+    visibility: hidden;
+}
+
+.only-icon {
+    padding: 0.5rem 0rem;
+    font-size: 1rem;
+}
+
+mat-toolbar {
+    border-bottom: #d9d9d9 solid 1px;
+    padding: 1rem 0.5rem;    
+
+}

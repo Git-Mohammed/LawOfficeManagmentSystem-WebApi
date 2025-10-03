@@ -1,0 +1,90 @@
+<section class="body">
+
+    <section class="mb-5">
+        <header class="row align-items">
+            <app-section-button actionText="إضافة" (action)="addEmployee()"></app-section-button>
+        </header>
+    </section>
+
+
+    <section class="section">
+
+        @if (employeesDataSource?.data?.length) {
+        <div class="col-3 mb-2">
+            <input type="text" placeholder="أدخل رقم الهوية" (keyup)="filter($event)" placeholder="ابحث"
+                class="form-control">
+        </div>
+        <div class="table-responsive tb-container">
+
+            <table matSort mat-table [dataSource]="employeesDataSource" class="mat-elevation-z8 table">
+
+                <ng-container [matColumnDef]="displayedColumns[0]">
+                    <th mat-header-cell *matHeaderCellDef>#</th>
+                    <td mat-cell *matCellDef="let i = index"> {{ helper.getCurrentRowNumber(i, paginator?.pageIndex!, paginator?.pageSize!) }}
+                    </td>
+                </ng-container>
+
+                <ng-container [matColumnDef]="displayedColumns[1]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[1]">الاسم الكامل</th>
+                    <td mat-cell *matCellDef="let element"> <span>{{element.name}}</span></td>
+                </ng-container>
+
+
+                <ng-container [matColumnDef]="displayedColumns[2]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[2]">رقم الهوية</th>
+                    <td mat-cell *matCellDef="let element"> <span>{{element.natId}}</span></td>
+                </ng-container>
+
+
+                <ng-container [matColumnDef]="displayedColumns[3]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[3]">البريد الالكتروني</th>
+                    <td mat-cell *matCellDef="let element"> <span>{{element.email}}</span></td>
+                </ng-container>
+
+
+                <ng-container [matColumnDef]="displayedColumns[4]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[4]">الدور</th>
+                    <td mat-cell *matCellDef="let element"> <span appRoleStyle>{{element.role }}</span></td>
+                </ng-container>
+
+
+                <ng-container [matColumnDef]="displayedColumns[5]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[5]">الجنسية</th>
+                    <td mat-cell *matCellDef="let element"> <span>{{element.countryCode | countryName}}</span></td>
+                </ng-container>
+
+                <ng-container [matColumnDef]="displayedColumns[6]">
+                    <th mat-header-cell *matHeaderCellDef  [mat-sort-header]="displayedColumns[6]">حالة الموظف</th>
+                    <td mat-cell *matCellDef="let element"> <span [appEmployeeStatusStyle]="element.IsActive">{{element.IsActive | employeeStatus}}</span></td>
+                </ng-container>
+
+
+                <ng-container [matColumnDef]="displayedColumns[7]">
+                    <th mat-header-cell *matHeaderCellDef>الاجراءات</th>
+                    <td mat-cell *matCellDef="let element">
+                        <button [matMenuTriggerFor]="menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        <mat-menu #menu="matMenu">
+                            <button mat-menu-item (click)="update(element.id)" class="btn bg-accent"><i
+                                    class="fa-solid fa-pen-to-square"></i> تحديث</button>
+                                    <!-- @if (!deactive()) { -->
+                                        <button mat-menu-item class="btn bg-accent"><i class="fa-solid fa-trash"></i> توقيف</button>
+                                    <!-- } -->
+                        </mat-menu>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky : true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+            <mat-paginator [pageSizeOptions]="[10, 20, 30, 40, 50]" (page)="handelPage($event)"
+                [pageIndex]="currentPage" [length]="employeesDataSource.data.length" pageSize="20">
+
+            </mat-paginator>
+        </div>
+
+        } @else {
+        <app-empty-table title="لايوجد موظفين" msg="لايوجد موظفين مسجلين في النظام"></app-empty-table>
+        }
+
+    </section>
+</section>

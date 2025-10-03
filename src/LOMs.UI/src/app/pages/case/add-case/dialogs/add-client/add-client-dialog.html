@@ -1,0 +1,98 @@
+<app-dialog-header-component title="إضافة عميل جديد" (onClose)="dialogRef.close()"></app-dialog-header-component>
+<mat-dialog-content>
+    <form [formGroup]="clientForm" id="clientForm" (ngSubmit)="submit()">
+        <div formGroupName="person" class="d-flex row g-3">
+            <div class="col-md-6">
+                <label class="form-label">الاسم الرباعي </label>
+                <input type="text" placeholder="أدخل الاسم الرباعي" formControlName="name"
+                    [class.border-error]="(clientForm.controls.person.controls.name.touched && clientForm.controls.person.controls.name.invalid)"
+                    class="form-control">
+                @if (clientForm.controls.person.controls.name?.touched) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (clientForm.controls.person.controls.name?.errors?.['required']) {
+                    <p>هاذا الحقل مطلوب</p>
+                    }
+                    @if (clientForm.controls.person.controls.name?.errors?.['minlength']) {
+                    <p>يجب ان يحتوي الاسم على 3 حروفاو اكثر</p>
+                    }
+                </div>
+                }
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">رقم الهوية</label>
+                <input type="text" placeholder="أدخل رقم الهوية" readonly class="disabled" formControlName="natId"
+                    class="form-control">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">الجنسية</label>
+                <select formControlName="countryCode"
+                    [class.border-error]="(clientForm.controls.person.controls.countryCode.touched && clientForm.controls.person.controls.countryCode.invalid)"
+                    class="form-select">
+                    @for(country of counties; track country.code) {
+                    <option [value]="country.code">{{country.name}}</option>
+                    }
+                </select>
+                @if (clientForm.controls.person.controls?.countryCode?.touched) {
+                <div class=" errors" animate.enter="error-animation">
+                    @if (clientForm.controls.person.controls?.countryCode?.errors?.['required']) {
+                    <p>هاذا الحقل مطلوب</p>
+                    }
+                </div>
+                }
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">تاريخ الميلاد</label>
+                <input type="date" formControlName="birthDate"
+                    [class.border-error]="(clientForm.controls.person.controls.birthDate.touched && clientForm.controls.person.controls.birthDate.invalid)"
+                    class="form-control">
+                @if (clientForm.controls.person.controls?.birthDate?.touched) {
+                <div class=" errors" animate.enter="error-animation">
+                    @if (clientForm.controls.person.controls?.birthDate?.errors?.['required']) {
+                    <p>هاذا الحقل مطلوب</p>
+                    }
+                    @if (clientForm.controls.person.controls?.birthDate?.errors?.['minAge']) {
+                    <p>عمر العميل يجب ان يكون اكبر من سنة</p>
+                    }
+                </div>
+                }
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">رقم الجوال</label>
+                <input type="text" formControlName="phone"
+                    [class.border-error]="(clientForm.controls.person.controls.phone.touched && clientForm.controls.person.controls.phone.invalid)"
+                    class="form-control">
+                @if (clientForm.controls.person.controls?.phone?.touched) {
+                <div class=" errors" animate.enter="error-animation">
+                    @if (clientForm.controls.person.controls?.phone?.errors?.['required']) {
+                    <p>هاذا الحقل مطلوب</p>
+                    }
+                    @if (clientForm.controls.person.controls?.phone?.errors?.['pattern']) {
+                    <p>ادخل رقم هاتف صحيح يبدأ ب 5</p>
+                    }
+                </div>
+                }
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">العنوان</label>
+                <input type="text" formControlName="address"
+                    [class.border-error]="(clientForm.controls.person.controls.address.touched && clientForm.controls.person.controls.address.invalid)"
+                    class="form-control">
+                @if (clientForm.controls.person.controls.address.touched) {
+                <div class="errors" animate.enter="error-animation">
+                    @if (clientForm.controls.person.controls.address?.errors?.['required']) {
+                    <p>هاذا الحقل مطلوب</p>
+                    }
+                    @if (clientForm.controls.person.controls.address.errors?.['minlength']) {
+                    <p>يجب ان يكون الحقل اكثر من10 حروف</p>
+                    }
+                </div>
+                }
+            </div>
+        </div>
+
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions class="btn-group row g-3" role="group">
+    <button class="btn bg-main col-sm-12" form="clientForm" type="submit">حفظ العميل</button>
+    <button class="btn bg-accent col-sm-12" type="button" mat-dialog-close>إلغاء</button>
+</mat-dialog-actions>

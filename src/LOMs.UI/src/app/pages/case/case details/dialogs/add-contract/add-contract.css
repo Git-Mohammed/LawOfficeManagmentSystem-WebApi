@@ -1,0 +1,9 @@
+form {
+    padding: 0.5rem;
+}
+.assigned {
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}

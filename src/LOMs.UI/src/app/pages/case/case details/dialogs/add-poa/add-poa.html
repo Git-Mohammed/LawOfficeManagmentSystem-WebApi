@@ -1,0 +1,58 @@
+<app-dialog-header-component title="إضافة وكالة جديدة" (onClose)="dialogRef.close()"></app-dialog-header-component>
+<mat-dialog-content>
+    <form [formGroup]="addPOAForm" id="addPOAForm" class="row d-flex g-3" (ngSubmit)="submit()">
+
+        <div class="col-md-6">
+            <label class="form-label">رقم الوكالة</label>
+            <input type="text" formControlName="poaNumber"
+                [class.border-error]="(addPOAForm.controls.poaNumber.touched && addPOAForm.controls.poaNumber.invalid)"
+                class="form-control" />
+            <div class="errors" *ngIf="addPOAForm.controls.poaNumber.touched" animate.enter="error-animation">
+                <p *ngIf="addPOAForm.controls.poaNumber?.errors?.['required']">هذا الحقل مطلوب</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">تاريخ الاصدار</label>
+            <input type="date" formControlName="poaIssueDate"
+                [class.border-error]="(addPOAForm.controls.poaIssueDate.touched && addPOAForm.controls.poaIssueDate.invalid)"
+                class="form-control" />
+            <div *ngIf="addPOAForm.controls.poaIssueDate.touched" class="errors" animate.enter="error-animation">
+                <p *ngIf="addPOAForm.controls.poaIssueDate.errors?.['required']">هاذا الحقل مطلوب</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">الجهة المصدرة</label>
+            <input type="text" formControlName="poaAuthrizedBy"
+                [class.border-error]="(addPOAForm.controls.poaAuthrizedBy.touched && addPOAForm.controls.poaAuthrizedBy.invalid)"
+                class="form-control" />
+            <div class="errors" *ngIf="addPOAForm.controls.poaAuthrizedBy.touched" animate.enter="error-animation">
+                <p *ngIf="addPOAForm.controls.poaAuthrizedBy?.errors?.['required']">هذا الحقل مطلوب</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">مرفق الوكالة</label>
+            <input type="file" (change)="onFileChange($event)"
+                [class.border-error]="(addPOAForm.controls.poaAttachment.touched && addPOAForm.controls.poaAttachment.invalid)"
+                class="form-control" />
+            @if (addPOAForm.controls.poaAttachment.touched) {
+            <div class="errors" animate.enter="error-animation">
+                @if (addPOAForm.controls.poaAttachment?.errors?.['required']) {
+                <p>هذا الحقل مطلوب</p>
+                }
+
+                @if (addPOAForm.controls?.poaAttachment?.errors?.['extension']) {
+                <p>{{addPOAForm.controls?.poaAttachment?.errors?.['extension']?.message}}</p>
+                }
+
+                @else if (addPOAForm.controls?.poaAttachment?.errors?.['maxSize']) {
+                <p>{{addPOAForm.controls?.poaAttachment?.errors?.['maxSize']?.message}}</p>
+                }
+            </div>
+            }
+        </div>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions class="btn-group d-flex justfiy-content-center gap-3" role="group">
+    <input type="submit" value="رفع العقد" form="addPOAForm" class="btn bg-main col-sm-12">
+    <button class="btn bg-accent " type="button" mat-dialog-close>إلغاء</button>
+</mat-dialog-actions>

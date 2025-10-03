@@ -1,0 +1,85 @@
+<section class="section">
+
+  @if(sessionsDataSource?.data?.length) {
+  <header class="d-myflex my-justi mb-2">
+    <h3>الجلسات</h3>
+    <button (click)="openAddSession()" class="btn bg-sub">إضافة جلسة</button>
+  </header>
+
+  <!-- Filter Input -->
+  <div class="row justify-content-between mb-3">
+    <div class="col-4 mb-2">
+      <input type="text" placeholder="ابحث في الجلسات..." (keyup)="filterSessions($event)" class="form-control">
+    </div>
+  </div>
+  <div class="table-responsive tb-container">
+    <table matSort mat-table [dataSource]="sessionsDataSource" class="mat-elevation-z8 table">
+
+      <!-- Index Column -->
+      <ng-container [matColumnDef]="displayedColumns[0]">
+        <th mat-header-cell *matHeaderCellDef>#</th>
+        <td mat-cell *matCellDef="let i = index">
+          {{ helper.getCurrentRowNumber(i, paginator?.pageIndex || 0, paginator?.pageSize || 20) }}
+        </td>
+      </ng-container>
+
+      <!-- Session Date Column -->
+      <ng-container [matColumnDef]="displayedColumns[1]">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>تاريخ الجلسة</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.scheduledAt | date:'dd/MM/yyyy' }}
+        </td>
+      </ng-container>
+
+      <!-- Assigned Employee Column -->
+      <ng-container [matColumnDef]="displayedColumns[2]">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>الموظف الموكل</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.assignedEmployeeName }}
+        </td>
+      </ng-container>
+
+      <!-- Created By Column -->
+      <ng-container [matColumnDef]="displayedColumns[3]">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>منشئ الجلسة</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.createdByEmployeeName }}
+        </td>
+      </ng-container>
+
+      <!-- Created Date Column -->
+      <ng-container [matColumnDef]="displayedColumns[4]">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>تاريخ الإنشاء</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.createdDate | date:'dd/MM/yyyy' }}
+        </td>
+      </ng-container>
+
+      <ng-container [matColumnDef]="displayedColumns[5]">
+        <th mat-header-cell *matHeaderCellDef>الاجراءات
+        <th>
+        <td mat-cell *matCellDef="let element">
+          <button [matMenuTriggerFor]="menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+          <mat-menu #menu="matMenu">
+          <button (click)="openUpdateSession(element.courtSessionId)" class="btn btn-icon px-2 py-1 ">
+            <i class="fa-solid fa-pen-to-square"></i>
+            تحديث
+            </button>
+          </mat-menu>
+        </td>
+      </ng-container>
+
+      <!-- Header and Row Definitions -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <!-- Pagination -->
+    <mat-paginator [pageSizeOptions]="[10, 20, 30, 40, 50]" (page)="handlePage($event)" [pageIndex]="currentPage"
+      [length]="sessionsDataSource.filteredData.length" pageSize="20">
+    </mat-paginator>
+  </div>
+  } @else {
+  <app-empty-table title="لاتوجد جلسات مضافة بعد" msg="لاتوجد جلسات لهذه القضية" [hasAction]="true" action="أضف جلسة" (actionClicked)="openAddSession()"></app-empty-table>
+  }
+</section>

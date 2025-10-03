@@ -1,0 +1,106 @@
+<section class="body">
+
+    <section class="mb-5">
+    </section>
+
+    <section class="section">
+        @if (draftCasesDataSource?.data?.length) {
+        <div class="row justify-content-between">
+            <!-- Enhanced Search Section -->
+            <div class="col-3 mb-2">
+                <input type="text" placeholder="ابحث في القضايا المسودة..." (keyup)="filter($event)"
+                    class="form-control">
+            </div>
+        </div>
+        <!-- Enhanced Table with Sort, Filter & Pagination -->
+        <div class="table-responsive tb-container">
+            <table matSort mat-table [dataSource]="draftCasesDataSource" class="mat-elevation-z8 table">
+
+                <!-- Index Column -->
+                <ng-container [matColumnDef]="displayedColumns[0]">
+                    <th mat-header-cell *matHeaderCellDef>#</th>
+                    <td mat-cell *matCellDef="let i = index">
+                        {{ helper.getCurrentRowNumber(i, paginator?.pageIndex || 0, paginator?.pageSize || 20) }}
+                    </td>
+                </ng-container>
+
+                <!-- File Number Column with Sort -->
+                <ng-container [matColumnDef]="displayedColumns[1]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[1]">رقم الملف</th>
+                    <td mat-cell *matCellDef="let element">{{element.fileNumber}}</td>
+                </ng-container>
+
+                <!-- Case Number Column with Sort -->
+                <ng-container [matColumnDef]="displayedColumns[2]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[2]">رقم القضية</th>
+                    <td mat-cell *matCellDef="let element">{{element.caseNumber}}</td>
+                </ng-container>
+
+                <!-- Case Status Column with Sort -->
+                <ng-container [matColumnDef]="displayedColumns[3]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[3]">حالة القضية</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span appCaseStatus>{{element.status}}</span>
+                    </td>
+                </ng-container>
+
+                <!-- Court Type Column -->
+                <ng-container [matColumnDef]="displayedColumns[4]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[4]">اسم المحكمة</th>
+                    <td mat-cell *matCellDef="let element">{{element.courtTypeName}}</td>
+                </ng-container>
+
+                <!-- Created Date Column -->
+                <ng-container [matColumnDef]="displayedColumns[5]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[5]">تاريخ الإنشاء</th>
+                    <td mat-cell *matCellDef="let element">{{element.createdDate | date:'dd/MM/yyyy'}}</td>
+                </ng-container>
+
+                <!-- Employee Name Column -->
+                <ng-container [matColumnDef]="displayedColumns[6]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[6]">اسم الموظف</th>
+                    <td mat-cell *matCellDef="let element">{{element.employeeName}}</td>
+                </ng-container>
+
+                <!-- Case Subject Column -->
+                <ng-container [matColumnDef]="displayedColumns[7]">
+                    <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[7]">موضوع القضية</th>
+                    <td mat-cell *matCellDef="let element">{{element.caseSubject}}</td>
+                </ng-container>
+
+
+                <!-- Actions Column -->
+
+                <ng-container [matColumnDef]="displayedColumns[8]">
+                    <th mat-header-cell *matHeaderCellDef>الاجراءات</th>
+                    <td mat-cell *matCellDef="let element">
+                        <button [matMenuTriggerFor]="menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        <mat-menu #menu="matMenu">
+                            <button class="btn" mat-menu-item (click)="approveDraftCase(element)"
+                                class="btn bg-accent">
+                                <i class="fa-solid fa-check"></i> قبول القضية</button>
+                            <button class="btn" (click)="cancelDraftCase(element)">
+                                <i class="fa-solid fa-xmark"></i>
+                                إلغاء القضية
+                            </button>
+                        </mat-menu>
+                    </td>
+                </ng-container>
+
+                <!-- Header and Row Definitions -->
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+
+            <!-- Pagination -->
+            <mat-paginator [pageSizeOptions]="[10, 20, 30, 40, 50]" (page)="handlePage($event)"
+                [pageIndex]="currentPage" [length]="draftCasesDataSource.filteredData.length" pageSize="20">
+            </mat-paginator>
+        </div>
+        } @else {
+        <app-empty-table title="لا توجد قضايا مسودة"
+            msg="لا توجد قضايا مسودة مطابقة للمعايير المحددة"></app-empty-table>
+        }
+
+    </section>
+</section>

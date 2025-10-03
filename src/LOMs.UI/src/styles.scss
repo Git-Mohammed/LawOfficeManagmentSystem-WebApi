@@ -1,0 +1,343 @@
+@use "@angular/material" as mat;
+@import "tailwindcss";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: 0;
+  font-family: "Cairo", sans-serif;
+}
+
+:root {
+  /* Primary: Dark Blue #1E3A5F */
+  --primary: #1E3A5F;
+  --primary-foreground: hsl(0 0% 100%);
+
+  /* Gold Accent #C9A227 */
+  --secondary: #C9A227;
+  --secondary-foreground: #eaecefff;
+
+  --txt: rgba(191, 191, 191, 0.621);
+
+  // --main: #1E3A5F;
+  --accent:#ECF0F1;
+}
+
+mat-paginator {
+  float: right;
+}
+
+.mat-mdc-table {
+  background-color: var(--secondary);
+}
+.mat-mdc-table thead {
+  background-color: #ececec !important;
+}
+
+.mat-mdc-header-cell {
+  color: var(--secondary-foreground);
+}
+
+/* More stylish hover effect */
+.mat-mdc-row {
+  transition: all 0.3s ease;
+}
+
+.mat-mdc-row:hover {
+  // transform: translateY(-1px);
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+// Customize the entire app. Change :root to your selector if you want to scope the styles.
+
+input,
+textarea {
+  outline: none;
+}
+
+a {
+  cursor: pointer;
+  text-decoration: none;
+  color: black;
+}
+
+textarea {
+  min-height: 100px;
+}
+
+/* classes */
+
+.btn-del {
+  color: red;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  transition: 0.3s;
+}
+
+.btn-del:hover {
+  background-color: var(--accent);
+}
+
+.bg-main {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.bg-sub {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+
+.bg-accent {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+
+.txt {
+  color: var(--txt);
+}
+
+.disabled {
+  cursor: not-allowed;
+  pointer-events: fill;
+  opacity: 0.8;
+}
+
+.errors {
+  margin-top: 0.2rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: rgb(246, 55, 55);
+}
+
+.errors p {
+  margin: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    transform: translateY(-5px);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+.error-animation {
+  animation: fadeIn 0.5s;
+}
+
+.form-control.border-error,
+.form-select.border-error {
+  border: 1px rgb(246, 55, 55) solid;
+}
+
+.form-control.border-error::placeholder {
+  color: rgb(246, 55, 55);
+}
+
+mat-snack-bar-container {
+  margin: 0;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  transform: translateY(-10px);
+  transition: transform 0.3s;
+}
+
+.d-myflex {
+  display: flex;
+}
+
+.my-justi {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.snackbar-success,
+.snackbar-error {
+  color: white;
+  border-radius: 5px;
+}
+
+.mat-mdc-snack-bar-action {
+  background-color: rgba(white, 0.2);
+  color: white;
+}
+
+.mdc-button__label {
+  color: white;
+}
+
+.snackbar-success {
+  background-color: #5fdc63;
+}
+
+.snackbar-error {
+  background-color: #b22e25;
+}
+
+.iti {
+  display: block !important;
+  margin-left: 1rem;
+}
+
+.iti .dropdown-menu {
+  max-height: 7rem !important;
+  overflow: hidden !important;
+  position: relative !important;
+  left: 0 !important;
+  top: 0rem !important;
+}
+
+.iti .dropdown-menu.country-dropdown {
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  border-color: #c7cace;
+  margin-top: -1px;
+  background-color: teal;
+}
+
+.iti .iti__country-list {
+  box-shadow: none;
+  font-size: 14px;
+  margin-left: 0;
+  max-height: 7rem !important;
+}
+
+.iti__flag-container.open + input {
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+
+.iti .search-container input {
+  font-size: 14px;
+  border-color: #c7cace;
+  border-radius: 0;
+  padding: 5px 10px;
+}
+
+.iti .search-container input:focus {
+  outline: none;
+}
+
+@media screen and (max-width: 479px) {
+  .iti .iti__country-list {
+    width: 88.3vw;
+  }
+}
+
+ngx-intl-tel-input input {
+  height: 44px;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #c7cace;
+  border-radius: 4px;
+  font-size: 18px;
+}
+
+ngx-intl-tel-input.ng-invalid.ng-touched input {
+  border: 1px solid #c0392b;
+}
+
+ngx-intl-tel-input input:focus {
+  outline: none !important;
+  border-color: #db34ba;
+  box-shadow: 0 0 0 0 #000;
+}
+
+ngx-intl-tel-input input::-webkit-input-placeholder {
+  color: #bac2c7;
+}
+
+ngx-intl-tel-input input:-ms-input-placeholder {
+  color: #bac2c7;
+}
+
+ngx-intl-tel-input input::-ms-input-placeholder {
+  color: #bac2c7;
+}
+
+ngx-intl-tel-input input::placeholder {
+  color: #bac2c7;
+}
+
+ngx-intl-tel-input input[disabled] {
+  background-color: #e5eaf1;
+}
+
+.section {
+  border: 1px solid var(--txt);
+  border-radius: 10px;
+  padding: 1.5rem 1rem;
+  margin-bottom: 2rem;
+}
+
+.w-fit {
+  width: fit-content;
+}
+
+.h-fit {
+  height: fit-content;
+}
+
+.w-fill {
+  width: 100%;
+}
+
+/* library */
+.btn {
+  transition: hover 0.3s;
+  border-color: transparent;
+}
+
+.btn.bg-main:hover {
+  opacity: 0.9;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.btn.bg-sub:hover {
+  opacity: 0.9;
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.btn.bg-accent:hover {
+  opacity: 0.9;
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/*rest classes*/
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--txt);
+  box-shadow: none;
+  outline: none;
+}
+
+option:hover {
+  background-color: var(--secondary);
+  color: var(--primary-foreground);
+}
+
+td {
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: fit-content;
+  }
+}
+
+
+.mat-mdc-menu-content {
+  background-color: rgb(255, 255, 255);
+  > button {
+    font-size: 0.8rem;
+  }
+}

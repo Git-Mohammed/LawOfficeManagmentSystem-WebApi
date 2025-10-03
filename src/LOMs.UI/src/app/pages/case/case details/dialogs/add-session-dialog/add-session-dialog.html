@@ -1,0 +1,47 @@
+<app-dialog-header-component [title]="title" (onClose)="dialogRef.close()"></app-dialog-header-component>
+<mat-dialog-content>
+    <form [formGroup]="sessionForm" id="sessionForm" (ngSubmit)="submit()" class="row d-flex g-3">
+        <div class="col-md-6">
+            <label class="form-label">تاريخ الجلسة</label>
+            <input type="date" formControlName="date"
+                [class.border-error]="(sessionForm.controls.date.touched && sessionForm.controls.date.invalid)"
+                class="form-control" />
+                @if (sessionForm.controls.date.touched) {
+                    <div class="errors" animate.enter="error-animation">
+                        @if(sessionForm.controls.date?.errors?.['required']) {
+                            <p>هذا الحقل مطلوب</p>
+                        }
+                        @if(sessionForm.controls.date?.errors?.['pastDate']) {
+                            <p>يجب ان يكون التارخ في المستقبل</p>
+                        }
+                    </div>
+                }
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">الموظف الموكل</label>
+            <select type="date" formControlName="layerId"
+                [class.border-error]="(sessionForm.controls.layerId.touched && sessionForm.controls.layerId.invalid)"
+                class="form-select">
+                @for(em of employees; track em.id) {
+                <option [value]="em.id">{{em.name}}</option>
+                }
+            </select>
+            <div *ngIf="sessionForm.controls.layerId.touched" class="errors" animate.enter="error-animation">
+                <p *ngIf="sessionForm.controls.layerId.errors?.['required']">هاذا الحقل مطلوب</p>
+            </div>
+        </div>
+        <div class="col-12">
+            <label class="form-label">مهام المحامي</label>
+            <textarea formControlName="tasks"
+                [class.border-error]="(sessionForm.controls.tasks.touched && sessionForm.controls.tasks.invalid)"
+                class="form-control"></textarea>
+            <div class="errors" *ngIf="sessionForm.controls.tasks.touched" animate.enter="error-animation">
+                <p *ngIf="sessionForm.controls.tasks?.errors?.['required']">هذا الحقل مطلوب</p>
+            </div>
+        </div>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions class="btn-group d-flex justfiy-content-center gap-3" role="group">
+    <input type="submit" form="sessionForm" value="حفظ الجلسة" class="btn bg-main w-fill">
+    <button class="btn bg-accent " type="button" mat-dialog-close>إلغاء</button>
+</mat-dialog-actions>

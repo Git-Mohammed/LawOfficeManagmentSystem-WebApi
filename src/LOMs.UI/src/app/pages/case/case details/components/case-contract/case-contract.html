@@ -1,0 +1,96 @@
+<section class="section">
+
+  @if (contractsDataSource.data?.length) {
+  <header class="d-myflex my-justi mb-2">
+    <h3>العقود</h3>
+    <button (click)="openAddContract()" class="btn bg-sub">إضافة عقد</button>
+  </header>
+
+  <!-- Filter Input -->
+  <div class="row justify-content-between mb-3">
+    <div class="col-4 mb-2">
+      <input type="text" placeholder="ابحث في العقود..." (keyup)="filterContracts($event)" class="form-control">
+    </div>
+  </div>
+  <div class="table-responsive tb-container">
+    <table matSort mat-table [dataSource]="contractsDataSource" class="mat-elevation-z8 table">
+      <!-- Index Column -->
+      <ng-container [matColumnDef]="displayedColumns[0]">
+        <th mat-header-cell *matHeaderCellDef>#</th>
+        <td mat-cell *matCellDef="let i = index">
+          {{ helper.getCurrentRowNumber(i, paginator?.pageIndex || 0, paginator?.pageSize || 20) }}
+        </td>
+      </ng-container>
+
+      <!-- Contract Number -->
+      <ng-container [matColumnDef]="displayedColumns[1]">
+        <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[1]">رقم العقد</th>
+        <td mat-cell *matCellDef="let element">{{ element.contractNumber }}</td>
+      </ng-container>
+
+      <!-- Contract Type -->
+      <ng-container [matColumnDef]="displayedColumns[2]">
+        <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[2]">نوع العقد</th>
+        <td mat-cell *matCellDef="let element"><span appContractType>{{ element.contractType }}</span></td>
+      </ng-container>
+
+      <!-- Total Amount -->
+      <ng-container [matColumnDef]="displayedColumns[3]">
+        <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[3]">المبلغ الإجمالي</th>
+        <td mat-cell *matCellDef="let element">{{ element.totalAmount }}</td>
+      </ng-container>
+
+      <!-- Issue Date -->
+      <ng-container [matColumnDef]="displayedColumns[4]">
+        <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[4]">تاريخ الإصدار</th>
+        <td mat-cell *matCellDef="let element">{{ formatDates(element.issueDate) }}</td>
+      </ng-container>
+
+      <!-- Expiration Date -->
+      <ng-container [matColumnDef]="displayedColumns[5]">
+        <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[5]">تاريخ الانتهاء</th>
+        <td mat-cell *matCellDef="let element">{{ formatDates(element.expirationDate) }}</td>
+      </ng-container>
+
+      <!-- Created By -->
+      <ng-container [matColumnDef]="displayedColumns[6]">
+        <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[6]">منشئ العقد</th>
+        <td mat-cell *matCellDef="let element">{{ element.employeeNameCreatedBy }}</td>
+      </ng-container>
+
+      <!-- Created Date -->
+      <ng-container [matColumnDef]="displayedColumns[7]">
+        <th mat-header-cell *matHeaderCellDef [mat-sort-header]="displayedColumns[7]">تاريخ الإنشاء</th>
+        <td mat-cell *matCellDef="let element">{{ element.createdDate | date:'dd/MM/yyyy' }}</td>
+      </ng-container>
+
+      <!-- Remaining Amount -->
+      <ng-container [matColumnDef]="displayedColumns[8]">
+        <th mat-header-cell *matHeaderCellDef>الاجراءات</th>
+        <td mat-cell *matCellDef="let element">
+          <button [matMenuTriggerFor]="menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item class="btn btn-sm bg-main" (click)="download(element)" title="تحميل">
+              <i class="fa-solid fa-download"></i>
+              تحميل
+            </button>
+          </mat-menu>
+
+        </td>
+      </ng-container>
+
+      <!-- Header and Row Definitions -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <!-- Pagination -->
+    <mat-paginator [pageSizeOptions]="[10, 20, 30, 40, 50]" (page)="handlePage($event)" [pageIndex]="currentPage"
+      [length]="contractsDataSource.filteredData.length" pageSize="20">
+    </mat-paginator>
+  </div>
+  } @else {
+  <app-empty-table title="لاتوجد عقود مسجلة بعد في هذه القضية" msg="لاتوجد عقود مسجلة بعد, يمكنك اضافة واحدة"
+    [hasAction]="true" action="أضف عقد" (actionClicked)="openAddContract()"></app-empty-table>
+  }
+</section>

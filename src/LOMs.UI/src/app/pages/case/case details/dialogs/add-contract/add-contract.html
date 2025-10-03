@@ -1,0 +1,110 @@
+<app-dialog-header-component title="إضافة عقد جديد" (onClose)="dialogRef.close()"></app-dialog-header-component>
+<mat-dialog-content>
+    <form [formGroup]="contractForm" id="contractForm" (ngSubmit)="submit()" class="row d-flex g-3">
+        <div class="col-md-6">
+            <label class="form-label">مرفق العقد</label>
+            <input type="file" (change)="onFileChange($event)" placeholder="لم يتم اختيار الملف"
+                [class.border-error]="contractForm.controls.contractAttachment.invalid && contractForm.controls.contractAttachment.touched"
+                class="form-control" [accept]="['.pdf','.doc','.docx']" />
+            @if (contractForm.controls.contractAttachment.invalid &&
+            contractForm.controls.contractAttachment.touched) {
+            <div class="errors" animate.enter="error-animation">
+                @if (contractForm.controls?.contractAttachment?.errors?.['required']) {
+                <p>هذا الحقل مطلوب</p>
+                }
+
+                @if (contractForm.controls?.contractAttachment?.errors?.['extension']) {
+                <p>{{contractForm.controls?.contractAttachment?.errors?.['extension']?.message}}</p>
+                }
+
+                @else if (contractForm.controls?.contractAttachment?.errors?.['maxSize']) {
+                <p>{{contractForm.controls?.contractAttachment?.errors?.['maxSize']?.message}}</p>
+                }
+            </div>
+            }
+        </div>
+        <div class="col-md-6">
+            <label>نوع العقد</label>
+            <select formControlName="contractType" class="form-control">
+                <option value="محدد بمدة">محدد بمدة</option>
+                <option value="غير محدد بمدة">غير محدد بمدة</option>
+            </select>
+        </div>
+        @if (contractForm.value.contractType == fixedTerm) {
+        <div class="col-md-6">
+            <label class="form-label">تاريخ البداية</label>
+            <input type="date" formControlName="issueDate"
+                [class.border-error]="contractForm.errors?.['issueDateRequired'] && contractForm.controls?.issueDate?.touched"
+                class="form-control" />
+            @if (contractForm.controls?.issueDate?.touched) {
+            <div class="errors" animate.enter="error-animation">
+                @if (contractForm?.errors?.['issueDateRequired']) {
+                <p>هاذا الحقل مطلوب</p>
+                }
+            </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">تاريخ النهاية</label>
+            <input type="date" formControlName="expirationDate"
+                [class.border-error]="(contractForm.errors?.['expirationDateRequired'] || contractForm.errors?.['invalidDateRange']) && contractForm.controls?.expirationDate?.touched"
+                class="form-control" />
+            @if (contractForm.controls?.expirationDate?.touched) {
+            <div class="errors" animate.enter="error-animation">
+                @if (contractForm?.errors?.['expirationDateRequired']) {
+                <p>هاذا الحقل مطلوب</p>
+                }
+                @if (contractForm?.errors?.['invalidDateRange']) {
+                <p>يجب ان يكون التاريخ بعد
+                    {{contractForm.value.issueDate}}</p>
+                }
+            </div>
+            }
+        </div>
+        }
+        <div class="col-md-6">
+            <label class="form-label">قيمة العقد</label>
+            <div>
+
+                <input type="number" formControlName="totalPrice"
+                [class.border-error]="contractForm.controls.totalPrice.invalid && contractForm.controls.totalPrice.touched"
+                class="form-control" />
+                <span>مع الضريبة المضافة: {{(contractForm.value.totalPrice! * 1.15) | number : '1.2-2'}}</span>
+            </div>
+            @if (contractForm.controls.totalPrice.touched) {
+            <div class="errors" animate.enter="error-animation">
+                @if (contractForm.controls?.totalPrice?.errors?.['min']) {
+                <p>ادخل قيمة صالحة</p>
+                }
+            </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">مقدم العقد</label>
+            <input type="number" formControlName="downAmount"
+                [class.border-error]="contractForm.controls.downAmount.invalid && contractForm.controls?.downAmount?.touched"
+                class="form-control" />
+            @if (contractForm.controls?.downAmount?.touched) {
+            <div class="errors" animate.enter="error-animation">
+                @if (contractForm.controls?.downAmount?.errors?.['min']) {
+                <p>ادخل قيمة صالحة</p>
+                }
+                @if (contractForm.errors?.['downAmountExceeded'] ) {
+                <p>العربون يجب ان يكون في حدود القيمة</p>
+                }
+            </div>
+            }
+        </div>
+
+        <div class="col-md-6 assigned">
+            <label class="form-check-label">موقع ؟</label>
+            <input type="checkbox" formControlName="assigned" class="form-check-input">
+        </div>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions class="btn-group d-flex justfiy-content-center gap-3" role="group">
+    <input type="submit" value="رفع العقد" form="contractForm" class="btn bg-main w-fill">
+    <button class="btn bg-accent " type="button" mat-dialog-close>إلغاء</button>
+</mat-dialog-actions>
