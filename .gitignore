@@ -178,3 +178,4 @@ containers/**
 # Published output (do not commit)
 publish/
 **/publish/
+/src/LOMs.Api/appsettings.Development.json
