@@ -30,133 +30,21 @@ public sealed class CreateCaseCommandHandler(
 
     public async Task<Result<Guid>> HandleAsync(CreateCaseCommand message, CancellationToken cancellationToken = default)
     {
+        // --- Validation ---
+        var validation = await ValidateInitialRequestAsync(message, cancellationToken);
+        if (validation.IsError)
+            return validation.Errors;
 
-        // All existing validation and entity creation logic for clients and cases...
-        if (message.Clients is null || !message.Clients.Any())
-        {
-            _logger.LogWarning("No clients provided for case creation.");
-            return CaseErrors.InvalidClients;
-        }
+        var (existingClients, courtType) = validation.Value;
 
-        if (!string.IsNullOrWhiteSpace(message.CaseNumber))
-        {
-            var caseNumberExists = await _context.Cases.AnyAsync(x => x.CaseNumber == message.CaseNumber, cancellationToken);
-            if (caseNumberExists)
-            {
-                _logger.LogWarning("Duplicate case number detected: {CaseNumber}", message.CaseNumber);
-                return CaseErrors.DuplicateCaseNumber(message.CaseNumber);
-            }
-        }
+        // --- Final Validation of Case & Clients ---
+        var caseValidation =  ValidateCaseAndClientsAsync(message, existingClients, courtType, cancellationToken);
+        if (caseValidation.IsError)
+            return caseValidation.Errors;
 
-        if (message.AssignedOfEmployeeId == Guid.Empty)
-        {
-            return CaseErrors.EmptyEmployeeId;
-        }
+        var (caseEntity, clients, clientFiles, clientCases) = caseValidation.Value;
 
-        var employeeExists = await _context.Employees
-            .AnyAsync(x => x.Id == message.AssignedOfEmployeeId, cancellationToken);
-
-        if (!employeeExists)
-        {
-            return CaseErrors.AssignedEmployeeNotFound(message.AssignedOfEmployeeId);
-        }
-
-
-        var courtType = await _context.CourtTypes.FirstOrDefaultAsync(x => x.Id == message.CourtTypeId);
-        if(courtType is null)
-        {
-            _logger.LogWarning("No clients provided for case creation.");
-
-            return CaseErrors.InvalidCourtType;
-
-        }
-
-        var existingClientIds = message.Clients
-            .OfType<ExistingCaseClientModel>()
-            .Select(x => x.ExistingClientId)
-            .ToList();
-        IReadOnlyDictionary<Guid, Client> existingClients = new Dictionary<Guid, Client>();
-
-        if (existingClientIds.Any())
-        {
-            existingClients = await _context.Clients
-                .AsNoTracking()
-                .Include(c => c.Person)
-                .Include(c => c.ClientFiles)
-                .Where(c => existingClientIds.Contains(c.Id))
-                .ToDictionaryAsync(c => c.Id, cancellationToken);
-
-            if (existingClients.Count != existingClientIds.Count)
-            {
-                var missingClientIds = existingClientIds
-                    .Where(id => !existingClients.ContainsKey(id))
-                    .ToList();
-
-                _logger.LogWarning("Missing clients detected. Expected: {Expected}, Found: {Found}, Missing: {Missing}",
-                    existingClientIds.Count, existingClients.Count, string.Join(", ", missingClientIds));
-
-                return CaseErrors.ClientNotFoundWithIds(missingClientIds);
-            }
-        }
-
-        var existingNationalIds = message.Clients
-            .OfType<NewCaseClientModel>()
-            .Select(x => x.Client.Person.NationalId)
-            .ToList();
-
-        if (existingNationalIds.Any())
-        {
-            var duplicates = await _context.People
-                .Where(p => existingNationalIds.Contains(p.NationalId))
-                .Select(p => p.NationalId)
-                .ToHashSetAsync(cancellationToken);
-
-            if (duplicates.Any())
-            {
-                _logger.LogWarning("Duplicate national IDs detected: {NationalIds}", string.Join(", ", duplicates));
-                return CaseErrors.DuplicateNationalIds(duplicates);
-            }
-        }
-
-        // --- Phone Number Validation ---
-        var phoneTuples = message.Clients
-            .OfType<NewCaseClientModel>()
-            .Select(x => new
-            {
-                Number = x.Client.Person.Phone.Number?.Trim(),
-                Code = x.Client.Person.Phone.Code?.Trim()
-            })
-            .Where(p => !string.IsNullOrWhiteSpace(p.Number) && !string.IsNullOrWhiteSpace(p.Code))
-            .ToList();
-
-        var dbPhones = await _context.Phones
-            .Select(p => new { p.Number, p.Code })
-            .ToListAsync(cancellationToken);
-
-        var duplicatesPhones = dbPhones
-            .Where(db => phoneTuples.Any(input =>
-                db.Number == input.Number && db.Code == input.Code))
-            .Select(p => $"{p.Code}-{p.Number}")
-            .ToHashSet();
-
-        if (duplicatesPhones.Any())
-        {
-            _logger.LogWarning("Duplicate phone numbers detected: {Phones}", string.Join(", ", duplicatesPhones));
-            return CaseErrors.DuplicatePhoneNumbers(duplicatesPhones);
-        }
-
-
-        _logger.LogInformation("Starting case creation for CaseNumber: {CaseNumber}", message.CaseNumber);
-
-        var validationResult = await ValidateCaseAndClientsAsync(message, existingClients, courtType,cancellationToken);
-        if (validationResult.IsError)
-        {
-            return validationResult.Errors;
-        }
-
-        var (caseEntity, clients, clientFiles, clientCases) = validationResult.Value;
-
-        // Final persistence in a single try-catch block
+        // --- Persistence ---
         try
         {
             _logger.LogInformation("Persisting case and related entities to database...");
@@ -184,19 +72,153 @@ public sealed class CreateCaseCommandHandler(
         }
     }
 
-    
+    // ------------------------------------------------------------
+    // VALIDATION HELPERS
+    // ------------------------------------------------------------
 
-    // Private helper methods for a cleaner main handler
-
-    private async Task<Result<(Case caseEntity, List<Client> clients, List<ClientFile> clientFiles, List<ClientCase> clientCases)>> ValidateCaseAndClientsAsync(CreateCaseCommand message, IReadOnlyDictionary<Guid, Client> existingClients,CourtType courtType, CancellationToken cancellationToken)
+    private async Task<Result<(IReadOnlyDictionary<Guid, Client> existingClients, CourtType courtType)>> ValidateInitialRequestAsync(CreateCaseCommand message, CancellationToken ct)
     {
-        // ... (This method would contain all the validation and client-related logic from your original code) ...
+        if (message.Clients is null || !message.Clients.Any())
+        {
+            _logger.LogWarning("No clients provided for case creation.");
+            return CaseErrors.InvalidClients;
+        }
 
-        var clients = new List<Client>();
-        var clientFiles = new List<ClientFile>();
-        var clientCases = new List<ClientCase>();
+        if (!string.IsNullOrWhiteSpace(message.CaseNumber))
+        {
+            var exists = await _context.Cases.AnyAsync(x => x.CaseNumber == message.CaseNumber, ct);
+            if (exists)
+            {
+                _logger.LogWarning("Duplicate case number detected: {CaseNumber}", message.CaseNumber);
+                return CaseErrors.DuplicateCaseNumber(message.CaseNumber);
+            }
+        }
 
-        // Case creation
+        if (message.AssignedOfEmployeeId == Guid.Empty)
+            return CaseErrors.EmptyEmployeeId;
+
+        var employeeExists = await _context.Employees.AnyAsync(x => x.Id == message.AssignedOfEmployeeId, ct);
+        if (!employeeExists)
+            return CaseErrors.AssignedEmployeeNotFound(message.AssignedOfEmployeeId);
+
+        var courtType = await _context.CourtTypes.FirstOrDefaultAsync(x => x.Id == message.CourtTypeId, ct);
+        if (courtType is null)
+        {
+            _logger.LogWarning("Invalid CourtType provided for case creation.");
+            return CaseErrors.InvalidCourtType;
+        }
+
+        var existingClients = await FetchExistingClientsAsync(message, ct);
+        if (existingClients.IsError)
+            return existingClients.Errors;
+
+        var nationalIdCheck = await CheckDuplicateNationalIdsAsync(message, ct);
+        if (nationalIdCheck.IsError)
+            return nationalIdCheck.Errors;
+
+        var phoneCheck = await CheckDuplicatePhonesAsync(message, ct);
+        if (phoneCheck.IsError)
+            return phoneCheck.Errors;
+
+        return (existingClients.Value, courtType);
+    }
+
+    private async Task<Result<IReadOnlyDictionary<Guid, Client>>> FetchExistingClientsAsync(CreateCaseCommand message, CancellationToken ct)
+    {
+        var existingClientIds = message.Clients
+            .OfType<ExistingCaseClientModel>()
+            .Select(x => x.ExistingClientId)
+            .ToList();
+
+        if (!existingClientIds.Any())
+            return new Dictionary<Guid, Client>();
+
+        var existingClients = await _context.Clients
+            .AsNoTracking()
+            .Include(c => c.Person)
+            .Include(c => c.ClientFiles)
+            .Where(c => existingClientIds.Contains(c.Id))
+            .ToDictionaryAsync(c => c.Id, ct);
+
+        if (existingClients.Count != existingClientIds.Count)
+        {
+            var missingIds = existingClientIds.Except(existingClients.Keys).ToList();
+            _logger.LogWarning("Missing clients detected. Missing IDs: {Missing}", string.Join(", ", missingIds));
+            return CaseErrors.ClientNotFoundWithIds(missingIds);
+        }
+
+        return existingClients;
+    }
+
+    private async Task<Result<Success>> CheckDuplicateNationalIdsAsync(CreateCaseCommand message, CancellationToken ct)
+    {
+        var nationalIds = message.Clients
+            .OfType<NewCaseClientModel>()
+            .Select(x => x.Client.Person.NationalId)
+            .ToList();
+
+        if (!nationalIds.Any())
+        {
+            _logger.LogWarning("No national IDs provided for duplicate check.");
+            return CaseErrors.NationalIdRequired;
+        }
+
+        var duplicates = await _context.People
+            .Where(p => nationalIds.Contains(p.NationalId))
+            .Select(p => p.NationalId)
+            .ToHashSetAsync(ct);
+
+        if (duplicates.Any())
+        {
+            _logger.LogWarning("Duplicate national IDs detected: {NationalIds}", string.Join(", ", duplicates));
+            return CaseErrors.DuplicateNationalIds(duplicates);
+        }
+
+        return Result.Success;
+    }
+
+    private async Task<Result<Success>> CheckDuplicatePhonesAsync(CreateCaseCommand message, CancellationToken ct)
+    {
+        var phoneTuples = message.Clients
+            .OfType<NewCaseClientModel>()
+            .Select(x => new
+            {
+                Number = x.Client.Person.Phone.Number?.Trim(),
+                Code = x.Client.Person.Phone.Code?.Trim()
+            })
+            .Where(p => !string.IsNullOrWhiteSpace(p.Number) && !string.IsNullOrWhiteSpace(p.Code))
+            .ToList();
+
+        if (!phoneTuples.Any()) return Result.Success;
+
+        var dbPhones = await _context.Phones
+            .Select(p => new { p.Number, p.Code })
+            .ToListAsync(ct);
+
+        var duplicates = dbPhones
+            .Where(db => phoneTuples.Any(input => db.Number == input.Number && db.Code == input.Code))
+            .Select(p => $"{p.Code}-{p.Number}")
+            .ToHashSet();
+
+        if (duplicates.Any())
+        {
+            _logger.LogWarning("Duplicate phone numbers detected: {Phones}", string.Join(", ", duplicates));
+            return CaseErrors.DuplicatePhoneNumbers(duplicates);
+        }
+
+        return Result.Success;
+    }
+
+    // ------------------------------------------------------------
+    // CASE + CLIENTS VALIDATION
+    // ------------------------------------------------------------
+
+    private Result<(Case caseEntity, List<Client> clients, List<ClientFile> clientFiles, List<ClientCase> clientCases)> ValidateCaseAndClientsAsync(
+        CreateCaseCommand message,
+        IReadOnlyDictionary<Guid, Client> existingClients,
+        CourtType courtType,
+        CancellationToken ct)
+    {
         var caseResult = Case.Create(
             Guid.NewGuid(),
             courtType.Id,
@@ -209,60 +231,57 @@ public sealed class CreateCaseCommandHandler(
             message.LawyerOpinion,
             message.AssignedOfEmployeeId
         );
+
         if (caseResult.IsError)
         {
             _logger.LogWarning("Case creation failed due to validation errors.");
             return caseResult.Errors;
         }
-        var caseEntity = caseResult.Value;
 
-        // Clients processing
-        // ... (all client validation and handling logic, like the loops in your original code) ...
-        _logger.LogInformation("Case entity created with ID: {CaseId}", caseEntity.Id); 
+        var caseEntity = caseResult.Value;
+        var clients = new List<Client>();
+        var clientFiles = new List<ClientFile>();
+        var clientCases = new List<ClientCase>();
+
+        _logger.LogInformation("Case entity created with ID: {CaseId}", caseEntity.Id);
+
         foreach (var clientDto in message.Clients)
         {
-            if (clientDto is ExistingCaseClientModel existing)
+            switch (clientDto)
             {
-                var existingResult = await HandleExistingClient(existing, caseEntity.Id, courtType, existingClients, cancellationToken);
-                if (existingResult.IsError)
-                {
-                    _logger.LogWarning("Failed to process existing client with ID: {ClientId}", existing.ExistingClientId);
-                    return existingResult.Errors;
-                }
+                case ExistingCaseClientModel existing:
+                    var existingResult =  HandleExistingClient(existing, caseEntity.Id, courtType, existingClients, ct);
+                    if (existingResult.IsError) return existingResult.Errors;
 
-                var (clientFile, clientCase) = existingResult.Value;
+                    var (clientFile, clientCase) = existingResult.Value;
+                    if (clientFile is not null) clientFiles.Add(clientFile);
+                    clientCases.Add(clientCase);
+                    break;
 
-                if (clientFile is not null)
-                    clientFiles.Add(clientFile);
+                case NewCaseClientModel newClient:
+                    var newResult = HandleNewClient(newClient, caseEntity.Id, courtType, ct);
+                    if (newResult.IsError) return newResult.Errors;
 
-                clientCases.Add(clientCase);
-            }
-            else if (clientDto is NewCaseClientModel newClient)
-            {
-                var newResult = await HandleNewClient(newClient, caseEntity.Id, courtType, cancellationToken);
-                if (newResult.IsError)
-                {
-                    _logger.LogWarning("Failed to process new client with NationalId: {NationalId}", newClient.Client.Person.NationalId);
-                    return newResult.Errors;
-                }
+                    var (client, clientFile2, clientCase2) = newResult.Value;
+                    clients.Add(client);
+                    clientFiles.Add(clientFile2);
+                    clientCases.Add(clientCase2);
+                    break;
 
-                var (client, clientFile, clientCase) = newResult.Value;
-
-                clients.Add(client);
-                clientFiles.Add(clientFile);
-                clientCases.Add(clientCase);
-            }
-            else
-            {
-                _logger.LogError("Unknown client type encountered during case creation.");
-                return CaseErrors.UnknownClientType;
+                default:
+                    _logger.LogError("Unknown client type encountered during case creation.");
+                    return CaseErrors.UnknownClientType;
             }
         }
 
-        return  (caseEntity, clients, clientFiles, clientCases);
+        return (caseEntity, clients, clientFiles, clientCases);
     }
 
-    private async Task<Result<(ClientFile? clientFile, ClientCase clientCase)>> HandleExistingClient(
+    // ------------------------------------------------------------
+    // CLIENT HELPERS
+    // ------------------------------------------------------------
+
+    private Result<(ClientFile? clientFile, ClientCase clientCase)> HandleExistingClient(
         ExistingCaseClientModel request,
         Guid caseId,
         CourtType courtType,
@@ -274,21 +293,20 @@ public sealed class CreateCaseCommandHandler(
             _logger.LogWarning("Existing client not found: {ClientId}", request.ExistingClientId);
             return CaseErrors.ClientNotFoundWithId(request.ExistingClientId);
         }
-        var currentHijriYear = HijriDateConverter.GetFullHijriYear();
 
+        var currentHijriYear = HijriDateConverter.GetFullHijriYear();
         var existingFile = client.ClientFiles.FirstOrDefault(x => x.CourtTypeCode == courtType.Code && x.HijriYear == currentHijriYear);
 
         ClientFile? clientFile = null;
 
         if (existingFile is null)
         {
-            var clientFileResult = await _clientFileFactory.CreateAsync(client.Id, courtType, ct);
+            var clientFileResult = _clientFileFactory.CreateAsync(client.Id, courtType, ct);
             if (clientFileResult.IsError)
             {
                 _logger.LogWarning("Failed to create client file for existing client: {ClientId}", client.Id);
                 return clientFileResult.Errors;
             }
-
             clientFile = clientFileResult.Value;
         }
 
@@ -296,13 +314,12 @@ public sealed class CreateCaseCommandHandler(
         return (clientFile, clientCase);
     }
 
-    private async Task<Result<(Client client, ClientFile clientFile, ClientCase clientCase)>> HandleNewClient(
+    private Result<(Client client, ClientFile clientFile, ClientCase clientCase)> HandleNewClient(
         NewCaseClientModel request,
         Guid caseId,
         CourtType courtType,
         CancellationToken ct)
     {
-
         var phoneResult = Phone.Create(Guid.NewGuid(), request.Client.Person.Phone.Number, request.Client.Person.Phone.Code);
 
         var personResult = Person.Create(
@@ -313,9 +330,6 @@ public sealed class CreateCaseCommandHandler(
             request.Client.Person.BirthDate,
             request.Client.Person.Address,
             new List<Phone> { phoneResult.Value });
-
-        if (personResult.IsError)
-            return personResult.Errors;
 
         if (personResult.IsError)
         {
@@ -330,7 +344,7 @@ public sealed class CreateCaseCommandHandler(
             return clientResult.Errors;
         }
 
-        var clientFileResult = await _clientFileFactory.CreateAsync(clientResult.Value.Id, courtType, ct);
+        var clientFileResult = _clientFileFactory.CreateAsync(clientResult.Value.Id, courtType, ct);
         if (clientFileResult.IsError)
         {
             _logger.LogWarning("Failed to create client file for new client: {ClientId}", clientResult.Value.Id);

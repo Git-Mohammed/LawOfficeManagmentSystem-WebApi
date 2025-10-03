@@ -20,7 +20,7 @@ public class GetAllEmployeesQueryHandler(
 
     public async Task<Result<IReadOnlyList<GetAllEmployeesDto>>> HandleAsync(GetAllEmployeesQuery query, CancellationToken cancellationToken = new CancellationToken())
     {
-        var employees = await _context.Employees.Include(e => e.Person).ThenInclude(p=>p.Phones)
+        var employees = await _context.Employees.Include(e => e.Person).ThenInclude(p=>p!.Phones!)
             .AsNoTracking().ToListAsync(cancellationToken);
         
         if (employees.Count == 0)

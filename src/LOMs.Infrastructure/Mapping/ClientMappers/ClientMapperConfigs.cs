@@ -16,8 +16,8 @@ public class ClientMapperConfigs : IRegister
 
         config.NewConfig<Client, ClientDto>()
             .Map(dest => dest.ClientId, src => src.Id)
-            .Map(dest => dest.Person.PersonId, src => src.Person.Id)
-            .Map(dest => dest.Person.Phone, src => src.Person.Phones != null && src.Person.Phones.Any()
+            .Map(dest => dest.Person.PersonId, src => src.Person!.Id)
+            .Map(dest => dest.Person.Phone, src => src.Person!.Phones != null && src.Person.Phones.Any()
                 ? new PhoneDto
                 {
                     Number = src.Person.Phones.First().Number,

@@ -36,7 +36,7 @@ public sealed class GetAvailableEmployeesByDateQueryHandler(
             .Select(e => new EmployeeNameDto
             {
                 EmployeeId = e.Id,
-                FullName = e.Person.FullName
+                FullName = e!.Person!.FullName
             })
             .ToListAsync(ct);
 

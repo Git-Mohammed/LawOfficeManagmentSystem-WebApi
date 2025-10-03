@@ -89,7 +89,7 @@ public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityServic
         
         // send email
         var createdEmployee = employee.Value;
-        await _eventPublisher.PublishAsync(new EmployeeCreatedEvent(createdEmployee, createdEmployee.Email, randomPassword), cancellationToken);
+        await _eventPublisher.PublishAsync(new EmployeeCreatedEvent(createdEmployee, createdEmployee!.Email!, randomPassword), cancellationToken);
         
         return _mapper.Map<Employee,EmployeeDto>(createdEmployee);
         

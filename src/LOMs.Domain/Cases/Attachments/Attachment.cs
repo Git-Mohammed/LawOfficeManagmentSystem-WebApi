@@ -12,9 +12,9 @@ namespace LOMs.Domain.Cases.Attachments
     {
 
         public Guid CaseId { get; private set; }
-        public string AttachmentName { get; private set; }
+        public string? AttachmentName { get; private set; }
 
-        public Case Case { get; private set; }
+        public Case? Case { get;  set; }
 
         private Attachment()
         {

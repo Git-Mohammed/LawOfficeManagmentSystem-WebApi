@@ -1,16 +1,8 @@
-﻿using LOMs.Domain.Common.Files;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace LOMs.Application.Features.Templates.DTOs;
 
-namespace LOMs.Application.Features.Templates.DTOs
+public class FileDto
 {
-    public class FileDto
-    {
-       public string FilePath { get; set; }
-        public string FileName { get; set; }
-        public string FileType { get; set; }
-    }
+   public string FilePath { get; set; } = string.Empty;
+    public string FileName { get; set; } = string.Empty;
+    public string FileType { get; set; } = string.Empty;
 }

@@ -1,5 +1,4 @@
 ﻿using LiteBus.Queries.Abstractions;
-using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.Contracts.Dtos;
 using LOMs.Application.Features.Templates.DTOs;
 using LOMs.Domain.Cases;
@@ -62,12 +61,12 @@ public sealed class GetContractsDetailsByCaseIdHandler
                 TotalAmount = contract.BaseAmount + contract.TaxAmount,
                 File  = fileGroup.Select(f => new FileDto
                 {
-                    FilePath = f.Filepath,
-                    FileName = f.Filename,
-                    FileType = f.ContentType
+                    FilePath = f.Filepath ?? string.Empty,
+                    FileName = f.Filename ?? string.Empty,
+                    FileType = f.ContentType ??string.Empty
                 }).FirstOrDefault(),
                 EmployeeIdCreatedBy = emp.Id,
-                EmployeeNameCreatedBy = emp.Person.FullName ?? "Unknown",
+                EmployeeNameCreatedBy = emp.Person!.FullName ?? "Unknown",
                 CreatedDate = contract.CreatedAtUtc
             })
             .ToListAsync(ct);

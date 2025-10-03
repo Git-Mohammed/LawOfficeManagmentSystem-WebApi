@@ -51,7 +51,7 @@ public sealed class GetPaginatedFutureCourtSessionsQueryHandler(
                               .FirstOrDefault(),
                           CreatedByEmployeeName = context.Employees
                     .Where(e => e.UserId == c.CreatedBy)
-                    .Select(e => e.Person.FullName)
+                    .Select(e => e.Person!.FullName)
                     .FirstOrDefault()
                       })
             .Select(cs => new GetFutureCourtSessionDto
@@ -62,7 +62,7 @@ public sealed class GetPaginatedFutureCourtSessionsQueryHandler(
                 CreatedByEmployeeId = cs.CreatedByEmpoyeeId,
                 CreatedByEmployeeName = cs.CreatedByEmployeeName ?? string.Empty,
                 AssignedEmployeeId = cs.CourtSession.AssignedEmployeeId,
-                AssignedEmployeeName = cs.CourtSession.AssignedEmployee!.Person.FullName ?? string.Empty,
+                AssignedEmployeeName = cs.CourtSession!.AssignedEmployee!.Person!.FullName ?? string.Empty,
                 CreatedDate = cs.CourtSession.CreatedAtUtc
             })
             .ToListAsync(ct);

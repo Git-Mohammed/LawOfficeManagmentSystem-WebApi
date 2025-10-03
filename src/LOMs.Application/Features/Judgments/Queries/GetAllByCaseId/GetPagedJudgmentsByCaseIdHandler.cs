@@ -61,12 +61,17 @@ namespace LOMs.Application.Features.Judgments.Queries.GetAllByCaseId
                     CaseId = j.CaseId,
                     Type = j.Type,
                     SubType = j.SubType,
-                    Number = j.Number,
+                    Number = j.Number ?? string.Empty,
                     IssuedOn = j.IssuedOn,
                     EmployeeIdCreatedBy = emp.Id,
-                    EmployeeNameCreatedBy = emp.Person.FullName ?? "Unknown",
+                    EmployeeNameCreatedBy = emp.Person!.FullName ?? "Unknown",
                     CreatedDate = j.CreatedAtUtc,
-                    File = fileGroup.Select(x => new FileDto {FileName = x.Filename, FilePath = x.Filepath, FileType = string.Empty}).FirstOrDefault()
+                    File = fileGroup.Select(x => new FileDto 
+                    {
+                        FileName = x.Filename ?? string.Empty,
+                        FilePath = x.Filepath ?? string.Empty,
+                        FileType = x.ContentType ?? string.Empty
+                    }).FirstOrDefault()!
                 })
                 .Skip((query.PageNumber - 1) * query.PageSize)
                 .Take(query.PageSize)

@@ -53,10 +53,10 @@ public sealed class GetPOAsByCaseIdQueryHandler
             .OrderByDescending(f => f.CreatedAtUtc)
             .Select(f => new FileDto
             {
-                FilePath = f.Filepath,
-                FileName = f.Filename,
-                FileType = f.ContentType
-            }).FirstOrDefault(),
+                FilePath = f.Filepath ?? string.Empty,
+                FileName = f.Filename ?? string.Empty,
+                FileType = f.ContentType ?? string.Empty
+            }).FirstOrDefault()!,
                 EmployeeIdCreatedBy = employee != null ? employee.Id : Guid.Empty
             };
 

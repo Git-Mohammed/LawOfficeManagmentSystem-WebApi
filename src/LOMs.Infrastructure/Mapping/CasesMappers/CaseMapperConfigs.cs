@@ -27,10 +27,10 @@ public class CaseMapperConfigs : IRegister
         config.NewConfig<Case, CaseDetailsDto>()
             .Map(dest => dest.CaseId, src => src.Id)
             .Map(dest => dest.Status, src => src.Status.ToString())
-            .Map(dest => dest.AssignedEmployeeName, src => src.Employee.Person.FullName ?? string.Empty)
-            .Map(dest => dest.CourtTypeName, src => src.CourtType.Name ?? string.Empty)
+            .Map(dest => dest.AssignedEmployeeName, src => src.Employee!.Person!.FullName ?? string.Empty)
+            .Map(dest => dest.CourtTypeName, src => src.CourtType!.Name ?? string.Empty)
             .Map(dest => dest.Clients, src => src.ClientCases
-                .Where(cc => cc.Client.Person != null)
+                .Where(cc => cc.Client!.Person != null)
                 .Select(cc => new CaseClientDto
                 {
                     ClientId = cc.ClientId,
@@ -39,8 +39,8 @@ public class CaseMapperConfigs : IRegister
                     PhoneNumber = new PhoneDto
                     {
                        
-                        Number = cc.Client!.Person!.Phones.FirstOrDefault().Number ?? string.Empty,
-                        Code = cc.Client.Person!.Phones.FirstOrDefault().Code ?? string.Empty
+                        Number = cc.Client!.Person!.Phones.FirstOrDefault()!.Number ?? string.Empty,
+                        Code = cc.Client.Person!.Phones.FirstOrDefault()!.Code ?? string.Empty
                     }
                 }).ToList());
         // Domain Case → CaseQuickStatsDto
@@ -48,7 +48,7 @@ public class CaseMapperConfigs : IRegister
             .Map(dest => dest.CaseId, src => src.Id)
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ClientName,
-                 src => src.ClientCases.FirstOrDefault().Client.Person.FullName ?? string.Empty)
+                 src => src.ClientCases.FirstOrDefault()!.Client!.Person!.FullName ?? string.Empty)
             .Map(dest => dest.CaseNumber,
                  src => src.CaseNumber ?? string.Empty);
 
