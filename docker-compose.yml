@@ -12,24 +12,24 @@ services:
       - ASPNETCORE_URLS=http://+:80
 
       # Database
-      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=LOMs;User=sa;Password=YourStrong@Password1;TrustServerCertificate=True;MultipleActiveResultSets=True
 
-      # JWT
-      - Jwt__Key=${JWT_KEY}
-      - Jwt__Issuer=${JWT_ISSUER}
-      - Jwt__Audience=${JWT_AUDIENCE}
-      - Jwt__ExpiryMinutes=${JWT_EXPIRY_MINUTES}
+      # JWT settings
+      - Jwt__Key=YourVerySecureKeyHereAtLeast32CharsLong
+      - Jwt__Issuer=LOMsLawOffice
+      - Jwt__Audience=LOMsLawOfficeApi
+      - Jwt__ExpiryMinutes=15
 
-      # SMTP
-      - Smtp__Host=${SMTP_HOST}
-      - Smtp__Port=${SMTP_PORT}
-      - Smtp__Username=${SMTP_USERNAME}
-      - Smtp__Password=${SMTP_PASSWORD}
-      - Smtp__EnableSsl=${SMTP_ENABLE_SSL}
-      - Smtp__From=${SMTP_FROM}
+      # SMTP settings
+      - Smtp__Host=smtp.gmail.com
+      - Smtp__Port=587
+      - Smtp__Username=teamaramm@gmail.com
+      - Smtp__Password=arwf jjcu mcin tdhi
+      - Smtp__EnableSsl=true
+      - Smtp__From=teamaramm@gmail.com
 
-      # Password generator
-      - PasswordGenerator__Key=${PASSWORD_GENERATOR_KEY}
+      # Password generator key
+      - PasswordGenerator__Key=YourVerySecure16ByteKey123
 
       # Serilog Seq sink
       - Serilog__WriteTo__1__Name=Seq

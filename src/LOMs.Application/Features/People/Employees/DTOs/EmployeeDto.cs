@@ -9,7 +9,7 @@ public sealed class EmployeeDto
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public DateOnly BirthDate { get; init; }
-    public string PhoneNumber { get; init; } = string.Empty;
+    public PhoneDto Phone { get; init; } 
     public string NatId { get; init; } = string.Empty;
     public string CountryCode { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
