@@ -3,30 +3,49 @@ using LOMs.Infrastructure.Constants;
 using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace LOMs.Infrastructure.Data.Configurations.Templates
+namespace LOMs.Infrastructure.Data.Configurations.Templates;
+
+public class TemplateConfiguration : IEntityTypeConfiguration<Template>
 {
-    public class TemplateConfiguration: IEntityTypeConfiguration<Template>
+    public void Configure(EntityTypeBuilder<Template> builder)
     {
-        public void Configure(EntityTypeBuilder<Template> builder)
-        {
-            // Primary key
-            builder.HasKey(a => a.Id).IsClustered(false);
+        builder.HasKey(t => t.Id)
+               .IsClustered(false);
+        builder.Property(t => t.Id)
+               .ValueGeneratedNever();
 
-            // Properties
-            builder.Property(a => a.TemplateName)
-                .IsRequired()
-                .HasMaxLength(200);
+        builder.Property(t => t.TemplateName)
+               .IsRequired()
+               .HasMaxLength(200)
+               .IsUnicode(false);
+        builder.HasIndex(t => t.TemplateName)
+               .HasDatabaseName("IX_Templates_TemplateName");
 
-           
-            // Table name and schema
+        builder.Property(t => t.Filename)
+               .IsRequired()
+               .HasMaxLength(200)
+               .IsUnicode(false);
 
-            builder.ToTable("Templates", "Templates");
-        }
+        builder.Property(t => t.Filepath)
+               .IsRequired()
+               .HasMaxLength(500)
+               .IsUnicode(false);
+
+        builder.Property(t => t.Extension)
+               .HasMaxLength(8)
+               .IsUnicode(false);
+
+        builder.Property(t => t.ContentType)
+               .HasMaxLength(100)
+               .IsUnicode(false);
+
+        builder.Property(t => t.FileType)
+               .IsRequired()
+               .HasConversion<string>()
+               .HasMaxLength(30)
+               .IsUnicode(false);
+
+        builder.ToTable("Templates", SchemaNames.GetName(DatabaseSchema.Templates));
     }
 }

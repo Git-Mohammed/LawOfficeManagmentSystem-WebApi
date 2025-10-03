@@ -4,42 +4,53 @@ using LOMs.Infrastructure.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LOMs.Infrastructure.Data.Configurations.CaseManagment
+namespace LOMs.Infrastructure.Data.Configurations.CaseManagement;
+
+internal class POAFileConfiguration : IEntityTypeConfiguration<POAFile>
 {
-    internal class POAFileConfiguration : IEntityTypeConfiguration<POAFile>
+    public void Configure(EntityTypeBuilder<POAFile> builder)
     {
-        public void Configure(EntityTypeBuilder<POAFile> builder)
-        {
+        builder.HasKey(cf => cf.Id)
+               .IsClustered(false);
+        builder.Property(cf => cf.Id)
+               .ValueGeneratedNever();
 
-            builder.HasKey(cf => cf.Id).IsClustered(false);
+        builder.Property(cf => cf.POAId)
+               .IsRequired();
+        builder.HasIndex(cf => cf.POAId)
+               .HasDatabaseName("IX_POAFiles_POAId");
 
-            builder.Property(cf => cf.POAId)
-                .IsRequired();
+        builder.Property(cf => cf.Filename)
+               .IsRequired()
+               .HasMaxLength(200)
+               .IsUnicode(false);
 
-            builder.Property(cf => cf.Filename)
-                .IsRequired()
-                .HasMaxLength(255);
+        builder.Property(cf => cf.Filepath)
+               .IsRequired()
+               .HasMaxLength(500)
+               .IsUnicode(false);
 
-            builder.Property(cf => cf.Filepath)
-                .IsRequired()
-                .HasMaxLength(500);
+        builder.Property(cf => cf.Extension)
+               .HasMaxLength(8)
+               .IsUnicode(false);
 
-            builder.Property(cf => cf.Extension)
-                .HasMaxLength(10);
+        builder.Property(cf => cf.ContentType)
+               .HasMaxLength(100)
+               .IsUnicode(false);
 
-            builder.Property(cf => cf.ContentType)
-                .HasMaxLength(100);
+        builder.Property(cf => cf.FileType)
+               .IsRequired()
+               .HasConversion<string>()
+               .HasMaxLength(30)
+               .IsUnicode(false);
+        builder.HasIndex(cf => new { cf.POAId, cf.FileType })
+               .HasDatabaseName("IX_POAFiles_POAId_FileType");
 
-            builder.Property(cf => cf.FileType).HasConversion<string>()
-                .IsRequired();
+        builder.HasOne(cf => cf.POA)
+               .WithMany(p => p.POAFiles)
+               .HasForeignKey(cf => cf.POAId)
+               .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(x => x.POA)
-                .WithMany(x => x.POAFiles)
-                .HasForeignKey(cf => cf.POAId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasIndex(cf => cf.POAId);
-            builder.ToTable("POAFiles", SchemaNames.GetName(DatabaseSchema.File));
-        }
+        builder.ToTable("POAFiles", SchemaNames.GetName(DatabaseSchema.File));
     }
 }
