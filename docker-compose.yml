@@ -1,0 +1,80 @@
+services:
+  loms-api:
+    container_name: loms-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: final
+    ports:
+      - "9092:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+
+      # Database
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=LOMs;User=sa;Password=YourStrong@Password1;TrustServerCertificate=True;MultipleActiveResultSets=True
+
+      # JWT settings
+      - Jwt__Key=YourVerySecureKeyHereAtLeast32CharsLong
+      - Jwt__Issuer=LOMsLawOffice
+      - Jwt__Audience=LOMsLawOfficeApi
+      - Jwt__ExpiryMinutes=15
+
+      # SMTP settings
+      - Smtp__Host=smtp.gmail.com
+      - Smtp__Port=587
+      - Smtp__Username=teamaramm@gmail.com
+      - Smtp__Password=arwf jjcu mcin tdhi
+      - Smtp__EnableSsl=true
+      - Smtp__From=teamaramm@gmail.com
+
+      # Password generator key
+      - PasswordGenerator__Key=YourVerySecure16ByteKey123
+
+      # Serilog Seq sink
+      - Serilog__WriteTo__1__Name=Seq
+      - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
+
+    depends_on:
+      - sqlserver
+      - seq
+    networks:
+      - loms-net
+    restart: on-failure
+
+  sqlserver:
+    container_name: loms-sql
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Password1
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - loms-net
+    restart: always
+
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=true
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    volumes:
+      - seq-data:/data
+    networks:
+      - loms-net
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data: {}
+  seq-data: {}
+
+networks:
+  loms-net:
+    driver: bridge

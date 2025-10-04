@@ -1,9 +1,17 @@
-﻿namespace LOMs.Application.Common.Interfaces;
+﻿using LOMs.Application.Features.Contracts.Dtos;
+using LOMs.Domain.Common.Results;
+
+namespace LOMs.Application.Common.Interfaces;
 
 public interface IFileService
 {
-    Task<string> SaveFileAsync(Stream fileStream, string fileName, string contentType);
-    Task<Stream?> GetFileAsync(string filePath);
-    Task DeleteFileAsync(string filePath);
-    bool ValidateFile(string fileName, string contentType, long fileSize);
+    Task<Result<string>> SaveFileAsync(Stream fileStream, string fileName, string folder);
+    Task<Stream?> GetFileAsync(string relativePath);
+    Task DeleteFileAsync(string relativePath);
+    Task<string> ReplaceFileAsync(Stream fileStream, string fileName, string oldRelativePath, string folder);
+    
+    Task<Result<FileDownloadResult>> DownloadFileAsync(string relativePath);
+    
+
+    public bool ValidateFile(string fileName, string contentType, long fileSize);
 }

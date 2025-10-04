@@ -1,5 +1,7 @@
-using LOMs.Application.Common.Interfaces;
+﻿using LOMs.Application.Common.Interfaces;
 using LOMs.Domain.Common.Options;
+using LOMs.Infrastructure.BackgroundServicesJob;
+using LOMs.Infrastructure.Configuration;
 using LOMs.Infrastructure.Data;
 using LOMs.Infrastructure.Data.Interceptors;
 using LOMs.Infrastructure.Identity;
@@ -8,13 +10,16 @@ using LOMs.Infrastructure.Services;
 using LOMs.Infrastructure.Services.DomainEventPublishers;
 using LOMs.Infrastructure.Services.EmailSender;
 using LOMs.Infrastructure.Services.FileServices;
-using LOMs.Infrastructure.Services.Image;
 using Mapster;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
-
-
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -22,10 +27,21 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton(TimeProvider.System);            
 
+        RegisterDatabase(services, configuration);
+        RegisterIdentity(services);
+        RegisterAuthentication(services, configuration);
+        RegisterApplicationServices(services, configuration);
+        RegisterOptions(services, configuration);
+
+        return services;
+    }
+
+    // 🔹 Database & EF Core
+    private static void RegisterDatabase(IServiceCollection services, IConfiguration configuration)
+    {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
-
         ArgumentNullException.ThrowIfNull(connectionString);
 
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
@@ -36,40 +52,91 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString);
         });
 
-        services.AddIdentityCore<ApplicationUser>(options =>
-            {
-                options.Password.RequiredLength = 6;
-                options.Password.RequireDigit = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequiredUniqueChars = 1;
-                options.SignIn.RequireConfirmedAccount = false;
-            }).AddRoles<ApplicationRole>()
-            .AddEntityFrameworkStores<AppDbContext>();
-        
-        services.AddScoped<ApplicationDbContextInitializer>();
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
+        services.AddScoped<ApplicationDbContextInitializer>();
+    }
+
+    // 🔹 Identity & Security
+    private static void RegisterIdentity(IServiceCollection services)
+    {
+        services.AddIdentityCore<ApplicationUser>(options =>
+        {
+            options.Password.RequiredLength = 8;
+            options.Password.RequireDigit = true;
+            options.Password.RequireNonAlphanumeric = true;
+            options.Password.RequireUppercase = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequiredUniqueChars = 5;
+            options.SignIn.RequireConfirmedAccount = false;
+        })
+        .AddRoles<ApplicationRole>()
+        .AddEntityFrameworkStores<AppDbContext>()
+        .AddDefaultTokenProviders();
+
         services.AddScoped<IIdentityService, IdentityService>();
-        services.MapsterRegister();
+    }
+
+    // 🔹 JWT Authentication
+    private static void RegisterAuthentication(IServiceCollection services, IConfiguration configuration)
+    {
+        var jwtSettings = configuration.GetSection("Jwt");
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings["Issuer"],
+                ValidAudience = jwtSettings["Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
+            };
+
+            // this will take care of extracting the token from the cokie
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = ctx =>
+                {
+                    ctx.Request.Cookies.TryGetValue("access-token", out var accessToken);
+                    if (!string.IsNullOrEmpty(accessToken))
+                        ctx.Token = accessToken;
+
+                    return Task.CompletedTask;
+                }
+            };
+        });
+    }
+
+    // 🔹 Application Services
+    private static void RegisterApplicationServices(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddScoped<IDomainEventPublisher, LiteBusEventPublisher>();
         services.AddPasswordGenerator();
         services.AddEmailSenderService(configuration);
-        services.AddScoped<IDomainEventPublisher,LiteBusEventPublisher>();
+        services.AddFileService();
+        services.MapsterRegister();
+    }
 
+    // 🔹 Configuration Binding
+    private static void RegisterOptions(IServiceCollection services, IConfiguration configuration)
+    {
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
         services.Configure<PasswordGeneratorOptions>(configuration.GetSection("PasswordGenerator"));
+        services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
+        services.Configure<LOMsSettings>(configuration.GetSection("LOMsSettings"));
 
-        services.AddServices();
-        services.AddFileService();
-        return services;
     }
 
-    private static IServiceCollection AddServices(this IServiceCollection services)
-    {
-        services.AddScoped<IImageService, ImageService>();
-
-        return services;
-    }
+    // 🔹 Mapster Mapping
     private static IServiceCollection MapsterRegister(this IServiceCollection services)
     {
         MappingConfig.Configure();
@@ -78,27 +145,27 @@ public static class DependencyInjection
         services.AddScoped<IMapper, MappingServiceAdapter>();
         return services;
     }
-    
+
+    // 🔹 Password Generator
     private static IServiceCollection AddPasswordGenerator(this IServiceCollection services)
     {
         return services.AddSingleton<IPasswordGenerator, PasswordGenerator>();
     }
+
+    // 🔹 Email Sender
     private static IServiceCollection AddEmailSenderService(this IServiceCollection services, IConfiguration configuration)
     {
-        // Bind the "Smtp" section to SmtpSettings
-        services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
-
-        // Register the email sender
         services.AddScoped<IEmailSender, SmtpEmailSender>();
-
+        services.AddScoped<ITokenProvider, TokenProvider>();
         return services;
     }
 
+    // 🔹 File Service
     private static IServiceCollection AddFileService(this IServiceCollection services)
     {
-        services.AddSingleton<IFileValidator,FileValidator>();
+        services.AddSingleton<IFileValidator, FileValidator>();
         services.AddScoped<IFileService>(sp =>
-            new LocalFileService("uploads",sp.GetRequiredService<IFileValidator>()));
+            new LocalFileService("uploads", sp.GetRequiredService<IFileValidator>(), sp.GetRequiredService<ILogger<LocalFileService>>()));
         return services;
     }
 }

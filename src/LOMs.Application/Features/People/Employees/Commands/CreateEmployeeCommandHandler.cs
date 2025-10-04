@@ -1,12 +1,13 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LOMs.Domain.Identity;
 using LOMs.Application.Common.Interfaces;
-using LOMs.Application.Features.People.Employees.DTOs;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Employees;
 using LOMs.Domain.People.Employees.DomainEvents;
 using Microsoft.EntityFrameworkCore;
+using LOMs.Application.Features.People.Employees.Dtos;
+using LOMs.Domain.People.Phones;
 
 namespace LOMs.Application.Features.People.Employees.Commands;
 
@@ -29,7 +30,26 @@ public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityServic
         var email = command.Email.Trim().ToLower();
         if (await _context.Employees.AnyAsync(e => e.Email == email, cancellationToken))
             return EmployeeErrors.ExistingEmail;
-        
+
+
+
+        var phoneNumber = command.Person.Phone.Number?.Trim();
+        var code = command.Person.Phone.Code?.Trim();
+
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+            return PersonErrors.PhoneNumberRequired;
+        if (string.IsNullOrWhiteSpace(code))
+            return PersonErrors.PhoneCodeRequired;
+
+        var exists = await _context.Phones.AnyAsync(x => (x.Number == phoneNumber) && (x.Code == code), cancellationToken);
+        if (exists)
+            return PersonErrors.PhoneNumberAlreadyExists;
+
+        var phoneResult = Phone.Create(Guid.NewGuid(), phoneNumber, code);
+
+        if (phoneResult.IsError)
+            return phoneResult.Errors;
+
         // create person
         var person = Person.Create(
             Guid.NewGuid(),
@@ -37,14 +57,14 @@ public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityServic
             nationalId,
             command.Person.CountryCode,
             command.Person.BirthDate,
-            command.Person.PhoneNumber,
-            command.Person.Address
+            command.Person.Address,
+            new List<Phone> { phoneResult.Value }
         );
         if (person.IsError)
             return person.Errors;
         
         // create employee
-        var employee = Employee.Create(Guid.NewGuid(),email,person.Value,command.Role);
+        var employee = Employee.Create(Guid.NewGuid(),email,person.Value, command.Role);
         
         if (employee.IsError)
             return employee.Errors;
@@ -69,7 +89,7 @@ public class CreateEmployeeCommandHandler(IAppDbContext context, IIdentityServic
         
         // send email
         var createdEmployee = employee.Value;
-        await _eventPublisher.PublishAsync(new EmployeeCreatedEvent(createdEmployee, createdEmployee.Email, randomPassword), cancellationToken);
+        await _eventPublisher.PublishAsync(new EmployeeCreatedEvent(createdEmployee, createdEmployee!.Email!, randomPassword), cancellationToken);
         
         return _mapper.Map<Employee,EmployeeDto>(createdEmployee);
         

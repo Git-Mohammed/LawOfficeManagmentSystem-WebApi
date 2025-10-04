@@ -1,7 +1,10 @@
-﻿using LOMs.Domain.Cases.ClientFiles;
+﻿using LOMs.Domain.Cases.Attachments;
+using LOMs.Domain.Cases.ClientFiles;
 using LOMs.Domain.Cases.Contracts;
+using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Cases.Enums;
+using LOMs.Domain.Cases.Judgments;
 using LOMs.Domain.Common;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People.Clients;
@@ -21,9 +24,13 @@ namespace LOMs.Domain.Cases
         public string? LawyerOpinion { get; private set; }
         public Guid AssignedEmployeeId { get; private set; } 
         public Guid CourtTypeId { get; private set; }
+
+        public ICollection<CourtSession> CourtSessions { get;  set; } = new List<CourtSession>();
         public ICollection<Contract> Contracts {  get;  set; } = new List<Contract>();
         public ICollection<ClientCase> ClientCases { get;  set; } = new List<ClientCase>();
         public ICollection<POA> POAs { get; set; } = new List<POA>();
+        public ICollection<Judgment> Judgments { get;  set; } = new List<Judgment>();
+        public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
         public Employee? Employee { get; set; }
        public CourtType? CourtType { get; set; }
 
@@ -100,6 +107,22 @@ namespace LOMs.Domain.Cases
              lawyerOpinion,
              assignedEmployeeId
             ); ;
+        }
+
+        /// <summary>
+        /// Updates the status of the case with validation.
+        /// </summary>
+        public Result<Updated> UpdateStatus(CaseStatus newStatus)
+        {
+            if (!Enum.IsDefined(typeof(CaseStatus), newStatus))
+                return CaseErrors.InvalidStatus;
+
+            if (Status == newStatus)
+                return Result.Updated; // No change needed
+
+            Status = newStatus;
+
+            return Result.Updated;
         }
 
 

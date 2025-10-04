@@ -1,28 +1,21 @@
 ﻿using LOMs.Application.Features.People.Clients.Dtos;
-using LOMs.Application.Features.People.Employees.DTOs;
+using LOMs.Domain.Cases.Enums;
 
-namespace LOMs.Application.Features.Cases.Dtos
+public sealed class CaseDetailsDto
 {
-    public class CaseDetailsDto
-    {
-        public Guid Id { get; set; }
-        public string CaseNumber { get; set; } = string.Empty;
-        public CourtTypeDto CourtType { get; set; } 
-        public string CaseSubject { get; set; } = string.Empty;
-        public string PartyRole { get; set; } = string.Empty;
-        public string ClientRequestDetails { get; set; } = string.Empty;
-        public DateOnly EstimatedReviewDate { get; set; }
-        public string CaseStatus { get; set; } = string.Empty;
-        public bool HasContracts { get; set; }
-        public List<ContractDto> Contracts { get; set; } = new();
+    public Guid CaseId { get; init; }
+    public string? CaseNumber { get; init; }
+    public string? CaseSubject { get; init; }
+    public PartyRole PartyRole { get; init; }
+    public string? ClientRequests { get; init; }
+    public DateOnly EstimatedReviewDate { get; init; }
+    public string? LawyerOpinion { get; init; }
 
-        public bool HasPOAs { get; set; }
-        public List<POADto> POAs { get; set; } = new();
+    public string? CourtTypeName { get; init; }
+    public string? AssignedEmployeeName { get; init; }
+    public CaseStatus Status { get; init; }
+    public DateTimeOffset CreatedAt { get; init; }
+    public string CreatedBy { get; init; } = null!;
 
-        public string? LawyerOpinion { get; set; }
-        public Guid AssignedEmployeeId { get; set; }
-        public EmployeeDto Employee { get; set; } 
-        public List<ClientDto> Clients { get; set; } = new();
-    }
-
+    public List<CaseClientDto> Clients { get; init; } = [];
 }

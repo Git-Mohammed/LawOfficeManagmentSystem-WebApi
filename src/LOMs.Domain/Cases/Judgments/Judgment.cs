@@ -1,0 +1,54 @@
+using LOMs.Domain.Common;
+using LOMs.Domain.Common.Extensions;
+using LOMs.Domain.Common.Files;
+using LOMs.Domain.Common.Results;
+
+namespace LOMs.Domain.Cases.Judgments;
+
+public class Judgment : AuditableEntity
+{
+    public Guid CaseId { get; private set; }
+    public string? Number { get; private set; } = null!;
+    public JudgmentType Type { get; private set; }
+    public JudgmentSubType SubType { get; private set; }
+    public DateOnly IssuedOn { get; private set; }
+
+    #region Navigation Properties
+    public Case? Case { get;  set; }
+    public ICollection<JudgmentFile> Files { get; private set; } = new List<JudgmentFile>();
+    #endregion
+    
+    private Judgment(){}
+
+    private Judgment(Guid id ,Guid caseId, string number, JudgmentType type, JudgmentSubType subType, DateOnly issuedOn): base(id)
+    {
+        Number = number;
+        Type = type;
+        IssuedOn = issuedOn;
+        CaseId = caseId;
+        SubType = subType;
+    }
+
+    public static Result<Judgment> Create(Guid caseId, string number, JudgmentType type, JudgmentSubType subType,
+        DateOnly issuedOn)
+    {
+        if (caseId == Guid.Empty)
+            return JudgmentErrors.CaseIdRequired;
+
+        if (string.IsNullOrWhiteSpace(number))
+            return JudgmentErrors.NumberRequired;
+
+        if (type == JudgmentType.None || !Enum.IsDefined(type))
+            return JudgmentErrors.TypeRequired;
+
+        if (subType == JudgmentSubType.None || !Enum.IsDefined(subType))
+            return JudgmentErrors.SubTypeRequired;
+
+        if (issuedOn == default)
+            return JudgmentErrors.IssuedOnRequired;
+
+        
+        return new Judgment(Guid.NewGuid(), caseId, number, type, subType, issuedOn);
+    }
+}
+

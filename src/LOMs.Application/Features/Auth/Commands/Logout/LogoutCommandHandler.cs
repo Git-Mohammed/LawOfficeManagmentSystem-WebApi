@@ -20,7 +20,7 @@ public class LogoutCommandHandler : ICommandHandler<LogoutCommand, Result<Succes
         _eventPublisher = eventPublisher;
     }
 
-    public async Task<Result<Success>> HandleAsync(LogoutCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Success>> HandleAsync(LogoutCommand command, CancellationToken ct)
     {
         _logger.LogInformation("Logout attempt with refresh token: {RefreshToken}", command.RefreshToken);
 
@@ -31,7 +31,7 @@ public class LogoutCommandHandler : ICommandHandler<LogoutCommand, Result<Succes
             return userResult.Errors;
         }
 
-        var result = await _identityService.RemoveRefreshTokenAsync(command.RefreshToken);
+        var result = await _identityService.RemoveRefreshTokenAsync(command.RefreshToken, ct);
         if (result.IsError)
         {
             _logger.LogWarning("Logout failed for refresh token: {RefreshToken}", command.RefreshToken);
@@ -41,7 +41,7 @@ public class LogoutCommandHandler : ICommandHandler<LogoutCommand, Result<Succes
         var user = userResult.Value;
         await _eventPublisher.PublishAsync(
                     new UserLoggedOutEvent(user!.UserId, user.Username, DateTime.UtcNow),
-                    cancellationToken);
+                    ct);
 
         _logger.LogInformation("Logout successful for refresh token: {RefreshToken}", command.RefreshToken);
 

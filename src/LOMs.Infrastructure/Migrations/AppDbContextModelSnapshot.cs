@@ -17,33 +17,96 @@ namespace LOMs.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("LOMs.Domain.Cases.Attachments.Attachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AttachmentName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<Guid>("CaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Extension")
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("Filename")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Filepath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CaseId");
+
+                    b.ToTable("Attachments", "CaseManagment");
+                });
+
             modelBuilder.Entity("LOMs.Domain.Cases.Case", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AssignedEmployeeId")
-                        .HasMaxLength(100)
-                        .HasColumnType("uniqueidentifier")
-                        .HasComment("اسم الموظف المسؤول عن متابعة القضية");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CaseNumber")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("CaseSubject")
                         .HasMaxLength(1000)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("ClientRequests")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasMaxLength(2000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<Guid>("CourtTypeId")
                         .HasColumnType("uniqueidentifier");
@@ -66,23 +129,35 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("LawyerOpinion")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PartyRole")
-                        .HasColumnType("int")
-                        .HasComment("دور العميل في القضية: 1 = مدعي، 2 = مدعى عليه");
+                    b.Property<string>("PartyRole")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)")
+                        .HasComment("Client's role: Plaintiff or Defendant");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int")
-                        .HasComment("الحالة الحالية للقضية: 0 = مسودة، 1 = قيد الانتظار، 2 = قيد المعالجة، 3 = منتهية، 4 = ملغية");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)");
 
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("AssignedEmployeeId");
+                    b.HasIndex("AssignedEmployeeId")
+                        .HasDatabaseName("IX_Cases_AssignedEmployeeId");
 
                     b.HasIndex("CourtTypeId");
 
-                    b.ToTable("Cases");
+                    b.HasIndex("PartyRole")
+                        .HasDatabaseName("IX_Cases_PartyRole");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Cases_Status");
+
+                    b.ToTable("Cases", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.ClientCase", b =>
@@ -102,29 +177,26 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("ClientId");
 
-                    b.ToTable("ClientCases");
+                    b.ToTable("ClientCases", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.ClientFiles.ClientFile", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ClientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<short>("CourtTypeCode")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
                         .HasColumnType("smallint");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FileNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<short>("HijriYear")
@@ -136,35 +208,73 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("LastModifiedUtc")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("OrderNumber")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("ClientId");
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("IX_ClientFiles_ClientId");
 
-                    b.ToTable("ClientFiles");
+                    b.HasIndex("CourtTypeCode")
+                        .HasDatabaseName("IX_ClientFiles_CourtTypeCode");
+
+                    b.ToTable("ClientFiles", "CaseManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.ClientFiles.ClientFileWithFileNumber", b =>
+                {
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<short>("CourtTypeCode")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<short>("HijriYear")
+                        .HasColumnType("smallint");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RowNumber")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_ClientFilesWithFileNumber", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.Contracts.Contract", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("BaseAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("CaseId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ContractNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<short>("CourtTypeCode")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
                         .HasColumnType("smallint");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -176,14 +286,11 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<DateOnly?>("ExpiresOn")
                         .HasColumnType("date");
 
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<short>("HijriYear")
                         .HasColumnType("smallint");
 
                     b.Property<decimal>("InitialPayment")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsAssigned")
@@ -198,15 +305,15 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("LastModifiedUtc")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("OrderNumber")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("int")
-                        .HasComment("نوع العقد: 1 = محدد، 2 = غير محدد");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)");
 
                     b.HasKey("Id");
 
@@ -214,16 +321,194 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("Contracts");
+                    b.HasIndex("CourtTypeCode")
+                        .HasDatabaseName("IX_Contracts_CourtTypeCode");
+
+                    b.HasIndex("HijriYear")
+                        .HasDatabaseName("IX_Contracts_HijriYear");
+
+                    b.ToTable("Contracts", "FinanceManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.Contracts.ContractFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<Guid>("ContractId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Extension")
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("Filename")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Filepath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("ContractId")
+                        .HasDatabaseName("IX_ContractFiles_ContractId");
+
+                    b.HasIndex("ContractId", "FileType")
+                        .HasDatabaseName("IX_ContractFiles_ContractId_FileType");
+
+                    b.ToTable("ContractFiles", "FileManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.Contracts.ContractsWithContractNumber", b =>
+                {
+                    b.Property<decimal>("BaseAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("CaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContractNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<short>("CourtTypeCode")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly?>("ExpiresOn")
+                        .HasColumnType("date");
+
+                    b.Property<short>("HijriYear")
+                        .HasColumnType("smallint");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("InitialPayment")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsAssigned")
+                        .HasColumnType("bit");
+
+                    b.Property<DateOnly?>("IssuedOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifiedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RowNumber")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_ContractsWithContractNumber", "FinanceManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.CourtSessions.CourtSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AssignedEmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AssignedTasks")
+                        .IsRequired()
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("CaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ScheduledAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("AssignedEmployeeId")
+                        .HasDatabaseName("IX_CourtSessions_AssignedEmployeeId");
+
+                    b.HasIndex("CaseId")
+                        .HasDatabaseName("IX_CourtSessions_CaseId");
+
+                    b.ToTable("CourtSessions", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.Cases.CourtTypes.CourtType", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<short>("Code")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
                         .HasColumnType("smallint");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -243,20 +528,121 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(255)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.ToTable("CourtTypes", (string)null);
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("UX_CourtTypes_Code");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("IX_CourtTypes_Name");
+
+                    b.ToTable("CourtTypes", "CaseManagment");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("b3a1f8b4-1e6a-4b3e-9c3d-0a9f8d8a1b11"),
+                            Code = (short)100,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "المحكمة العامة",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "العامة"
+                        },
+                        new
+                        {
+                            Id = new Guid("c4f2a9d7-2b7e-4a4f-8b2e-1c2d3e4f5a66"),
+                            Code = (short)200,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "المحكمة الجنائية",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "الجنائية"
+                        },
+                        new
+                        {
+                            Id = new Guid("d5e3b0c8-3c8f-4c5f-9d3f-2d3e4f5a6b77"),
+                            Code = (short)300,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "المحكمة العمالية",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "العمالية"
+                        },
+                        new
+                        {
+                            Id = new Guid("e6f4c1d9-4d9f-4d6f-ae4f-3e4f5a6b7c88"),
+                            Code = (short)400,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "محكمة الأحوال الشخصية",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "الأحوال الشخصية"
+                        },
+                        new
+                        {
+                            Id = new Guid("f7a5d2ea-5eaf-4e7f-bf5f-4f5a6b7c8d99"),
+                            Code = (short)500,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "المحكمة التجارية",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "التجارية"
+                        },
+                        new
+                        {
+                            Id = new Guid("a8b6e3fb-6fb0-4f8f-cf6f-5a6b7c8d9e10"),
+                            Code = (short)600,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "المحكمة الإدارية",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "الإدارية"
+                        },
+                        new
+                        {
+                            Id = new Guid("1816e3fb-6fb0-428f-cf6f-5a7b7c829e10"),
+                            Code = (short)700,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "اللجان شبه القضائية",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "اللجان شبه القضائية"
+                        },
+                        new
+                        {
+                            Id = new Guid("b9c7f40c-70c1-4f9f-df7f-6b7c8d9e0f21"),
+                            Code = (short)32000,
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "System",
+                            Description = "أخرى",
+                            LastModifiedBy = "System",
+                            LastModifiedUtc = new DateTimeOffset(new DateTime(2025, 10, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "أخرى"
+                        });
                 });
 
-            modelBuilder.Entity("LOMs.Domain.Customers.Customer", b =>
+            modelBuilder.Entity("LOMs.Domain.Cases.Judgments.Judgment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CaseId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -265,9 +651,8 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Email")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                    b.Property<DateOnly>("IssuedOn")
+                        .HasColumnType("date");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -275,34 +660,202 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("LastModifiedUtc")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Number")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
 
-                    b.Property<string>("PhoneNumber")
+                    b.Property<string>("SubType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CaseId");
+
+                    b.ToTable("Judgments", "CaseManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.Judgments.JudgmentFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Extension")
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("Filename")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Filepath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<Guid>("JudgmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JudgmentId");
+
+                    b.HasIndex("JudgmentId", "FileType");
+
+                    b.ToTable("JudgmentFiles", "CaseManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.POAs.POAFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Extension")
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("Filename")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Filepath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("POAId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.ToTable("Customers");
+                    b.HasIndex("POAId")
+                        .HasDatabaseName("IX_POAFiles_POAId");
+
+                    b.HasIndex("POAId", "FileType")
+                        .HasDatabaseName("IX_POAFiles_POAId_FileType");
+
+                    b.ToTable("POAFiles", "FileManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Identity.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("ExpiresOnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("UX_RefreshTokens_Token");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_RefreshTokens_UserId");
+
+                    b.ToTable("RefreshTokens", "UserManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.POAs.POA", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AttachmentPath")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasComment("Path or URL to the attached POA document");
 
                     b.Property<Guid>("CaseId")
                         .HasColumnType("uniqueidentifier");
@@ -314,14 +867,13 @@ namespace LOMs.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateOnly>("IssueDate")
-                        .HasColumnType("date")
-                        .HasComment("Date the POA was issued");
+                        .HasColumnType("date");
 
                     b.Property<string>("IssuingAuthority")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
-                        .HasComment("The authority that issued the POA, such as a court or notary");
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -331,23 +883,23 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("POANumber")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasComment("Official POA number as stated in the document");
+                        .HasMaxLength(255)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("CaseId");
+                    b.HasIndex("CaseId")
+                        .HasDatabaseName("IX_POAs_CaseId");
 
-                    b.ToTable("POAs");
+                    b.ToTable("POAs", "CaseManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Clients.Client", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -370,15 +922,15 @@ namespace LOMs.Infrastructure.Migrations
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
                     b.HasIndex("PersonId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("UX_Clients_PersonId");
 
-                    b.ToTable("Clients");
+                    b.ToTable("Clients", "UserManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Employees.Employee", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -390,7 +942,11 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -404,7 +960,8 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -414,25 +971,30 @@ namespace LOMs.Infrastructure.Migrations
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("Email");
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Employees_Email");
 
                     b.HasIndex("PersonId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("UX_Employees_PersonId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Employees_UserId");
 
-                    b.ToTable("Employees", "UserManagement");
+                    b.ToTable("Employees", "UserManagment");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Person", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasMaxLength(250)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(250)");
 
                     b.Property<DateOnly>("BirthDate")
@@ -440,7 +1002,9 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("CountryCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
@@ -450,8 +1014,9 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(255)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -462,20 +1027,127 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<string>("NationalId")
                         .IsRequired()
                         .HasMaxLength(11)
-                        .HasColumnType("nvarchar(11)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(11)");
 
                     b.HasKey("Id");
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.HasIndex("NationalId");
+                    b.HasIndex("CountryCode")
+                        .HasDatabaseName("IX_People_CountryCode");
 
-                    b.ToTable("People", "UserManagement");
+                    b.HasIndex("NationalId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_People_NationalId");
+
+                    b.ToTable("People", "UserManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.People.Phones.Phone", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(10)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("IX_Phones_PersonId");
+
+                    b.ToTable("Phones", "UserManagment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Templates.Template", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Extension")
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("Filename")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Filepath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TemplateName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex("TemplateName")
+                        .HasDatabaseName("IX_Templates_TemplateName");
+
+                    b.ToTable("Templates", "Templates");
                 });
 
             modelBuilder.Entity("LOMs.Infrastructure.Identity.ApplicationRole", b =>
@@ -524,6 +1196,9 @@ namespace LOMs.Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsUsingTempPassword")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -546,9 +1221,6 @@ namespace LOMs.Infrastructure.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<string>("RefreshToken")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -679,6 +1351,17 @@ namespace LOMs.Infrastructure.Migrations
                     b.ToTable("UserTokens", "Identity");
                 });
 
+            modelBuilder.Entity("LOMs.Domain.Cases.Attachments.Attachment", b =>
+                {
+                    b.HasOne("LOMs.Domain.Cases.Case", "Case")
+                        .WithMany("Attachments")
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Case");
+                });
+
             modelBuilder.Entity("LOMs.Domain.Cases.Case", b =>
                 {
                     b.HasOne("LOMs.Domain.People.Employees.Employee", "Employee")
@@ -747,6 +1430,78 @@ namespace LOMs.Infrastructure.Migrations
                     b.Navigation("Case");
                 });
 
+            modelBuilder.Entity("LOMs.Domain.Cases.Contracts.ContractFile", b =>
+                {
+                    b.HasOne("LOMs.Domain.Cases.Contracts.Contract", "Contract")
+                        .WithMany("ContractFiles")
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Contract");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.CourtSessions.CourtSession", b =>
+                {
+                    b.HasOne("LOMs.Domain.People.Employees.Employee", "AssignedEmployee")
+                        .WithMany()
+                        .HasForeignKey("AssignedEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LOMs.Domain.Cases.Case", "Case")
+                        .WithMany("CourtSessions")
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AssignedEmployee");
+
+                    b.Navigation("Case");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.Judgments.Judgment", b =>
+                {
+                    b.HasOne("LOMs.Domain.Cases.Case", "Case")
+                        .WithMany("Judgments")
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Case");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.Judgments.JudgmentFile", b =>
+                {
+                    b.HasOne("LOMs.Domain.Cases.Judgments.Judgment", "Judgment")
+                        .WithMany("Files")
+                        .HasForeignKey("JudgmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Judgment");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.POAs.POAFile", b =>
+                {
+                    b.HasOne("LOMs.Domain.POAs.POA", "POA")
+                        .WithMany("POAFiles")
+                        .HasForeignKey("POAId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("POA");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Identity.RefreshToken", b =>
+                {
+                    b.HasOne("LOMs.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("LOMs.Domain.POAs.POA", b =>
                 {
                     b.HasOne("LOMs.Domain.Cases.Case", "Case")
@@ -775,6 +1530,17 @@ namespace LOMs.Infrastructure.Migrations
                         .WithOne("Employee")
                         .HasForeignKey("LOMs.Domain.People.Employees.Employee", "PersonId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.People.Phones.Phone", b =>
+                {
+                    b.HasOne("LOMs.Domain.People.Person", "Person")
+                        .WithMany("Phones")
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Person");
@@ -833,9 +1599,15 @@ namespace LOMs.Infrastructure.Migrations
 
             modelBuilder.Entity("LOMs.Domain.Cases.Case", b =>
                 {
+                    b.Navigation("Attachments");
+
                     b.Navigation("ClientCases");
 
                     b.Navigation("Contracts");
+
+                    b.Navigation("CourtSessions");
+
+                    b.Navigation("Judgments");
 
                     b.Navigation("POAs");
                 });
@@ -845,9 +1617,24 @@ namespace LOMs.Infrastructure.Migrations
                     b.Navigation("CaseClients");
                 });
 
+            modelBuilder.Entity("LOMs.Domain.Cases.Contracts.Contract", b =>
+                {
+                    b.Navigation("ContractFiles");
+                });
+
             modelBuilder.Entity("LOMs.Domain.Cases.CourtTypes.CourtType", b =>
                 {
                     b.Navigation("Cases");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.Cases.Judgments.Judgment", b =>
+                {
+                    b.Navigation("Files");
+                });
+
+            modelBuilder.Entity("LOMs.Domain.POAs.POA", b =>
+                {
+                    b.Navigation("POAFiles");
                 });
 
             modelBuilder.Entity("LOMs.Domain.People.Clients.Client", b =>
@@ -867,6 +1654,13 @@ namespace LOMs.Infrastructure.Migrations
                     b.Navigation("Client");
 
                     b.Navigation("Employee");
+
+                    b.Navigation("Phones");
+                });
+
+            modelBuilder.Entity("LOMs.Infrastructure.Identity.ApplicationUser", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

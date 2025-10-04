@@ -3,12 +3,15 @@ using LiteBus.Queries.Abstractions;
 using LOMs.Application.Features.People.Clients.Commands.CreateClient;
 using LOMs.Application.Features.People.Clients.Dtos;
 using LOMs.Application.Features.People.Clients.Queries.GetClientByNationalIdQuery;
+using LOMs.Application.Features.People.Commands;
 using LOMs.Contract.Requests.Clients;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LOMs.Api.Controllers;
 
 [Route("api/clients")]
+[Authorize]
 public class ClientsController(ICommandMediator command, IQueryMediator query) : ApiController
 {
     private readonly IQueryMediator _query = query;
@@ -58,8 +61,8 @@ public class ClientsController(ICommandMediator command, IQueryMediator query) :
             NationalId: request.Person.NationalId,
             CountryCode: request.Person.CountryCode,
             BirthDate: request.Person.BirthDate,
-            PhoneNumber: request.Person.PhoneNumber,
-            Address: request.Person.Address);
+            Address: request.Person.Address,
+            Phone: new CreatePhoneCommand(request.Person.Phone.Number, request.Person.Phone.Code));
 
         var commandRequest = new CreateClientCommand(personCommand);
         var result = await _command.SendAsync(commandRequest, ct);

@@ -1,4 +1,5 @@
 ﻿using LOMs.Application.Common.Interfaces;
+using LOMs.Application.Utilities;
 using LOMs.Domain.Cases.Contracts;
 using LOMs.Domain.Cases.CourtTypes;
 using LOMs.Domain.Cases.Enums;
@@ -8,9 +9,12 @@ using System.Globalization;
 
 namespace LOMs.Application.Features.Contracts.Services
 {
-    public interface IContractFactory
+
+    public sealed class ContractFactory(IAppDbContext context) : IContractFactory
     {
-        Task<Result<Contract>> CreateAsync(
+        private readonly IAppDbContext _context = context;
+
+        public Result<Contract> CreateAsync(
             Guid caseId,
             CourtType courtType,
             ContractType type,
@@ -18,40 +22,11 @@ namespace LOMs.Application.Features.Contracts.Services
             DateOnly? expiresOn,
             decimal totalAmount,
             decimal initialPayment,
-            string filePath,
-            bool isAssigned,
-            CancellationToken ct = default);
-    }
-
-    public sealed class ContractFactory : IContractFactory
-    {
-        private readonly IAppDbContext _context;
-
-        public ContractFactory(IAppDbContext context)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-        }
-
-        public async Task<Result<Contract>> CreateAsync(
-            Guid caseId,
-            CourtType courtType,
-            ContractType type,
-            DateOnly? issuedOn,
-            DateOnly? expiresOn,
-            decimal totalAmount,
-            decimal initialPayment,
-            string filePath,
             bool isAssigned,
             CancellationToken ct = default)
         {
 
-            var hijriYear = new HijriCalendar().GetYear(DateTime.UtcNow) % 100;
-
-            var existingCount = await _context.Contracts
-                .CountAsync(c => c.CourtTypeCode == courtType.Code && c.HijriYear == hijriYear,
-                    ct);
-
-            var orderNumber = existingCount + 1;
+            var hijriYear = HijriDateConverter.GetFullHijriYear();
 
             var result = Contract.Create(
                 caseId,
@@ -61,10 +36,8 @@ namespace LOMs.Application.Features.Contracts.Services
                 expiresOn,
                 totalAmount,
                 initialPayment,
-                filePath,
                 isAssigned,
-                (short)hijriYear,
-                orderNumber
+                (short)hijriYear
             );
 
             if (result.IsError)

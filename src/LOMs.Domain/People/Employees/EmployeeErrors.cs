@@ -17,5 +17,5 @@ public static class EmployeeErrors
     public static readonly Error EmailRequired =
         Error.Validation("Employee.EmailRequired", "The provided Email is required.");
     public static readonly Error ExistingEmail =
-        Error.Validation("Employee.ExistingEmail", "The provided Email is already existing.");
+        Error.Conflict("Employee.ExistingEmail", "The provided Email is already existing.");
 }

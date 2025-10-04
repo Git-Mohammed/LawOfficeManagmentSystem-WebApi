@@ -1,17 +1,24 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LiteBus.Queries.Abstractions;
+using LOMs.Application.Common.Models;
 using LOMs.Application.Features.Cases.Commands.CreateCase;
+using LOMs.Application.Features.Cases.Commands.UpdateStatus;
 using LOMs.Application.Features.Cases.Dtos;
+using LOMs.Application.Features.Cases.Queries.CaseListRow;
 using LOMs.Application.Features.Cases.Queries.GetCaseByIdQuery;
+using LOMs.Application.Features.Cases.Queries.GetCaseQuickStatsByCourtTypeAndHijriYear;
 using LOMs.Application.Features.People.Clients.Commands.CreateClient;
+using LOMs.Application.Features.People.Commands;
 using LOMs.Contract.Requests.Cases;
+using LOMs.Domain.Cases.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
 
 namespace LOMs.Api.Controllers;
 
 [Route("api/cases")]
+[Authorize]
 public class CasesController(ICommandMediator command, IQueryMediator query) : ApiController
 {
     private readonly IQueryMediator _query = query;
@@ -31,6 +38,62 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
 
         return result.Match(Ok, Problem);
     }
+[HttpGet("by-court-type/{courtTypeId:guid}/year/{hijriYear:int}", Name = nameof(GetCasesByCourtTypeAndYearPaginated))]
+[ProducesResponseType(typeof(PaginatedList<CaseQuickStatsDto>), StatusCodes.Status200OK)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+[EndpointSummary("Retrieves paginated case statistics by court type and Hijri year.")]
+[EndpointDescription("Fetches a paginated list of case quick statistics filtered by court type, Hijri year, and optionally by status.")]
+[EndpointName(nameof(GetCasesByCourtTypeAndYearPaginated))]
+public async Task<IActionResult> GetCasesByCourtTypeAndYearPaginated(
+    Guid courtTypeId,
+    int hijriYear,
+    [FromQuery] CaseStatus? status,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10,
+    CancellationToken ct = default)
+{
+        if (pageNumber <= 0)
+            return Problem("Page number must be greater than zero.");
+
+        if (pageSize <= 0)
+            return Problem("Page size must be greater than zero.");
+
+        var queryRequest = new GetCaseQuickStatsByCourtTypeAndHijriYearQuery(
+        CourtTypeId: courtTypeId,
+        HijriYear: (short)hijriYear,
+        PageNumber: pageNumber,
+        PageSize: pageSize,
+        Status: status
+    );
+
+    var result = await _query.QueryAsync(queryRequest, ct);
+
+    return result.Match(Ok, Problem);
+}
+
+    [HttpGet("list", Name = nameof(GetCasesList))]
+    [ProducesResponseType(typeof(PaginatedList<CaseListRowDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [EndpointSummary("Get paginated list of cases")]
+    [EndpointDescription("Returns a paginated list of cases with optional status filtering.")]
+    [EndpointName(nameof(GetCasesList))]
+    public async Task<IActionResult> GetCasesList(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] CaseStatus? status = null,
+    CancellationToken ct = default)
+    {
+        if (pageNumber <= 0)
+            return Problem("Page number must be greater than zero.");
+
+        if (pageSize <= 0)
+            return Problem("Page size must be greater than zero.");
+
+        var result = await _query.QueryAsync(new GetCasesListQuery(pageNumber, pageSize, status), ct);
+
+        return result.Match(Ok, Problem);
+    }
 
     [HttpPost(Name = nameof(CreateCase))]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
@@ -39,28 +102,16 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
     [EndpointSummary("Creates a new case.")]
     [EndpointDescription("Adds a new case to the system with clients, contracts, and POAs.")]
     [EndpointName(nameof(CreateCase))]
-    public async Task<IActionResult> CreateCase([FromForm] CreateCaseRequest request, CancellationToken ct)
+    public async Task<IActionResult> CreateCase([FromBody] CreateCaseRequest request, CancellationToken ct)
     {
         if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.PartyRole), request.PartyRole))
-            return Problem("دور العميل في القضية غير صالح.");
+            return Problem("The client's role in the case is invalid.");
 
-        var clients = ParseClients(request.ClientsJson);
-        if (clients is null || clients.Count == 0)
-            return Problem("يجب ان يكون هناك عملاء");
+        if (request.Clients is null || request.Clients.Count == 0)
+            return Problem("At least one client must be provided.");
 
-        var clientModels = MapClients(clients);
+        var clientModels = MapClients(request.Clients);
 
-        var contracts = request.HasContracts
-            ? ValidateAndMapContracts(request)
-            : new List<CreateContractWithCaseCommand>();
-
-        if (contracts == null) return Problem("بيانات العقود غير صالحة.");
-
-        var poas = request.HasPOAs
-            ? ValidateAndMapPOAs(request)
-            : new List<CreatePOAWithCaseCommand>();
-
-        if (poas == null) return Problem("بيانات الوكالات غير صالحة.");
 
         var createCaseCommand = new CreateCaseCommand(
             Clients: clientModels,
@@ -72,40 +123,44 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
             EstimatedReviewDate: request.EstimatedReviewDate,
             LawyerOpinion: request.LawyerOpinion,
             IsDraft: request.IsDraft,
-            HasContracts: request.HasContracts,
-            Contracts: contracts,
-            HasPOAs: request.HasPOAs,
-            POAs: poas,
             AssignedOfEmployeeId: request.AssignedEmployeeId
         );
 
         var result = await _command.SendAsync(createCaseCommand, ct);
 
         return result.Match(
-            success => CreatedAtRoute(
+            Id => CreatedAtRoute(
                 routeName: nameof(GetCaseById),
-                routeValues: new { caseId = success.Id },
-                value: new { Id = success.Id }),
+                routeValues: new { caseId = Id },
+                value: new { Id = Id }),
             Problem);
     }
 
-    #region Helpers
 
-    private static List<CaseClientRequest>? ParseClients(string? clientsJson)
+    [HttpPut("{caseId:guid}/status", Name = nameof(UpdateCaseStatus))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [EndpointSummary("Update case status")]
+    [EndpointDescription("Used to update the status of an existing case using its ID and the new status.")]
+    [EndpointName(nameof(UpdateCaseStatus))]
+    public async Task<IActionResult> UpdateCaseStatus(
+        Guid caseId,
+        [FromBody] UpdateCaseStatusRequest request,
+        CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(clientsJson))
-            return null;
+        if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.CaseStatus), request.Status))
+            return Problem("The provided status value is invalid.");
 
-        try
-        {
-            return JsonSerializer.Deserialize<List<CaseClientRequest>>(clientsJson);
-        }
-        catch
-        {
-            return null;
-        }
+        var result = await _command.SendAsync(
+            new UpdateCaseStatusCommand(caseId, (LOMs.Domain.Cases.Enums.CaseStatus)request.Status),
+            ct);
+
+        return result.Match(_ => NoContent(), Problem);
     }
 
+
+    #region Helpers
     private static List<CaseClientModel> MapClients(List<CaseClientRequest> clients) =>
         clients.Select<CaseClientRequest, CaseClientModel>(c => c switch
         {
@@ -120,81 +175,15 @@ public class CasesController(ICommandMediator command, IQueryMediator query) : A
                         newClient.Client.Person.NationalId,
                         newClient.Client.Person.CountryCode,
                         newClient.Client.Person.BirthDate,
-                        newClient.Client.Person.PhoneNumber,
-                        newClient.Client.Person.Address
+                        newClient.Client.Person.Address,
+                        new CreatePhoneCommand(
+                            newClient.Client.Person.Phone.Number,
+                            newClient.Client.Person.Phone.Code
                     )
-                )
+                ))
             ),
-            _ => throw new ValidationException("كل عنصر في قائمة العملاء يجب أن يحتوي إما على معرف موجود أو بيانات عميل جديدة.")
+            _ => throw new ValidationException("Each item in the client list must contain either an existing client ID or new client data.")
         }).ToList();
-
-    private static List<CreateContractWithCaseCommand>? ValidateAndMapContracts(CreateCaseRequest request)
-    {
-        if (request.ContractsData is null || request.ContractsData.Count == 0)
-            return null;
-
-        if (request.ContractFiles is null || request.ContractFiles.Count != request.ContractsData.Count)
-            return null;
-
-        var contracts = new List<CreateContractWithCaseCommand>();
-
-        for (int i = 0; i < request.ContractsData.Count; i++)
-        {
-            var data = request.ContractsData[i];
-            var file = request.ContractFiles[i];
-
-            if (!Enum.IsDefined(typeof(LOMs.Contract.Commons.Enums.ContractType), (LOMs.Contract.Commons.Enums.ContractType)data.ContractType))
-                return null;
-
-            if (file.Length == 0)
-                return null;
-
-            contracts.Add(new CreateContractWithCaseCommand(
-                (LOMs.Domain.Cases.Enums.ContractType)data.ContractType,
-                data.IssueDate,
-                data.ExpiryDate,
-                data.BaseAmount,
-                data.InitialPayment,
-                file.OpenReadStream(),
-                file.FileName,
-                data.IsAssigned
-            ));
-        }
-
-        return contracts;
-    }
-
-    private static List<CreatePOAWithCaseCommand>? ValidateAndMapPOAs(CreateCaseRequest request)
-    {
-        if (request.POAsData is null || request.POAFiles is null || request.POAFiles.Count != request.POAsData.Count)
-            return null;
-
-        var poas = new List<CreatePOAWithCaseCommand>();
-
-        for (int i = 0; i < request.POAsData.Count; i++)
-        {
-            var data = request.POAsData[i];
-            var file = request.POAFiles[i];
-
-            if (string.IsNullOrWhiteSpace(data.POANumber) ||
-                string.IsNullOrWhiteSpace(data.IssuingAuthority) ||
-                data.IssueDate > DateOnly.FromDateTime(DateTime.UtcNow) ||
-                file == null || file.Length == 0)
-            {
-                return null;
-            }
-
-            poas.Add(new CreatePOAWithCaseCommand(
-                data.POANumber.Trim(),
-                data.IssueDate,
-                data.IssuingAuthority.Trim(),
-                file.OpenReadStream(),
-                file.FileName
-            ));
-        }
-
-        return poas;
-    }
 
     #endregion
 }

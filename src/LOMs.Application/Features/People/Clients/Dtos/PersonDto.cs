@@ -6,7 +6,7 @@
         public string FullName { get; init; } = null!;
         public string NationalId { get; init; } = null!;
         public DateOnly BirthDate { get; init; }
-        public string PhoneNumber { get; init; } = null!;
+        public PhoneDto Phone { get; init; } = null!;
         public string Address { get; init; } = null!;
         public string CountryCode { get; init; } = null!;
     }

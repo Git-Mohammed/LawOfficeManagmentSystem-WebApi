@@ -1,10 +1,7 @@
 ﻿using LOMs.Application.Features.Cases.Dtos;
-using LOMs.Application.Features.Customers.Dtos;
 using LOMs.Application.Features.People.Clients.Dtos;
+using LOMs.Application.Features.POAs.Dtos;
 using LOMs.Domain.Cases;
-using LOMs.Domain.Customers;
-using LOMs.Domain.People;
-using LOMs.Domain.People.Clients;
 using LOMs.Domain.POAs;
 using Mapster;
 
@@ -17,42 +14,48 @@ public class CaseMapperConfigs : IRegister
 
 
         // Example: Map Case -> CaseDetailsDto (for GetCaseById)
-     config.NewConfig<Case, CaseDetailsDto>()
-     .Map(dest => dest.Id, src => src.Id)
-     .Map(dest => dest.CaseNumber, src => src.CaseNumber)
-     .Map(dest => dest.CaseSubject, src => src.CaseSubject)
-     .Map(dest => dest.PartyRole, src => src.PartyRole.ToString())
-     .Map(dest => dest.ClientRequestDetails, src => src.ClientRequests)
-     .Map(dest => dest.EstimatedReviewDate, src => src.EstimatedReviewDate)
-     .Map(dest => dest.CaseStatus, src => src.Status.ToString())
-     .Map(dest => dest.Contracts, src => src.Contracts)
-     .Map(dest => dest.CourtType, src => src.CourtType)
-     .Map(dest => dest.LawyerOpinion, src => src.LawyerOpinion)
-     .Map(dest => dest.AssignedEmployeeId, src => src.AssignedEmployeeId)
-     .Map(dest => dest.Employee, src => src.Employee)
-     .Map(dest => dest.HasContracts, src => src.Contracts.Any())
-     .Map(dest => dest.HasPOAs, src => src.POAs.Any())
-     .Map(dest => dest.Clients, src => src.ClientCases.Select(x => new ClientDto
-     {
-         ClientId = x.Client.Id,
-         Person = new PersonDto
-         {
-             PersonId = x.Client.Person.Id,
-             PhoneNumber = x.Client.Person.PhoneNumber,
-             FullName = x.Client.Person.FullName,
-             Address = x.Client.Person.Address,
-             BirthDate = x.Client.Person.BirthDate,
-             NationalId = x.Client.Person.NationalId,
-             CountryCode = x.Client.Person.CountryCode.ToString()
-             
-         }
-     })
-     .ToList());
+        config.NewConfig<Case, CaseDto>()
+        .Map(dest => dest.Id, src => src.Id)
+        .Map(dest => dest.CaseNumber, src => src.CaseNumber)
+        .Map(dest => dest.CaseSubject, src => src.CaseSubject)
+        .Map(dest => dest.PartyRole, src => src.PartyRole)
+        .Map(dest => dest.ClientRequestDetails, src => src.ClientRequests)
+        .Map(dest => dest.EstimatedReviewDate, src => src.EstimatedReviewDate)
+        .Map(dest => dest.CaseStatus, src => src.Status);
+
+        // Domain Case → CaseDetailsDto
+        config.NewConfig<Case, CaseDetailsDto>()
+            .Map(dest => dest.CaseId, src => src.Id)
+            .Map(dest => dest.Status, src => src.Status.ToString())
+            .Map(dest => dest.AssignedEmployeeName, src => src.Employee!.Person!.FullName ?? string.Empty)
+            .Map(dest => dest.CourtTypeName, src => src.CourtType!.Name ?? string.Empty)
+            .Map(dest => dest.Clients, src => src.ClientCases
+                .Where(cc => cc.Client!.Person != null)
+                .Select(cc => new CaseClientDto
+                {
+                    ClientId = cc.ClientId,
+                    FullName = cc.Client!.Person!.FullName,
+                    NationalId = cc.Client.Person.NationalId,
+                    PhoneNumber = new PhoneDto
+                    {
+                       
+                        Number = cc.Client!.Person!.Phones.FirstOrDefault()!.Number ?? string.Empty,
+                        Code = cc.Client.Person!.Phones.FirstOrDefault()!.Code ?? string.Empty
+                    }
+                }).ToList());
+        // Domain Case → CaseQuickStatsDto
+        config.NewConfig<Case, CaseQuickStatsDto>()
+            .Map(dest => dest.CaseId, src => src.Id)
+            .Map(dest => dest.Status, src => src.Status)
+            .Map(dest => dest.ClientName,
+                 src => src.ClientCases.FirstOrDefault()!.Client!.Person!.FullName ?? string.Empty)
+            .Map(dest => dest.CaseNumber,
+                 src => src.CaseNumber ?? string.Empty);
+
         // Domain Contract -> ContractDto
         config.NewConfig<POA, POADto>()
             .Map(dest => dest.POAId, src => src.Id)
             .Map(dest => dest.IssueDate, src => src.IssueDate)
-            .Map(dest => dest.AttachmentPath, src => src.AttachmentPath)
             .Map(dest => dest.IssuingAuthority, src => src.IssuingAuthority);
 
     }

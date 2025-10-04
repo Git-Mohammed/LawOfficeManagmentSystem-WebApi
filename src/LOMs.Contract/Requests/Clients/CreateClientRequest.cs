@@ -5,5 +5,5 @@ namespace LOMs.Contract.Requests.Clients;
 public class CreateClientRequest
 {
     [Required]
-    public PersonRequest Person { get; set; } = new();
+    public CreatePersonRequest Person { get; set; } = new();
 }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11018.127
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
@@ -15,9 +15,20 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LOMs.Domain", "src\LOMs.Dom
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LOMs.Infrastructure", "src\LOMs.Infrastructure\LOMs.Infrastructure.csproj", "{B29151E1-7529-448B-822D-D225B5F7F7F2}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LOMs.Test", "tests\LOMs.Test\LOMs.Test.csproj", "{5B5BFB0A-7233-4797-92D7-973865123F72}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8AA7A15B-388A-438E-BCD3-13A1D8BDAB25}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		.github\workflows\api-ci-build.yml = .github\workflows\api-ci-build.yml
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		docker-compose.yml = docker-compose.yml
+		Dockerfile = Dockerfile
+		README.md = README.md
+		request.http = request.http
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -89,18 +100,6 @@ Global
 		{B29151E1-7529-448B-822D-D225B5F7F7F2}.Release|x64.Build.0 = Release|Any CPU
 		{B29151E1-7529-448B-822D-D225B5F7F7F2}.Release|x86.ActiveCfg = Release|Any CPU
 		{B29151E1-7529-448B-822D-D225B5F7F7F2}.Release|x86.Build.0 = Release|Any CPU
-		{5B5BFB0A-7233-4797-92D7-973865123F72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5B5BFB0A-7233-4797-92D7-973865123F72}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5B5BFB0A-7233-4797-92D7-973865123F72}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{5B5BFB0A-7233-4797-92D7-973865123F72}.Debug|x64.Build.0 = Debug|Any CPU
-		{5B5BFB0A-7233-4797-92D7-973865123F72}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5B5BFB0A-7233-4797-92D7-973865123F72}.Debug|x86.Build.0 = Debug|Any CPU
-		{5B5BFB0A-7233-4797-92D7-973865123F72}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5B5BFB0A-7233-4797-92D7-973865123F72}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5B5BFB0A-7233-4797-92D7-973865123F72}.Release|x64.ActiveCfg = Release|Any CPU
-		{5B5BFB0A-7233-4797-92D7-973865123F72}.Release|x64.Build.0 = Release|Any CPU
-		{5B5BFB0A-7233-4797-92D7-973865123F72}.Release|x86.ActiveCfg = Release|Any CPU
-		{5B5BFB0A-7233-4797-92D7-973865123F72}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -111,7 +110,6 @@ Global
 		{5B803C0A-D68C-41F0-8761-DFA26F82BCDF} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{FA0DB833-8EFC-4ECA-80EC-B68CD45E63A6} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{B29151E1-7529-448B-822D-D225B5F7F7F2} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{5B5BFB0A-7233-4797-92D7-973865123F72} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {02154C4E-4E8B-4354-A4F9-C404ABB0F0CA}

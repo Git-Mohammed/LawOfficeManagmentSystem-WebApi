@@ -5,38 +5,50 @@ namespace LOMs.Domain.People;
 public static class PersonErrors
 {
     public static readonly Error FullNameRequired =
-        Error.Validation("Person.FullNameRequired", "الاسم الكامل مطلوب ويجب أن لا يقل عن 3 أحرف.");
+        Error.Validation("Person.FullNameRequired", "Full name is required and must be at least 3 characters.");
 
     public static readonly Error InvalidNationalId =
-        Error.Validation("Person.InvalidNationalId", "رقم الهوية الوطنية يجب أن يتكون من 10 أرقام بالضبط.");
+        Error.Validation("Person.InvalidNationalId", "National ID must be exactly 10 digits.");
 
     public static readonly Error ExistingNationalId =
-        Error.Conflict("Person.ExistingNationalId", "رقم الهوية الوطنية موجود بالفعل.");
+        Error.Conflict("Person.ExistingNationalId", "National ID already exists.");
 
     public static readonly Error CountryCodeRequired =
-        Error.Validation("Person.CountryCodeRequired", "رمز الدولة مطلوب.");
+        Error.Validation("Person.CountryCodeRequired", "Country code is required.");
 
     public static readonly Error CountryCodeInvalid =
-        Error.Validation("Person.CountryCodeInvalid", "رمز الدولة غير صالح (يجب أن يكون ISO Alpha-2).");
+        Error.Validation("Person.CountryCodeInvalid", "Invalid country code (must be ISO Alpha-2).");
 
     public static readonly Error InvalidBirthDate =
-        Error.Validation("Person.InvalidBirthDate", "يجب أن يكون عمر الشخص 18 سنة على الأقل.");
+        Error.Validation("Person.InvalidBirthDate", "Person must be at least 18 years old.");
 
     public static readonly Error PhoneNumberRequired =
-        Error.Validation("Person.PhoneNumberRequired", "رقم الهاتف مطلوب.");
+        Error.Validation("Person.PhoneNumberRequired", "Phone number is required.");
 
     public static readonly Error InvalidPhoneNumber =
-        Error.Validation("Person.InvalidPhoneNumber", "رقم الهاتف يجب أن يتكون من 7 إلى 15 رقمًا وقد يبدأ بـ '+'.");
+        Error.Validation("Person.InvalidPhoneNumber", "Phone number must be 7 to 15 digits and may start with '+'.");
+
+    public static readonly Error PhoneCodeRequired =
+        Error.Validation("Person.PhoneCodeRequired", "Phone country code is required.");
 
     public static readonly Error AddressRequired =
-        Error.Validation("Person.AddressRequired", "العنوان مطلوب ويجب أن يحتوي على تفاصيل كافية.");
+        Error.Validation("Person.AddressRequired", "Address is required and must contain sufficient detail.");
 
     public static readonly Error InvalidAddress =
-        Error.Validation("Person.InvalidAddress", "العنوان يجب أن لا يقل عن 10 أحرف ويحتوي على تفاصيل كافية.");
+        Error.Validation("Person.InvalidAddress", "Address must be at least 10 characters and contain sufficient detail.");
 
     public static readonly Error PersonAlreadyExists =
-        Error.Conflict("Person.AlreadyExists", "يوجد شخص بنفس رقم الهوية الوطنية.");
+        Error.Conflict("Person.AlreadyExists", "A person with this national ID already exists.");
 
     public static readonly Error PhoneNumberAlreadyExists =
-        Error.Conflict("Person.PhoneNumberAlreadyExists", "يوجد شخص بنفس رقم الهاتف.");
+        Error.Conflict("Person.PhoneNumberAlreadyExists", "A person with this phone number already exists.");
+
+    public static readonly Error AlreadyAssignedAsEmployee =
+        Error.Conflict("Person.AlreadyAssignedAsEmployee", "This person is already assigned as an employee.");
+
+    public static readonly Error AlreadyAssignedAsClient =
+        Error.Conflict("Person.AlreadyAssignedAsClient", "This person is already assigned as a client.");
+
+    public static readonly Error RoleAssignmentConflict =
+        Error.Conflict("Person.RoleAssignmentConflict", "Cannot assign this role because the person is already linked to a conflicting role.");
 }

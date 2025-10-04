@@ -1,6 +1,4 @@
-﻿using LOMs.Application.Features.Customers.Dtos;
-using LOMs.Application.Features.People.Clients.Dtos;
-using LOMs.Domain.Customers;
+﻿using LOMs.Application.Features.People.Clients.Dtos;
 using LOMs.Domain.People;
 using LOMs.Domain.People.Clients;
 using Mapster;
@@ -18,6 +16,13 @@ public class ClientMapperConfigs : IRegister
 
         config.NewConfig<Client, ClientDto>()
             .Map(dest => dest.ClientId, src => src.Id)
-            .Map(dest => dest.Person.PersonId, src => src.Person.Id);
+            .Map(dest => dest.Person.PersonId, src => src.Person!.Id)
+            .Map(dest => dest.Person.Phone, src => src.Person!.Phones != null && src.Person.Phones.Any()
+                ? new PhoneDto
+                {
+                    Number = src.Person.Phones.First().Number,
+                    Code = src.Person.Phones.First().Code
+                }
+                : new PhoneDto { Number = string.Empty, Code = string.Empty });
     }
 }

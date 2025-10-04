@@ -1,6 +1,6 @@
 ﻿using LiteBus.Queries.Abstractions;
 using LOMs.Application.Common.Interfaces;
-using LOMs.Application.Features.People.Employees.DTOs;
+using LOMs.Application.Features.People.Employees.Dtos;
 using LOMs.Domain.Common.Results;
 using LOMs.Domain.People.Employees;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +15,12 @@ public class GetEmployeeByIdQueryHandler(IAppDbContext context, IMapper mapper)
 
     public async Task<Result<EmployeeDto>> HandleAsync(GetEmployeeByIdQuery query, CancellationToken cancellationToken = new CancellationToken())
     {
-        var  employee = await _context.Employees.Include(e=> e.Person).AsNoTracking().FirstOrDefaultAsync(e=> e.Id == query.Id, cancellationToken);
+        var  employee = await _context.Employees
+            .AsNoTracking()
+            .Include(e=> e.Person)
+                .ThenInclude(x => x!.Phones!)
+            .FirstOrDefaultAsync(e=> e.Id == query.Id, cancellationToken);
+
         if (employee == null)
             return Error.NotFound();
         return _mapper.Map<Employee, EmployeeDto>(employee);

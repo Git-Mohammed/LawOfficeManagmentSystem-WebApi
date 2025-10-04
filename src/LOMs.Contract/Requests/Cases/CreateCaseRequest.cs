@@ -1,45 +1,38 @@
 ﻿using LOMs.Contract.Commons.Enums;
-using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
-namespace LOMs.Contract.Requests.Cases
+namespace LOMs.Contract.Requests.Cases;
+
+public class CreateCaseRequest
 {
-    public class CreateCaseRequest
-    {
-        public string? CaseNumber { get; set; } = string.Empty;
+    [StringLength(50, ErrorMessage = "Case number must not exceed 50 characters.")]
+    public string? CaseNumber { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "نوع المحكمة مطلوب.")]
-        public Guid CourtTypeId { get; set; }
+    [Required(ErrorMessage = "Court type is required.")]
+    public Guid CourtTypeId { get; set; }
 
-        public string? CaseSubject { get; set; } = string.Empty;
+    [StringLength(250, ErrorMessage = "Case subject must not exceed 250 characters.")]
+    public string? CaseSubject { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "دور الطرف مطلوب.")]
-        public PartyRole PartyRole { get; set; }
+    [Required(ErrorMessage = "Party role is required.")]
+    [EnumDataType(typeof(PartyRole), ErrorMessage = "Party role is invalid.")]
+    public PartyRole PartyRole { get; set; }
 
-        public string? ClientRequestDetails { get; set; } = string.Empty;
+    [StringLength(1000, ErrorMessage = "Client request details must not exceed 1000 characters.")]
+    public string? ClientRequestDetails { get; set; } = string.Empty;
 
-        public DateOnly EstimatedReviewDate { get; set; }
+    [Required(ErrorMessage = "Estimated review date is required.")]
+    public DateOnly EstimatedReviewDate { get; set; }
 
-        public bool IsDraft { get; set; }
+    public bool IsDraft { get; set; }
 
-        public bool HasContracts { get; set; }
-        // This will hold the actual files. The order must match the ContractsData list.
-        public List<IFormFile>? ContractFiles { get; set; }
+    [StringLength(1000, ErrorMessage = "Lawyer opinion must not exceed 1000 characters.")]
+    public string? LawyerOpinion { get; set; } = string.Empty;
 
-        public List<CreateContractWithCaseRequest> ContractsData { get; set; } = new();
+    [Required(ErrorMessage = "Assigned employee is required.")]
+    public Guid AssignedEmployeeId { get; set; }
 
-
-        public bool HasPOAs { get; set; }
-
-        public List<CreatePOAWithCaseRequest> POAsData { get; set; } = new();
-        public List<IFormFile>? POAFiles { get; set; }
-
-        public string? LawyerOpinion { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = " الموظف المسؤول مطلوب.")]
-        public Guid AssignedEmployeeId { get; set; }
-
-        //   [MinLength(1, ErrorMessage = "يجب إضافة عميل واحد على الأقل.")]
-        public string ClientsJson { get; set; } = null!;
-    }
+    [MinLength(1, ErrorMessage = "At least one client must be added.")]
+    [Required(ErrorMessage = "Clients list is required.")]
+    public List<CaseClientRequest> Clients { get; set; } = new();
 }

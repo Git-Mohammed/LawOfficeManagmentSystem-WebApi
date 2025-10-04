@@ -1,78 +1,57 @@
-using LOMs.Api;
+﻿using LOMs.Api;
+using LOMs.Domain.Identity;
+using LOMs.Infrastructure.BackgroundJobs;
 using LOMs.Infrastructure.Data;
-using System.Reflection;
-using System.Runtime.CompilerServices;
+using Serilog;
 
-[assembly: InternalsVisibleTo("LOMs.Test")]
+var builder = WebApplication.CreateBuilder(args);
 
-public class Program
+builder.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+Directory.CreateDirectory(builder.Environment.WebRootPath);
+
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+builder.Host.UseSerilog((context, config) =>
+    config.ReadFrom.Configuration(context.Configuration));
+
+builder.Services
+    .AddControllers()
+    .ConfigureJsonConverters();
+
+builder.Services
+    .AddPresentation(builder.Configuration,builder.Environment)
+    .AddApplication()
+    .AddInfrastructure(builder.Configuration);
+
+builder.Services.AddHostedService<CourtSessionReminderService>();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
 {
-    public static async Task Main(string[] args)
+    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
     {
-        var builder = WebApplication.CreateBuilder(args);
-
-        builder.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-
-        if (!Directory.Exists(builder.Environment.WebRootPath))
-        {
-            Directory.CreateDirectory(builder.Environment.WebRootPath);
-        }
-
-        builder.Services.AddControllers();
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen(options =>
-        {
-            options.SwaggerDoc("v1", new() { Title = "LOMs API", Version = "v1" });
-            options.CustomSchemaIds(type => type.FullName);
-
-            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            if (File.Exists(xmlPath))
-            {
-                options.IncludeXmlComments(xmlPath);
-            }
-        });
-
-        builder.Services
-            .AddPresentation()
-            .AddApplication()
-            .AddInfrastructure(builder.Configuration);
-
-        builder.Services.AddCors(options =>
-        {
-            options.AddPolicy("AllowAll", policy =>
-            {
-                policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-            });
-        });
-
-        var app = builder.Build();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi();
-            app.UseSwagger();
-            app.UseSwaggerUI(options =>
-            {
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "LOMs API V1");
-                options.EnableDeepLinking();
-                options.DisplayRequestDuration();
-                options.EnableFilter();
-            });
-
-            await app.InitialiseDatabaseAsync();
-        }
-        else
-        {
-            app.UseHsts();
-        }
-
-        app.UseStaticFiles();
-        app.UseCoreMiddlewares(builder.Configuration);
-        app.UseCors("AllowAll");
-        app.MapControllers();
-        app.MapStaticAssets();
-
-        app.Run();
-    }
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "LOMs API V1");
+        options.DocumentTitle = "LOMs API Docs";
+        options.EnableDeepLinking();
+        options.DisplayRequestDuration();
+        options.EnableFilter();
+    });
 }
+else
+{
+    app.UseHsts();
+}
+
+app.UseCoreMiddlewares(builder.Configuration);
+app.MapControllers();
+app.MapStaticAssets();
+
+await app.InitialiseDatabaseAsync();
+app.Run();

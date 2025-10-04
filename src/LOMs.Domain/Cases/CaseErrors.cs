@@ -8,88 +8,99 @@ public static class CaseErrors
     // 🔹 General Validation Errors
     // ─────────────────────────────
 
+    public static readonly Error CaseNotFound =
+        Error.NotFound("Case.NotFound", "The requested case was not found.");
+
     public static readonly Error InvalidCaseId =
-        Error.Validation("Case.InvalidCaseId", "معرّف القضية لا يمكن أن يكون فارغًا.");
+        Error.Validation("Case.InvalidCaseId", "Case ID cannot be empty.");
 
     public static Error InvalidClientId(Guid? id = null) =>
         Error.Validation(
             "Case.InvalidClientId",
             id is null
-                ? "معرّف العميل لا يمكن أن يكون فارغًا."
-                : $"معرّف العميل غير صالح: {id}"
+                ? "Client ID cannot be empty."
+                : $"Invalid client ID: {id}"
         );
 
     public static Error InvalidCourtTypeId(Guid? id = null) =>
         Error.Validation(
             "Case.InvalidCourtTypeId",
             id is null
-                ? "معرّف نوع المحكمة لا يمكن أن يكون فارغًا."
-                : $"معرّف نوع المحكمة غير صالح: {id}"
+                ? "Court type ID cannot be empty."
+                : $"Invalid court type ID: {id}"
         );
 
+    public static Error DuplicatePhoneNumbers(HashSet<string> phones) =>
+        Error.Conflict("Case.DuplicatePhoneNumbers", $"Duplicate phone numbers detected: {string.Join(", ", phones)}");
+
     public static readonly Error InvalidCaseSubject =
-        Error.Validation("Case.InvalidCaseSubject", "موضوع القضية مطلوب.");
+        Error.Validation("Case.InvalidCaseSubject", "Case subject is required.");
 
     public static readonly Error InvalidClientRequests =
-        Error.Validation("Case.InvalidClientRequests", "طلبات العميل يجب أن تكون محددة.");
+        Error.Validation("Case.InvalidClientRequests", "Client requests must be specified.");
 
     public static readonly Error MissingAssignedEmployee =
-        Error.Validation("Case.MissingAssignedOfficer", "يجب تحديد الموظف المسؤول عن القضية.");
+        Error.Validation("Case.MissingAssignedOfficer", "Assigned employee must be specified.");
 
     public static readonly Error InvalidStatus =
-        Error.Validation("Case.InvalidStatus", "حالة القضية غير صالحة أو غير معروفة.");
+        Error.Validation("Case.InvalidStatus", "Invalid or unknown case status.");
 
     public static readonly Error InvalidReviewDate =
-        Error.Validation("Case.InvalidReviewDate", "تاريخ مراجعة القضية يجب أن يكون تاريخًا مستقبليًا صالحًا.");
+        Error.Validation("Case.InvalidReviewDate", "Review date must be a valid future date.");
 
     public static readonly Error InvalidCaseNumberFormat =
-        Error.Validation("Case.InvalidCaseNumberFormat", "تنسيق رقم القضية غير صحيح. يرجى اتباع النمط المطلوب.");
+        Error.Validation("Case.InvalidCaseNumberFormat", "Invalid case number format. Please follow the required pattern.");
 
     public static readonly Error InvalidCourtType =
-        Error.Validation("Case.InvalidCourtType", "نوع المحكمة غير صالح أو غير معروف.");
+        Error.Validation("Case.InvalidCourtType", "Invalid or unknown court type.");
 
     public static readonly Error InvalidPartyRole =
-        Error.Validation("Case.InvalidPartyRole", "نوع الطرف غير صالح أو غير معروف.");
+        Error.Validation("Case.InvalidPartyRole", "Invalid or unknown party role.");
 
     // ─────────────────────────────
     // 🔹 Employee Errors
     // ─────────────────────────────
 
     public static readonly Error EmptyEmployeeId =
-        Error.Validation("Case.EmptyEmployeeId", "معرّف الموظف لا يمكن أن يكون فارغًا.");
+        Error.Validation("Case.EmptyEmployeeId", "Employee ID cannot be empty.");
 
     public static Error AssignedEmployeeNotFound(Guid officerId) =>
-        Error.NotFound("Case.AssignedEmployeeNotFound", $"لم يتم العثور على الموظف بالمعرّف: {officerId}");
+        Error.NotFound("Case.AssignedEmployeeNotFound", $"Assigned employee not found with ID: {officerId}");
 
     // ─────────────────────────────
     // 🔹 CreateCase-Specific Errors
     // ─────────────────────────────
 
     public static readonly Error InvalidClients =
-        Error.Validation("CreateCase.InvalidClients", "يجب توفير عميل واحد على الأقل.");
+        Error.Validation("CreateCase.InvalidClients", "At least one client must be provided.");
 
     public static Error DuplicateCaseNumber(string caseNumber) =>
-        Error.Validation("CreateCase.DuplicateCaseNumber", $"رقم القضية {caseNumber} موجود بالفعل.");
+        Error.Validation("CreateCase.DuplicateCaseNumber", $"Case number '{caseNumber}' already exists.");
+
     public static Error DuplicateNationalId(Guid nationalId) =>
-    Error.Validation("CreateCase.DuplicateNationalIds", $"رقم الهوية الوطنية موجودة بالفعل: {nationalId}");
+        Error.Validation("CreateCase.DuplicateNationalId", $"National ID already exists: {nationalId}");
 
     public static Error DuplicateNationalIds(IEnumerable<string> nationalIds) =>
-        Error.Validation("CreateCase.DuplicateNationalIds", $"رقم/أرقام الهوية الوطنية موجودة بالفعل: {string.Join(", ", nationalIds)}");
+        Error.Validation("CreateCase.DuplicateNationalIds", $"Duplicate national IDs detected: {string.Join(", ", nationalIds)}");
+
+    // ✅ NEW ERROR
+    public static readonly Error NationalIdRequired =
+        Error.Validation("CreateCase.NationalIdRequired", "At least one national ID must be provided.");
 
     public static readonly Error ClientNotFound =
-        Error.NotFound("CreateCase.ClientNotFound", "العميل غير موجود.");
+        Error.NotFound("CreateCase.ClientNotFound", "Client not found.");
 
     public static Error ClientNotFoundWithId(Guid clientId) =>
-        Error.NotFound("CreateCase.ClientNotFoundWithId", $"لم يتم العثور على العميل بالمعرّف: {clientId}");
+        Error.NotFound("CreateCase.ClientNotFoundWithId", $"Client not found with ID: {clientId}");
 
     public static Error ClientNotFoundWithIds(IEnumerable<Guid> clientIds) =>
-        Error.NotFound("CreateCase.ClientNotFoundWithIds", $"لم يتم العثور على العملاء بالمعرّفات: {string.Join(", ", clientIds)}");
+        Error.NotFound("CreateCase.ClientNotFoundWithIds", $"Clients not found with IDs: {string.Join(", ", clientIds)}");
 
     public static readonly Error UnknownClientType =
-        Error.Unexpected("CreateCase.UnknownClientType", "نوع العميل غير معروف.");
+        Error.Unexpected("CreateCase.UnknownClientType", "Unknown client type.");
 
     public static readonly Error UnexpectedFailure =
-        Error.Unexpected("CreateCase.Failure", "حدث خطأ غير متوقع أثناء إنشاء القضية.");
+        Error.Unexpected("CreateCase.Failure", "An unexpected error occurred while creating the case.");
 
     // ─────────────────────────────
     // 🔹 File & Document Errors
@@ -99,19 +110,19 @@ public static class CaseErrors
         Error.Validation(
             "Case.InvalidClientFileId",
             id is null
-                ? "معرّف ملف العميل لا يمكن أن يكون فارغًا."
-                : $"معرّف ملف العميل غير صالح: {id}"
+                ? "Client file ID cannot be empty."
+                : $"Invalid client file ID: {id}"
         );
 
     public static readonly Error ContractFilesMissing =
-        Error.Validation("Case.ContractFilesMissing", "تم تحديد وجود عقود، ولكن لم يتم إرفاق أي ملفات عقود.");
+        Error.Validation("Case.ContractFilesMissing", "Contracts were indicated, but no contract files were attached.");
 
     public static readonly Error PoasMissing =
-        Error.Validation("Case.PoasMissing", "تم تحديد وجود توكيلات، ولكن لم يتم إرفاق أي ملفات توكيلات.");
+        Error.Validation("Case.PoasMissing", "POAs were indicated, but no POA files were attached.");
 
     public static readonly Error SaveContractFileFailure =
-        Error.Unexpected("Case.SaveContractFileFailure", "حدث خطأ أثناء حفظ ملف العقد.");
+        Error.Unexpected("Case.SaveContractFileFailure", "An error occurred while saving the contract file.");
 
     public static readonly Error ImageSaveFailure =
-        Error.Unexpected("Case.ImageSaveFailure", "حدث خطأ أثناء حفظ الملف.");
+        Error.Unexpected("Case.ImageSaveFailure", "An error occurred while saving the image file.");
 }
