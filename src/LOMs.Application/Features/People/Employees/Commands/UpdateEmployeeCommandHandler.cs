@@ -18,7 +18,7 @@ public class UpdateEmployeeCommandHandler(IAppDbContext context, ILogger<UpdateE
     {
         try
         { 
-            var existingEmployee = await _context.Employees.Include(e=> e.Person).ThenInclude(p=> p.Phones).FirstOrDefaultAsync(e=> e.Id == command.Id, cancellationToken: cancellationToken);
+            var existingEmployee = await _context.Employees.Include(e=> e.Person).ThenInclude(p=> p!.Phones).FirstOrDefaultAsync(e=> e.Id == command.Id, cancellationToken: cancellationToken);
             if (existingEmployee == null) return Error.NotFound();
             
             if(existingEmployee.Email != command.Email)
@@ -27,9 +27,9 @@ public class UpdateEmployeeCommandHandler(IAppDbContext context, ILogger<UpdateE
                 if(isExistEmployeeHaveSameEmail) return Error.Conflict("EmailUsedAntherExistsEmployee","Email already exists");
             }
 
-            if (existingEmployee.Person.NationalId != command.NationalId)
+            if (existingEmployee.Person!.NationalId != command.NationalId)
             {
-                var isExistEmployeeHaveSameNationalId = await _context.Employees.Include(e=> e.Person).AnyAsync(e=> e.Person.NationalId == command.NationalId && e.Id != existingEmployee.Id, cancellationToken);
+                var isExistEmployeeHaveSameNationalId = await _context.Employees.Include(e=> e.Person).AnyAsync(e=> e!.Person!.NationalId == command.NationalId && e.Id != existingEmployee.Id, cancellationToken);
                 if(isExistEmployeeHaveSameNationalId) return Error.Conflict("NationalIdUsedAnotherExistsEmployee","National id already exists");
             }
             
@@ -46,7 +46,7 @@ public class UpdateEmployeeCommandHandler(IAppDbContext context, ILogger<UpdateE
             var updateEmployeeResult = existingEmployee.Update(command.Email, command.Role.ToString());
             if(updateEmployeeResult.IsError) return updateEmployeeResult.Errors;
 
-            var user = await _identityService.GetUserByIdAsync(existingEmployee.UserId);
+            var user = await _identityService.GetUserByIdAsync(existingEmployee!.UserId!);
             if(user.IsError || user.Value is null) return user.Errors;
             var updateUserResult = await _identityService.UpdateUserAsync(user.Value.UserId, user.Value.Username, user.Value.Email, existingEmployee.Role.ToString());
             if(updateUserResult.IsError) return updateUserResult.Errors;

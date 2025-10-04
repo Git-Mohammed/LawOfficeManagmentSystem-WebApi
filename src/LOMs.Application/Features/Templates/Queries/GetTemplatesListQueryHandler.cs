@@ -28,9 +28,9 @@ namespace LOMs.Application.Features.Templates.Queries
               TemplateName = a.TemplateName,
               File = new FileDto
               {
-                  FilePath = a.Filepath,      
-                  FileName = a.Filename,      
-                  FileType = a.ContentType,    
+                  FilePath = a.Filepath ?? string.Empty,      
+                  FileName = a.Filename ?? string.Empty,      
+                  FileType = a.ContentType ?? string.Empty   
               }
 
           })

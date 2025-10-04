@@ -8,6 +8,6 @@ namespace LOMs.Application.Features.Attachments.DTOs
         public string AttachmentName { get; set; } = string.Empty;
         public DateTimeOffset CreatedDate { get; set; }
         public string CreatedByEmployeeName { get; set; } = string.Empty;
-        public FileDto File { get; set; } 
+        public FileDto? File { get; set; } 
     }
 }

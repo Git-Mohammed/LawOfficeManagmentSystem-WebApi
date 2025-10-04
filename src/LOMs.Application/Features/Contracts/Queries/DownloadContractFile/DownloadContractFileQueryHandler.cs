@@ -36,7 +36,7 @@ public class DownloadContractFileQueryHandler(
             .AsNoTracking()
             .AnyAsync(f =>
                 f.ContractId == query.ContractId &&
-                f.Contract.CaseId == query.CaseId &&
+                f.Contract!.CaseId == query.CaseId &&
                 f.Filepath == query.RelativePath,
                 cancellationToken);
 

@@ -55,7 +55,7 @@ public class CourtSessionReminderService(
                     AssignedTasks = cs.AssignedTasks,
                     AssignedEmployeeId = cs.AssignedEmployee != null ? cs.AssignedEmployee.Id : Guid.Empty,
                     AssignedEmployeeEmail = cs.AssignedEmployee!.Email ?? string.Empty,
-                    AssignedEmployeeFullName = cs.AssignedEmployee.Person.FullName ?? string.Empty
+                    AssignedEmployeeFullName = cs.AssignedEmployee.Person!.FullName ?? string.Empty
                 })
                 .ToListAsync(stoppingToken);
 

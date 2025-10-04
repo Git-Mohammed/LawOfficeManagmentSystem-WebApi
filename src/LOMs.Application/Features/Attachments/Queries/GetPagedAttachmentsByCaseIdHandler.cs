@@ -69,14 +69,14 @@ public sealed class GetPagedAttachmentsByCaseIdHandler
             select new AttachmentDto
             {
                 AttachmentId = attachment.Id,
-                AttachmentName = attachment.AttachmentName,
+                AttachmentName = attachment.AttachmentName ?? string.Empty,
                 CreatedDate = attachment.CreatedAtUtc,
-                CreatedByEmployeeName = emp.Person.FullName ,
+                CreatedByEmployeeName = emp.Person!.FullName ?? string.Empty,
                 File = new FileDto
                 {
-                    FilePath = attachment.Filepath,
-                    FileName = attachment.Filename,
-                    FileType = attachment.ContentType,
+                    FilePath = attachment.Filepath ?? string.Empty,
+                    FileName = attachment.Filename ?? string.Empty,
+                    FileType = attachment.ContentType ?? string.Empty
                 }
             })
             .Skip((query.PageNumber - 1) * query.PageSize)

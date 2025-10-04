@@ -23,6 +23,6 @@ public class GetUserByIdQueryHanlder(ILogger<GetUserByIdQueryHanlder> logger, II
             return getUserByIdResult.Errors;
         }
 
-        return getUserByIdResult.Value;
+        return getUserByIdResult!.Value!;
     }
 }

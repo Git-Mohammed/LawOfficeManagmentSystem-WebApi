@@ -38,7 +38,7 @@ public class DownloadPoaFileQueryHandler(
             .AsNoTracking()
             .AnyAsync(f =>
                 f.POAId == query.POAId &&
-                f.POA.CaseId == query.CaseId &&
+                f.POA!.CaseId == query.CaseId &&
                 f.Filepath == query.RelativePath,
                 cancellationToken);
 

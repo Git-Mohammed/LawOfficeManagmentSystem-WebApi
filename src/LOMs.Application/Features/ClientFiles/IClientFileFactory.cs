@@ -6,6 +6,6 @@ namespace LOMs.Application.Features.ClientFiles
 {
     public interface IClientFileFactory
     {
-        Task<Result<ClientFile>> CreateAsync(Guid clientId, CourtType courtType, CancellationToken ct = default);
+        Result<ClientFile> CreateAsync(Guid clientId, CourtType courtType, CancellationToken ct = default);
     }
 }

@@ -8,7 +8,7 @@ public sealed class JudgmentFile : DbFile
     public Guid JudgmentId { get; private set; }
 
     #region Navigation Properties
-    public Judgment Judgment { get; private set; }
+    public Judgment? Judgment { get; private set; }
     #endregion
 
     private JudgmentFile() { }

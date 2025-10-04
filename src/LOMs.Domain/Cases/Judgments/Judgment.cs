@@ -8,13 +8,13 @@ namespace LOMs.Domain.Cases.Judgments;
 public class Judgment : AuditableEntity
 {
     public Guid CaseId { get; private set; }
-    public string Number { get; private set; } = null!;
+    public string? Number { get; private set; } = null!;
     public JudgmentType Type { get; private set; }
     public JudgmentSubType SubType { get; private set; }
     public DateOnly IssuedOn { get; private set; }
 
     #region Navigation Properties
-    public Case Case { get; private set; }
+    public Case? Case { get;  set; }
     public ICollection<JudgmentFile> Files { get; private set; } = new List<JudgmentFile>();
     #endregion
     

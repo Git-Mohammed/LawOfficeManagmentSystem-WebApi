@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -164,7 +165,7 @@ public static class DependencyInjection
     {
         services.AddSingleton<IFileValidator, FileValidator>();
         services.AddScoped<IFileService>(sp =>
-            new LocalFileService("uploads", sp.GetRequiredService<IFileValidator>()));
+            new LocalFileService("uploads", sp.GetRequiredService<IFileValidator>(), sp.GetRequiredService<ILogger<LocalFileService>>()));
         return services;
     }
 }

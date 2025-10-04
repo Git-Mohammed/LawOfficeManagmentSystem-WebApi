@@ -47,18 +47,20 @@ public sealed class GetPagedJudgmentsHandler
                 CaseId = j.CaseId,
                 Type = j.Type,
                 SubType = j.SubType,
-                Number = j.Number,
+                Number = j.Number ?? string.Empty,
                 IssuedOn = j.IssuedOn,
                 EmployeeIdCreatedBy = emp.Id,
-                EmployeeNameCreatedBy = emp.Person.FullName ?? "Unknown",
+                EmployeeNameCreatedBy = emp.Person!.FullName ?? "Unknown",
                 CreatedDate = j.CreatedAtUtc,
                 File =fileGroup
                 .OrderByDescending(f => f.CreatedAtUtc)
                 .Select(
-                    f =>new FileDto { 
-                        FileName =f.Filename,
-                        FilePath=f.Filepath,
-                        FileType=f.ContentType}).FirstOrDefault(),
+                    f => new FileDto 
+                    { 
+                        FileName =f.Filename ?? string.Empty,
+                        FilePath=f.Filepath ?? string.Empty,
+                        FileType=f.ContentType ?? string.Empty
+                    }).FirstOrDefault()!,
             })
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)

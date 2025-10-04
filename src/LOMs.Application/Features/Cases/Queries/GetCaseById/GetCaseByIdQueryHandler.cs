@@ -22,8 +22,8 @@ public sealed class GetCaseByIdQueryHandler(
         var caseEntity = await _context.Cases
             .AsNoTracking()
             .Include(x => x.CourtType)
-            .Include(x => x.Employee).ThenInclude(e => e.Person)
-            .Include(x => x.ClientCases).ThenInclude(cc => cc.Client).ThenInclude(c => c.Person).ThenInclude(x => x.Phones)
+            .Include(x => x.Employee).ThenInclude(e => e!.Person)
+            .Include(x => x.ClientCases).ThenInclude(cc => cc.Client).ThenInclude(c => c!.Person).ThenInclude(x => x!.Phones)
             .FirstOrDefaultAsync(x => x.Id == request.CaseId, cancellationToken);
 
         if (caseEntity is null)
@@ -34,7 +34,7 @@ public sealed class GetCaseByIdQueryHandler(
 
         var createdByEmployee = await _context.Employees
             .AsNoTracking()
-            .Where(x => x.UserId.Equals(caseEntity.CreatedBy))
+            .Where(x => x.UserId!.Equals(caseEntity.CreatedBy))
             .Select(x => new
             {
                 FullName = x.Person!.FullName,

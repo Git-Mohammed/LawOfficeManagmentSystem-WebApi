@@ -9,10 +9,10 @@ namespace LOMs.Domain.People.Employees;
 public sealed class Employee : AuditableEntity
 {
     public Guid PersonId { get; }
-    public Person Person { get; } = null!;
+    public Person? Person { get; set; } = null!;
     public Role Role { get; private set; }
-    public string Email { get; private set; }
-    public string UserId { get; private set; }
+    public string? Email { get; private set; }
+    public string? UserId { get; private set; }
     public bool IsActive { get; private set; }
 
     public ICollection<Case> Cases { get; set; } = [];
@@ -59,7 +59,7 @@ public sealed class Employee : AuditableEntity
         {
             roleEnum = role.Trim().ToEnum<Role>(ignoreCase: true);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return EmployeeErrors.RoleInvalid;
         }

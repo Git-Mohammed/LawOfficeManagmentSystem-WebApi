@@ -41,7 +41,7 @@ public sealed class GetContractListQueryHandler
                 TotalAmount = contract.BaseAmount + contract.TaxAmount,
                 InitialPayment = contract.InitialPayment,
                 IsAssigned = contract.IsAssigned,
-                EmployeeCreatedBy = emp.Person.FullName ?? string.Empty,
+                EmployeeCreatedBy = emp.Person!.FullName ?? string.Empty,
                 CreatedDate = contract.CreatedAtUtc
             })
             .ToListAsync(ct);
