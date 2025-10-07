@@ -1,6 +1,7 @@
 ﻿using LiteBus.Queries.Abstractions;
 using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.CourtSessions.Dtos;
+using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -23,13 +24,13 @@ public sealed class GetCourtSessionByIdQueryHandler(
             {
                 CourtSessionId = cs.Id,
                 AssignedEmployeeId = cs.AssignedEmployeeId,
-                AssignedEmployeeName = cs.AssignedEmployee != null ? cs.AssignedEmployee.Person.FullName : "Unknown",
+                AssignedEmployeeName = cs.AssignedEmployee != null ? cs.AssignedEmployee.Person!.FullName : "Unknown",
                 ScheduledAt = cs.ScheduledAt,
                 AssignedTasks = cs.AssignedTasks,
                 CreatedAt = cs.CreatedAtUtc,
-                EmployeeCreateItName = context.Employees
+                EmployeeCreateItName = _context.Employees
             .Where(e => e.UserId == cs.CreatedBy)
-            .Select(e => e.Person.FullName)
+            .Select(e => e.Person!.FullName)
             .FirstOrDefault() ?? "Unknown"
 
             })
@@ -38,7 +39,7 @@ public sealed class GetCourtSessionByIdQueryHandler(
         if (session is null)
         {
             _logger.LogWarning("CourtSession not found. CaseId: {CaseId}, SessionId: {SessionId}", query.CaseId, query.SessionId);
-            return Error.NotFound("CourtSession not found.");
+            return CourtSessionErrors.SessionNotFound;
         }
 
         return session;

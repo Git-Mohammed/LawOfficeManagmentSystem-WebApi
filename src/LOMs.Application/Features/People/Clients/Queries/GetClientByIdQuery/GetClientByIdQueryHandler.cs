@@ -26,7 +26,7 @@ public sealed class GetClientByIdQueryHandler(
     {
         var clientEntity = await _context.Clients.AsNoTracking()
             .Include(x => x.Person)
-                .ThenInclude(x => x.Phones)
+                .ThenInclude(x => x!.Phones)
             .FirstOrDefaultAsync(x => x.Id == request.ClientId);
         if (clientEntity is null)
         {

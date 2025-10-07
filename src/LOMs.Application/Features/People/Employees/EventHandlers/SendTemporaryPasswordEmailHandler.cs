@@ -66,7 +66,7 @@ public class SendTemporaryPasswordEmailHandler(IEmailSender emailSender) : IEven
             </head>
             <body>
                 <div class=""container"">
-                    <h2>Hello {@event.Employee.Person.FullName},</h2>
+                    <h2>Hello {@event.Employee.Person!.FullName},</h2>
                     <p>Your temporary password is:</p>
                     <p class=""password"">{@event.TemporaryPassword}</p>
                     <p>Please change it after logging in for security reasons.</p>

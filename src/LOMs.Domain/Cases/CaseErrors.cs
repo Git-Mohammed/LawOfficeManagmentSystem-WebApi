@@ -83,6 +83,10 @@ public static class CaseErrors
     public static Error DuplicateNationalIds(IEnumerable<string> nationalIds) =>
         Error.Validation("CreateCase.DuplicateNationalIds", $"Duplicate national IDs detected: {string.Join(", ", nationalIds)}");
 
+    // ✅ NEW ERROR
+    public static readonly Error NationalIdRequired =
+        Error.Validation("CreateCase.NationalIdRequired", "At least one national ID must be provided.");
+
     public static readonly Error ClientNotFound =
         Error.NotFound("CreateCase.ClientNotFound", "Client not found.");
 

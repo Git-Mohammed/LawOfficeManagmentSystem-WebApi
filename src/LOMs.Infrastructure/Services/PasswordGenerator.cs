@@ -1,15 +1,16 @@
-﻿using LOMs.Application.Common.Interfaces;
-using LOMs.Domain.Common.Options;
-using Microsoft.Extensions.Options;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using LOMs.Application.Common.Interfaces;
 
 namespace LOMs.Infrastructure.Services;
 
 /// <summary>
 /// Provides secure password generation and hashing utilities.
 /// </summary>
-public class PasswordGenerator(IOptions<PasswordGeneratorOptions> passwordOptions) : IPasswordGenerator
+public class PasswordGenerator : IPasswordGenerator
 {
     // Constants for PBKDF2
     private const int SaltSize = 16;          // 128-bit salt
@@ -25,8 +26,8 @@ public class PasswordGenerator(IOptions<PasswordGeneratorOptions> passwordOption
     /// </summary>
     public string GenerateTempPassword()
     {
-        string prefixHash = HashPrefix(TempPrefix);
-        string randomPart = GenerateComplexPassword(12);
+        var prefixHash = HashPrefix(TempPrefix);
+        var randomPart = GenerateComplexPassword(12);
         return prefixHash + randomPart;
     }
 
@@ -69,16 +70,16 @@ public class PasswordGenerator(IOptions<PasswordGeneratorOptions> passwordOption
     /// - At least one uppercase, lowercase, digit, and symbol.
     /// - Minimum length enforced.
     /// </summary>
-    private string GenerateComplexPassword(int length)
+    private static string GenerateComplexPassword(int length)
     {
-        if (length < 8) length = 8; // enforce minimum
+        if (length < 8) length = 8;
 
         const string upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         const string lower = "abcdefghijklmnopqrstuvwxyz";
         const string digits = "0123456789";
         const string symbols = "!@#$%^&*()-_=+[]{}<>?";
 
-        string allChars = upper + lower + digits + symbols;
+        var allChars = upper + lower + digits + symbols;
         var chars = new List<char>
         {
             GetRandomChar(upper),
@@ -90,7 +91,6 @@ public class PasswordGenerator(IOptions<PasswordGeneratorOptions> passwordOption
         while (chars.Count < length)
             chars.Add(GetRandomChar(allChars));
 
-        // Shuffle to avoid predictable order
         return new string(chars.OrderBy(_ => Guid.NewGuid()).ToArray());
     }
 
@@ -100,7 +100,7 @@ public class PasswordGenerator(IOptions<PasswordGeneratorOptions> passwordOption
     private static char GetRandomChar(string charset)
     {
         var data = RandomNumberGenerator.GetBytes(4);
-        int value = BitConverter.ToInt32(data, 0) & int.MaxValue;
+        var value = BitConverter.ToInt32(data, 0) & int.MaxValue;
         return charset[value % charset.Length];
     }
 
@@ -112,6 +112,6 @@ public class PasswordGenerator(IOptions<PasswordGeneratorOptions> passwordOption
         using var sha256 = SHA256.Create();
         var bytes = Encoding.UTF8.GetBytes(prefix);
         var hash = sha256.ComputeHash(bytes);
-        return Convert.ToBase64String(hash)[..6]; // short, non-obvious prefix
+        return Convert.ToBase64String(hash)[..6];
     }
 }

@@ -1,7 +1,4 @@
 ﻿using LOMs.Api;
-using LOMs.Contract.Commons.Enums;
-using LOMs.Domain.Cases.Enums;
-using LOMs.Domain.Cases.Judgments;
 using LOMs.Domain.Identity;
 using LOMs.Infrastructure.BackgroundJobs;
 using LOMs.Infrastructure.Data;
@@ -12,37 +9,27 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 Directory.CreateDirectory(builder.Environment.WebRootPath);
 
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new PartyRoleJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new ContractTypeJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new CaseStatusJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new PartyRoleArabicJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new CaseStatusArabicJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new cContractTypeJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new JudgmentTypeJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new JudgmentSubTypeJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new cJudgmentTypeJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new cJudgmentSubTypeJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new cRoleJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new RoleJsonConverter());
-    });
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+builder.Host.UseSerilog((context, config) =>
+    config.ReadFrom.Configuration(context.Configuration));
 
 builder.Services
-    .AddPresentation(builder.Configuration)
+    .AddControllers()
+    .ConfigureJsonConverters();
+
+builder.Services
+    .AddPresentation(builder.Configuration,builder.Environment)
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
 
 builder.Services.AddHostedService<CourtSessionReminderService>();
 
-builder.Configuration.AddEnvironmentVariables();
-
-builder.Host.UseSerilog((context, loggerConfig) =>
-    loggerConfig.ReadFrom.Configuration(context.Configuration));
-
 var app = builder.Build();
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -61,8 +48,6 @@ else
 {
     app.UseHsts();
 }
-
-
 
 app.UseCoreMiddlewares(builder.Configuration);
 app.MapControllers();

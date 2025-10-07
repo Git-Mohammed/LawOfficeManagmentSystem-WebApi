@@ -1,19 +1,12 @@
-﻿using LOMs.Domain.Cases;
-using LOMs.Domain.Common.Files;
+﻿using LOMs.Domain.Common.Files;
 using LOMs.Domain.Common.Results;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LOMs.Domain.Templates
 {
     public sealed  class Template :DbFile
     {
        
-        public string TemplateName { get; private set; }
+        public string? TemplateName { get; private set; }
 
         private Template() { }
 

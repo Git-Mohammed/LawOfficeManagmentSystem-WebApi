@@ -47,7 +47,7 @@ public class CreateContractCommandHandler(
         }
 
 
-        var contract = await _contractFactory.CreateAsync(
+        var contract =  _contractFactory.CreateAsync(
             caseEntity.Id,
             caseEntity.CourtType,
             command.ContractType,

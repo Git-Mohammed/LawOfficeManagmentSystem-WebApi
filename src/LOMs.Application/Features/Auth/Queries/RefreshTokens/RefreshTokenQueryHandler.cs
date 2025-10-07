@@ -54,7 +54,7 @@ public class RefreshTokenQueryHandler(ILogger<RefreshTokenQueryHandler> logger, 
         //    return ApplicationErrors.RefreshTokenExpired;
         //}
 
-        var generateTokenResult = await _tokenProvider.GenerateJwtTokenAsync(getUserResult.Value, ct);
+        var generateTokenResult = await _tokenProvider.GenerateJwtTokenAsync(getUserResult!.Value!, ct);
 
         if (generateTokenResult.IsError)
         {

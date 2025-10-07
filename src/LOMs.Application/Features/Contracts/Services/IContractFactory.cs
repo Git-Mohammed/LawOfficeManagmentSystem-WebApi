@@ -7,7 +7,7 @@ namespace LOMs.Application.Features.Contracts.Services
 {
     public interface IContractFactory
     {
-        Task<Result<Contract>> CreateAsync(
+        Result<Contract> CreateAsync(
             Guid caseId,
             CourtType courtType,
             ContractType type,

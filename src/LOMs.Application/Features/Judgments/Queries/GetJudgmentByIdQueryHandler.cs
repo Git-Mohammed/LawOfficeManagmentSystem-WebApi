@@ -19,7 +19,7 @@ public class GetJudgmentByIdQueryHandler(IAppDbContext context, ILogger<GetJudgm
         var existingJudgment = await _context.Judgments.AsNoTracking().FirstOrDefaultAsync(j => j.Id == query.JudgmentId && j.CaseId == query.CaseId, cancellationToken);
         if (existingJudgment is null)
         {
-            logger.LogWarning("Judgment with Id {JudgmentId} not found.", query.JudgmentId);
+            _logger.LogWarning("Judgment with Id {JudgmentId} not found.", query.JudgmentId);
             return JudgmentErrors.NotFound;
         }
         

@@ -27,10 +27,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LOMs.Infrastructure.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options), IAppDbContext
+public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>, IAppDbContext
 {
-    // People
+    public AppDbContext() { }  // EF design time will call this
+
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+      : base(options) { }    // People
     public DbSet<Person> People => Set<Person>();
     public DbSet<Client> Clients => Set<Client>();
     public DbSet<Employee> Employees => Set<Employee>();

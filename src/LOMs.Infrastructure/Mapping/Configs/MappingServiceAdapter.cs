@@ -8,6 +8,11 @@ namespace LOMs.Infrastructure.Mapping.Configs
 
         public TDestination Map<TSource, TDestination>(TSource source)
         {
+            if(source == null)
+            {
+                throw new ArgumentNullException(nameof(source), "Source object cannot be null.");
+            }
+
             return _mapper.Map<TDestination>(source);
         }
 

@@ -26,7 +26,8 @@
   <ItemGroup>
     <Folder Include="uploads\Contract\" />
     <Folder Include="uploads\Judgment\" />
-    <Folder Include="wwwroot\" />
+    <Folder Include="uploads\NewFolder\" />
+    <Folder Include="wwwroot\NewFolder\" />
   </ItemGroup>
 
 </Project>

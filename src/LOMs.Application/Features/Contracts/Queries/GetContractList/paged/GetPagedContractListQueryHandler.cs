@@ -58,7 +58,7 @@ public sealed class GetPagedContractListQueryHandler
                 TotalAmount = contract.BaseAmount + contract.TaxAmount, 
                 InitialPayment = contract.InitialPayment,
                 IsAssigned = contract.IsAssigned,
-                EmployeeCreatedBy = emp.Person.FullName ?? string.Empty,
+                EmployeeCreatedBy = emp.Person!.FullName ?? string.Empty,
                 CreatedDate = contract.CreatedAtUtc
             })
             .Skip((query.PageNumber - 1) * query.PageSize)

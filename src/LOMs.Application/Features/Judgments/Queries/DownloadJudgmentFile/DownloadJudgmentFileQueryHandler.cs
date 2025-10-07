@@ -37,7 +37,7 @@ public class DownloadJudgmentFileQueryHandler(
             .AsNoTracking()
             .AnyAsync(f =>
                 f.JudgmentId == query.JudgmentId &&
-                f.Judgment.CaseId == query.CaseId &&
+                f.Judgment!.CaseId == query.CaseId &&
                 f.Filepath == query.RelativePath,
                 cancellationToken);
 

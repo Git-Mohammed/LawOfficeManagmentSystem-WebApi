@@ -18,7 +18,7 @@ public class GetEmployeeByIdQueryHandler(IAppDbContext context, IMapper mapper)
         var  employee = await _context.Employees
             .AsNoTracking()
             .Include(e=> e.Person)
-                .ThenInclude(x => x.Phones)
+                .ThenInclude(x => x!.Phones!)
             .FirstOrDefaultAsync(e=> e.Id == query.Id, cancellationToken);
 
         if (employee == null)

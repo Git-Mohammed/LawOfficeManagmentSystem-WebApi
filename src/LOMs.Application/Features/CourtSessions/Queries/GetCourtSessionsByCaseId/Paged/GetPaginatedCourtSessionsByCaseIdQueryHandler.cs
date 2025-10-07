@@ -59,11 +59,11 @@ public sealed class GetPaginatedCourtSessionsByCaseIdQueryHandler(
                 ScheduledAt = cs.ScheduledAt,
                 AssignedTasks = cs.AssignedTasks,
                 AssignedEmployeeId = cs.AssignedEmployeeId,
-                AssignedEmployeeName = cs.AssignedEmployee!.Person.FullName ?? string.Empty,
+                AssignedEmployeeName = cs.AssignedEmployee!.Person!.FullName ?? string.Empty,
                 CreatedAt = cs.CreatedAtUtc,
                 EmployeeCreateItName = context.Employees
             .Where(e => e.UserId == cs.CreatedBy)
-            .Select(e => e.Person.FullName)
+            .Select(e => e.Person!.FullName)
             .FirstOrDefault() ?? "Unknown"
             })
             .ToListAsync(ct);

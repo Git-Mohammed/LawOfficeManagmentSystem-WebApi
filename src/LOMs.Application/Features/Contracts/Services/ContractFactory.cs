@@ -14,7 +14,7 @@ namespace LOMs.Application.Features.Contracts.Services
     {
         private readonly IAppDbContext _context = context;
 
-        public async Task<Result<Contract>> CreateAsync(
+        public Result<Contract> CreateAsync(
             Guid caseId,
             CourtType courtType,
             ContractType type,

@@ -1,7 +1,5 @@
 ﻿using LiteBus.Queries.Abstractions;
-using LOMs.Application.Common.Interfaces;
 using LOMs.Application.Features.CourtSessions.Dtos;
-using LOMs.Domain.Cases.CourtSessions;
 using LOMs.Domain.Common.Results;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,13 +19,13 @@ public sealed class GetFutureCourtSessionsQueryHandler(
                       .Select(c => new
                       {
                           CourtSession = c,
-                          CreatedByEmpoyeeId = context.Employees
+                          CreatedByEmpoyeeId = _context.Employees
                               .Where(e => e.UserId == c.CreatedBy)
                               .Select(e => e.Id)
                               .FirstOrDefault(),
-                          CreatedByEmployeeName = context.Employees
+                          CreatedByEmployeeName = _context.Employees
                     .Where(e => e.UserId == c.CreatedBy)
-                    .Select(e => e.Person.FullName)
+                    .Select(e => e.Person!.FullName)
                     .FirstOrDefault()
                       })
             .Select(cs => new GetFutureCourtSessionDto
@@ -38,7 +36,7 @@ public sealed class GetFutureCourtSessionsQueryHandler(
                 CreatedByEmployeeId = cs.CreatedByEmpoyeeId,
                 CreatedByEmployeeName = cs.CreatedByEmployeeName ?? string.Empty,
                 AssignedEmployeeId = cs.CourtSession.AssignedEmployeeId,
-                AssignedEmployeeName = cs.CourtSession.AssignedEmployee!.Person.FullName ?? string.Empty,
+                AssignedEmployeeName = cs.CourtSession!.AssignedEmployee!.Person!.FullName ?? string.Empty,
                 CreatedDate = cs.CourtSession.CreatedAtUtc
             })
             .ToListAsync(cancellationToken);
