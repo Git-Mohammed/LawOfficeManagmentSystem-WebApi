@@ -143,9 +143,9 @@ public static class DependencyInjection
             {
                 if (env.IsDevelopment())
                 {
-                    b.AllowAnyOrigin()
+                    b.WithOrigins("https://localhost:4200")
                      .AllowAnyHeader()
-                     .AllowAnyMethod();
+                     .AllowAnyMethod().AllowCredentials();
                 }
                 else
                 {
