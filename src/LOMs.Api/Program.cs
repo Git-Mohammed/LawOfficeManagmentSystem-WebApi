@@ -31,7 +31,7 @@ builder.Services.AddHostedService<CourtSessionReminderService>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseSwagger();
@@ -49,9 +49,17 @@ else
     app.UseHsts();
 }
 
-app.UseCoreMiddlewares(builder.Configuration);
+app.UseStaticFiles();
+
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 app.MapStaticAssets();
 
+app.MapFallbackToFile("index.html");
+
 await app.InitialiseDatabaseAsync();
+
 app.Run();
