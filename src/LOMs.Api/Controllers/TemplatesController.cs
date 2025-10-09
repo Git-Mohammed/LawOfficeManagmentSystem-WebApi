@@ -9,13 +9,14 @@ using LOMs.Application.Features.Templates.Queries;
 using LOMs.Application.Features.Templates.Queries.DownloadTemplateFile;
 using LOMs.Contract.Requests.Templates;
 using LOMs.Domain.Templates;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace LOMs.Api.Controllers
 {
     [Route("api/templates")]
-    
+    [Authorize]
     public class TemplatesController(ICommandMediator command , IQueryMediator query) :ApiController
     {
         private readonly ICommandMediator _command = command;

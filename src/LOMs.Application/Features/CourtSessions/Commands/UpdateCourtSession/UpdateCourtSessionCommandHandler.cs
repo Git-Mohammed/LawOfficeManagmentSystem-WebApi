@@ -35,20 +35,20 @@ public sealed class UpdateCourtSessionCommandHandler(
             return CourtSessionErrors.EmployeeNotFound;
         }
 
-        // Check for scheduling conflict
-        var hasConflict = await _context.CourtSessions
-            .AnyAsync(cs =>
-                cs.AssignedEmployeeId == message.AssignedEmployeeId &&
-                cs.ScheduledAt == message.NewDate,
-                cancellationToken);
+        //// Check for scheduling conflict
+        //var hasConflict = await _context.CourtSessions
+        //    .AnyAsync(cs =>
+        //        cs.AssignedEmployeeId == message.AssignedEmployeeId &&
+        //        cs.ScheduledAt == message.NewDate,
+        //        cancellationToken);
 
-        if (hasConflict)
-        {
-            _logger.LogWarning("CourtSession creation failed: Employee already assigned to another session at the same time. EmployeeId: {EmployeeId}, ScheduledAt: {ScheduledAt}",
-                message.AssignedEmployeeId, message.NewDate);
+        //if (hasConflict)
+        //{
+        //    _logger.LogWarning("CourtSession creation failed: Employee already assigned to another session at the same time. EmployeeId: {EmployeeId}, ScheduledAt: {ScheduledAt}",
+        //        message.AssignedEmployeeId, message.NewDate);
 
-            return CourtSessionErrors.EmployeeScheduleConflict;
-        }
+        //    return CourtSessionErrors.EmployeeScheduleConflict;
+        //}
 
 
         var updateResult = session.Update(caseId: message.CaseId,

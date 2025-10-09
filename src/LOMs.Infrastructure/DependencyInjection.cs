@@ -41,7 +41,7 @@ public static class DependencyInjection
     // 🔹 Database & EF Core
     private static void RegisterDatabase(IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("production");
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
         ArgumentNullException.ThrowIfNull(connectionString);
 
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();

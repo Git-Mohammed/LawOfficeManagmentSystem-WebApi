@@ -120,6 +120,7 @@ public sealed class Person : AuditableEntity
         NationalId = nationalId;
         BirthDate = birthDate;
         Address = address;
+        CountryCode = code;
 
         return Result.Updated;
     }
