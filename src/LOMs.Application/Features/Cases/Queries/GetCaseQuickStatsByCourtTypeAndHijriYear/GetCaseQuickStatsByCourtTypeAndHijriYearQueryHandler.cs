@@ -52,6 +52,7 @@ public sealed class GetCaseQuickStatsByCourtTypeAndHijriYearQueryHandler
   join employee in _context.Employees.AsNoTracking()
       on caseEntity.CreatedBy equals employee.UserId into employeeGroup
   from employee in employeeGroup.DefaultIfEmpty()
+  where fileView.CourtTypeCode == courtType.Code && fileView.HijriYear == query.HijriYear
   select new CaseQuickStatsDto
             {
                 CaseId = caseEntity.Id,
