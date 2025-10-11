@@ -152,8 +152,16 @@ public sealed class CreateCaseCommandHandler(
 
     private async Task<Result<Success>> CheckDuplicateNationalIdsAsync(CreateCaseCommand message, CancellationToken ct)
     {
-        var nationalIds = message.Clients
+        var newClients = message.Clients
             .OfType<NewCaseClientModel>()
+            .ToList();
+
+        if (!newClients.Any())
+        {
+            return Result.Success;
+        }
+
+        var nationalIds = newClients
             .Select(x => x.Client.Person.NationalId)
             .ToList();
 
@@ -179,8 +187,15 @@ public sealed class CreateCaseCommandHandler(
 
     private async Task<Result<Success>> CheckDuplicatePhonesAsync(CreateCaseCommand message, CancellationToken ct)
     {
-        var phoneTuples = message.Clients
-            .OfType<NewCaseClientModel>()
+
+        var newClients = message.Clients
+            .OfType<NewCaseClientModel>().ToList();
+
+        if (!newClients.Any()) {
+            return Result.Success;
+        }
+            
+        var phoneTuples = newClients
             .Select(x => new
             {
                 Number = x.Client.Person.Phone.Number?.Trim(),

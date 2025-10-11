@@ -1,5 +1,6 @@
 ﻿using LiteBus.Commands.Abstractions;
 using LiteBus.Queries.Abstractions;
+using LOMs.Api.Common;
 using LOMs.Application.Common.Models;
 using LOMs.Application.Features.POAs.Commands.CreatePOA;
 using LOMs.Application.Features.POAs.Dtos;
@@ -9,6 +10,7 @@ using LOMs.Application.Features.POAs.Queries.GetListByCaseId;
 using LOMs.Contract.Requests.POAs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LOMs.Api.Controllers;
 
@@ -52,6 +54,8 @@ public class POAsController(ICommandMediator command, IQueryMediator query) : Ap
         return result.Match(Ok, Problem);
     }
 
+
+    [EnableRateLimiting(RateLimitPolicies.FileConcurrency)]
     [HttpGet("{poaId:guid}/files/download", Name = nameof(DownloadPoaFile))]
     [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]

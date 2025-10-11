@@ -49,9 +49,19 @@ else
     app.UseHsts();
 }
 
-app.UseCoreMiddlewares(builder.Configuration);
+app.UseStaticFiles();
+
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 app.MapStaticAssets();
 
+app.MapFallbackToFile("index.html");
+
+app.UseCors("ProdCorsPolicy");
+
 await app.InitialiseDatabaseAsync();
+
 app.Run();

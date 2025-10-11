@@ -16,7 +16,11 @@ internal static class ContractsWithContractNumberView
             [CaseId],
             [HijriYear],
             [CourtTypeCode],
-            [Type],
+            CASE [Type]
+                WHEN 'FixedTerm' THEN 1
+                WHEN 'OpenEnded' THEN 2
+                ELSE NULL
+            END AS Type,
             [IssuedOn],
             [ExpiresOn],
             [BaseAmount],
