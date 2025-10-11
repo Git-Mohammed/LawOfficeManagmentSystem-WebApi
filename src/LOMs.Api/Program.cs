@@ -31,7 +31,7 @@ builder.Services.AddHostedService<CourtSessionReminderService>();
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseSwagger();
@@ -59,6 +59,8 @@ app.MapControllers();
 app.MapStaticAssets();
 
 app.MapFallbackToFile("index.html");
+
+app.UseCors("ProdCorsPolicy");
 
 await app.InitialiseDatabaseAsync();
 
